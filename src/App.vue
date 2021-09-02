@@ -5,11 +5,19 @@
     <Column field="brand" header="Brand"></Column>
     <Column field="color" header="Color"></Column>
   </DataTable>
+
+  <DataTable :value="events">
+    <Column field="id" header="Id"></Column>
+    <Column field="title" header="Title"></Column>
+    <Column field="category" header="Category"></Column>
+    <Column field="date" header="Date"></Column>
+  </DataTable>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import EventService from './services/EventService'
+import { Event, EventResponse } from './types/event'
 
 const cars = ref([
   { "brand": "Volkswagen", "year": 2012, "color": "Orange", "vin": "dsad231ff" },
@@ -24,7 +32,7 @@ const cars = ref([
   { "brand": "Fiat", "year": 2013, "color": "Red", "vin": "245t2s" }
 ])
 
-const events = ref()
+const events = ref<Event[]>()
 EventService.getEvents(false, 0)
   .then((response) => {
     events.value = response.data

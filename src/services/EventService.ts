@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { Event, EventResponse } from '../types/event'
 
 const apiClient = axios.create({
     baseURL: `/api`,
@@ -10,7 +11,7 @@ const apiClient = axios.create({
 })
 
 export default {
-    getEvents(perPage: boolean, page: number) {
+    getEvents(perPage: boolean, page: number): Promise<EventResponse> {
         return apiClient.get('/events?_limit=' + perPage + '&_page=' + page)
     },
     getEvent(id: number) {

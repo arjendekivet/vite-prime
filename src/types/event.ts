@@ -12,4 +12,8 @@ interface Event {
     attendees: Array<Person>
 }
 
-export default Event
+interface EventResponse {
+    data: Event[]
+}
+
+export { Event, EventResponse }
