@@ -9,6 +9,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import EventService from './services/EventService'
 
 const cars = ref([
   { "brand": "Volkswagen", "year": 2012, "color": "Orange", "vin": "dsad231ff" },
@@ -22,6 +23,15 @@ const cars = ref([
   { "brand": "Ford", "year": 2000, "color": "Black", "vin": "h54hw5" },
   { "brand": "Fiat", "year": 2013, "color": "Red", "vin": "245t2s" }
 ])
+
+const events = ref()
+EventService.getEvents(false, 0)
+  .then((response) => {
+    events.value = response.data
+  })
+  .catch((error) => {
+    console.log(error)
+  })
 
 </script>
 
