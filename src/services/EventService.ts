@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { Event, EventResponse } from '../types/event'
+import { Event, EventResponse } from '@/types/event'
 
 const apiClient = axios.create({
     baseURL: `/api`,
