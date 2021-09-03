@@ -1,7 +1,7 @@
 <template>
   <DataTable :value="events">
     <Column field="id" header="Id"></Column>
-    <Column field="title" header="Title"></Column>
+    <Column field="title" header="Title" :sortable="true"></Column>
     <Column field="category" header="Category"></Column>
     <Column field="date" header="Date"></Column>
   </DataTable>
@@ -30,6 +30,13 @@ function log() {
 const events = ref<Event[]>()
 EventService.getEvents(false, 0)
   .then((response) => {
+    const names = response.data.map(function (item) {
+      if (item.date && item.date !== '') {
+        item.date = new Date(item.date).toLocaleDateString('nl-NL')
+      }
+
+      return item;
+    });
     events.value = response.data
   })
   .catch((error) => {

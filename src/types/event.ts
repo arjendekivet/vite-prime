@@ -1,14 +1,14 @@
 import Person from '../types/person'
 
 interface Event {
-    id: Number
-    title: String
-    category: String
-    organizer: String
-    description: String
-    location: String
-    date: String
-    time: String
+    id: number
+    title: string
+    category: string
+    organizer: string
+    description: string
+    location: string
+    date: string
+    time: string
     attendees: Array<Person>
 }
 
