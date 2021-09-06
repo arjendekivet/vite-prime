@@ -1,7 +1,7 @@
 <template>
-  <div style="display: flex">
-    <NavBar />
-    <div style="flex: 8">
+  <div style="display: flex; flex-direction: row;">
+    <NavBar direction="column" style="flex: 1" />
+    <div style="flex: 6">
       <router-view />
     </div>
   </div>
