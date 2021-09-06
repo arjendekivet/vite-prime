@@ -17,9 +17,6 @@ const props = defineProps({
   direction: {
     type: String as PropType<'row' | 'column'>,
     default: 'row',
-    validator: function (value: string) {
-      return ['row', 'column'].indexOf(value) !== -1
-    }
   }
 })
 
