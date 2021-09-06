@@ -1,4 +1,5 @@
 import { createApp } from 'vue';
+import router from '@/routes'
 import App from '@/App.vue';
 import PrimeVue from 'primevue/config';
 
@@ -15,6 +16,7 @@ import Column from 'primevue/column';
 
 const app = createApp(App);
 
+app.use(router)
 app.use(PrimeVue);
 
 app.component('Button', Button);
