@@ -1,15 +1,9 @@
 <template>
-  <div style="display: flex; flex-direction: row;">
-    <NavBar direction="column" style="flex: 1" />
-    <div style="flex: 6">
-      <router-view />
-    </div>
-  </div>
+  <NavLayout direction="row" />
 </template>
 
 <script setup lang="ts">
-import NavBar from '@/components/NavBar.vue'
-
+import NavLayout from '@/components/NavLayout.vue'
 </script>
 
 <style lang="scss">

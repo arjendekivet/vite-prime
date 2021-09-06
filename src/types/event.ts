@@ -1,4 +1,4 @@
-import Person from '../types/person'
+import Person from '@/types/person'
 
 interface Event {
     id: number
