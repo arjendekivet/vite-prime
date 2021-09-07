@@ -13,10 +13,18 @@
 import NavBar from '@/components/NavBar.vue'
 import { PropType } from 'vue';
 
-const props = defineProps({
-  direction: {
-    type: String as PropType<'row' | 'column'>,
-    default: 'row',
-  }
+interface propTypes {
+  direction: 'row' | 'column'
+}
+const props = withDefaults(defineProps<propTypes>(), {
+  direction: 'row'
 })
+
+// const props = defineProps({
+//   direction: {
+//     type: String as PropType<'row' | 'column'>,
+//     default: 'row',
+//   }
+// })
+
 </script>
