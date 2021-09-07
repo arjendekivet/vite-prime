@@ -20,11 +20,4 @@ const props = withDefaults(defineProps<propTypes>(), {
   direction: 'row'
 })
 
-// const props = defineProps({
-//   direction: {
-//     type: String as PropType<'row' | 'column'>,
-//     default: 'row',
-//   }
-// })
-
 </script>
