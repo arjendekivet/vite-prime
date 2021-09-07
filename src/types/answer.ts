@@ -1,4 +1,4 @@
-interface Answer {
+type Answer = {
     id: Number
     title: String
     hint?: String

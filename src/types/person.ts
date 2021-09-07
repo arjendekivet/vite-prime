@@ -1,4 +1,4 @@
-interface Person {
+type Person = {
     id: Number
     name: String
 }

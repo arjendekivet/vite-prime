@@ -1,5 +1,6 @@
 <template>
-    <DataTable :value="events">
+    <DataTable :value="events" v-model:selection="selectedEvents" data-key="id">
+        <Column selectionMode="multiple" headerStyle="width: 3em"></Column>
         <Column field="id" header="Id"></Column>
         <Column field="title" header="Title" :sortable="true"></Column>
         <Column field="category" header="Category"></Column>
@@ -28,6 +29,8 @@ function log() {
 }
 
 const events = ref<Event[]>()
+const selectedEvents = ref<Event[]>();
+
 EventService.getEvents(false, 0)
     .then((response) => {
         const names = response.data.map(function (item) {

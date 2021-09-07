@@ -1,6 +1,6 @@
 import Person from '@/types/person'
 
-interface Event {
+type Event = {
     id: number
     title: string
     category: string
@@ -12,7 +12,7 @@ interface Event {
     attendees: Array<Person>
 }
 
-interface EventResponse {
+type EventResponse = {
     data: Event[]
 }
 

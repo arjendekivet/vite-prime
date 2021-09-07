@@ -1,7 +1,7 @@
 import Question from '@/types/question'
 import Answer from '@/types/answer'
 
-interface Card {
+type Card = {
     question: Question
     answer: Answer
 }
