@@ -39,17 +39,3 @@ const fields: Fieldconfig[] =
   ]
 
 </script>
-
-<style lang="scss" scoped>
-@media screen and (max-width: 489px) {
-  .p-formgroup-inline {
-    .p-field {
-      margin-bottom: 1em !important;
-    }
-  }
-}
-
-textarea {
-  resize: none;
-}
-</style>
