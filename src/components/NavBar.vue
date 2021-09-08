@@ -20,7 +20,7 @@ const props = defineProps({
   }
 })
 
-const routes = [{ name: 'home' }, { name: 'events' }]
+const routes = [{ name: 'home' }, { name: 'events' }, { name: 'questionform' }]
 
 function goToRoute(route: string) {
   router.push({ name: route })

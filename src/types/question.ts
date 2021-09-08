@@ -1,8 +1,8 @@
 type Question = {
-    id: Number
+    id: number
     type: 'open' | 'multiple choice' | 'Rating scale'
-    title: String
-    Description: String
+    title: string
+    Description: string
 }
 
 export default Question

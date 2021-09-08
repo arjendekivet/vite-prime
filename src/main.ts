@@ -13,6 +13,9 @@ import 'primeicons/primeicons.css';                     //icons
 import Button from 'primevue/button';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import InputText from 'primevue/inputtext';
+import Dropdown from 'primevue/dropdown';
+import Textarea from 'primevue/textarea';
 
 const app = createApp(App);
 
@@ -22,5 +25,8 @@ app.use(PrimeVue);
 app.component('Button', Button);
 app.component('DataTable', DataTable);
 app.component('Column', Column);
+app.component('P-InputText', InputText);
+app.component('P-Dropdown', Dropdown);
+app.component('P-Textarea', Textarea);
 
 app.mount('#app')
