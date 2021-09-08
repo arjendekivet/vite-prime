@@ -12,6 +12,7 @@
 <script setup lang="ts">
 import router from '@/routes'
 import { PropType } from 'vue'
+import routes from '@/data/NavigationItems'
 
 const props = defineProps({
   direction: {
@@ -19,8 +20,6 @@ const props = defineProps({
     default: 'row',
   }
 })
-
-const routes = [{ name: 'home' }, { name: 'events' }, { name: 'questionform' }]
 
 function goToRoute(route: string) {
   router.push({ name: route })

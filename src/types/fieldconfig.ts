@@ -8,4 +8,4 @@ type Fieldconfig = {
     placeholder?: string
 }
 
-export { Fieldconfig }
+export default Fieldconfig

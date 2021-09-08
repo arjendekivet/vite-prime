@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { PropType, ref } from 'vue'
-import { Fieldconfig } from '@/types/fieldconfig'
+import Fieldconfig from '@/types/fieldconfig'
 
 const props = defineProps({
   fields: { type: Object as PropType<Fieldconfig[]>, default: 2 },

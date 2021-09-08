@@ -1,10 +1,10 @@
 <template>
-  <DynamicForm :fields="fields" />
+  <DynamicForm :fields="fields" :columns="2" />
 </template>
 
 <script setup lang="ts">
 import DynamicForm from '@/components/DynamicForm.vue'
-import { Fieldconfig } from '@/types/fieldconfig'
+import Fieldconfig from '@/types/fieldconfig'
 
 const states = [
   { name: 'Arizona', code: 'Arizona' },

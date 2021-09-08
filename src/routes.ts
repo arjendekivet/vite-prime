@@ -4,6 +4,7 @@ import Hello from "@/components/HelloWorld.vue";
 import Events from "@/components/EventsTable.vue";
 import NavLayout from "@/components/NavLayout.vue";
 import QuestionForm from "@/components/QuestionForm.vue";
+import AnswerForm from "@/components/AnswerForm.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -31,6 +32,11 @@ const router = createRouter({
       path: "/questionform",
       name: "questionform",
       component: QuestionForm,
+    },
+    {
+      path: "/answerform",
+      name: "answerform",
+      component: AnswerForm,
     },
   ],
 });
