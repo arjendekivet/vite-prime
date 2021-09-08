@@ -1,39 +1,20 @@
 <template>
-  <div class="card">
-    <div class="p-fluid p-formgrid p-grid">
-      <div v-for="field in fields" :class="`p-field p-col-12 p-md-${12 / columns}`">
-        <label :for="field.id">{{ field.label }}</label>
-        <component
-          :is="field.type"
-          :id="field.id"
-          v-model="fieldValues[field.id]"
-          :options="field.options ? field.options : null"
-          :optionLabel="field.optionLabel"
-          :placeholder="field.placeholder"
-        ></component>
-      </div>
-    </div>
-  </div>
+  <DynamicForm :fields="fields" />
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import DynamicForm from '@/components/DynamicForm.vue'
 import { Fieldconfig } from '@/types/fieldconfig'
 
-const props = defineProps({
-  columns: { type: Number, default: 2 }
-})
-
-const states = ref([
+const states = [
   { name: 'Arizona', code: 'Arizona' },
   { name: 'California', value: 'California' },
   { name: 'Florida', code: 'Florida' },
   { name: 'Ohio', code: 'Ohio' },
   { name: 'Washington', code: 'Washington' }
-]);
+];
 
-const fieldValues: any = ref<object>({})
-const fields = ref<Fieldconfig[]>(
+const fields: Fieldconfig[] =
   [
     {
       id: 'firstname',
@@ -51,14 +32,11 @@ const fields = ref<Fieldconfig[]>(
       id: 'state',
       label: 'State',
       type: 'P-Dropdown',
-      options: states.value,
+      options: states,
       optionLabel: "name",
       placeholder: 'States'
     }
   ]
-)
-
-const selectedState = ref(null);
 
 </script>
 
