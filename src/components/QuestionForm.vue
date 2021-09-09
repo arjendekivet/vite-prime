@@ -7,35 +7,37 @@ import DynamicForm from '@/components/DynamicForm.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import Option from '@/types/Option'
 
-const states: Option[] = [
-  { label: 'Arizona', value: 'Arizona' },
-  { label: 'California', value: 'California' },
-  { label: 'Florida', value: 'Florida' },
-  { label: 'Ohio', value: 'Ohio' },
-  { label: 'Washington', value: 'Washington' }
+const questionType: Option[] = [
+  { label: 'Open', value: 'open' },
+  { label: 'Multiple choice', value: 'mc' },
+  { label: 'Rating scale', value: 'rs' },
 ];
 
 const fields: Fieldconfig[] =
   [
     {
-      id: 'firstname',
-      label: 'Firstname',
-      type: 'P-InputText',
-      placeholder: 'Firstname'
+      id: 'id',
+      label: 'Id',
+      type: 'P-InputText'
     },
     {
-      id: 'lastname',
-      label: 'Lastname',
+      id: 'title',
+      label: 'Title',
       type: 'P-InputText',
-      placeholder: 'Lastname'
+      placeholder: 'Title'
     },
     {
-      id: 'state',
-      label: 'State',
+      id: 'description',
+      label: 'Description',
+      type: 'P-Textarea',
+      placeholder: 'Description'
+    },
+    {
+      id: 'type',
+      label: 'Question type',
       type: 'P-Dropdown',
-      options: states,
+      options: questionType,
       optionLabel: "label",
-      placeholder: 'States'
     }
   ]
 

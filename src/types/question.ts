@@ -1,8 +1,9 @@
 type Question = {
     id: number
-    type: 'open' | 'multiple choice' | 'Rating scale'
+    type: 'open' | 'mc' | 'rs'
     title: string
     Description: string
+    Answer: string[]
 }
 
 export default Question
