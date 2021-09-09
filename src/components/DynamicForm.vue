@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import { PropType, ref } from 'vue'
 import Fieldconfig from '@/types/fieldconfig'
-import Validator from '@/types/validator'
+import { validate } from '@/modules/validate'
 
 const props = defineProps({
   fields: { type: Object as PropType<Fieldconfig[]>, default: 2 },
@@ -42,20 +42,12 @@ function validateField(field: Fieldconfig) {
   const value = fieldValues.value[field.id]
 
   if (field.validators) {
-    const validators = field.validators
-    console.log(value, validators)
-
-    const validated = validate(value, validators)
+    const validated = validate(value, field.validators)
     errorFields.value[field.id] = !validated
   }
 }
 
-function validate(value: unknown, validators: Validator[]): boolean {
-  if (validators[0] === 'required' && (value === '' || value === undefined)) {
-    return false
-  }
-  return true
-}
+
 </script>
 
 <style lang="scss">
