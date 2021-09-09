@@ -18,7 +18,8 @@ const fields: Fieldconfig[] =
     {
       id: 'id',
       label: 'Id',
-      type: 'P-InputText'
+      type: 'P-InputText',
+      disabled: true,
     },
     {
       id: 'title',
@@ -27,17 +28,17 @@ const fields: Fieldconfig[] =
       placeholder: 'Title'
     },
     {
-      id: 'description',
-      label: 'Description',
-      type: 'P-Textarea',
-      placeholder: 'Description'
-    },
-    {
       id: 'type',
       label: 'Question type',
       type: 'P-Dropdown',
       options: questionType,
       optionLabel: "label",
+    },
+    {
+      id: 'description',
+      label: 'Description',
+      type: 'P-Textarea',
+      placeholder: 'Description'
     }
   ]
 

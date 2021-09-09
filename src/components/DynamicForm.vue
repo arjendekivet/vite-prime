@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <div class="card dynamicform">
     <div class="p-fluid p-formgrid p-grid">
       <div v-for="field in fields" :class="`p-field p-col-12 p-md-${12 / columns}`">
         <label :for="field.id">{{ field.label }}</label>
@@ -7,10 +7,13 @@
           :is="field.type"
           :id="field.id"
           v-model="fieldValues[field.id]"
+          :disabled="field.disabled"
           :options="field.options ? field.options : null"
           :optionLabel="field.optionLabel"
           :placeholder="field.placeholder"
+          :aria-describedby="`${field.id}-help`"
         ></component>
+        <small :id="`${field.id}-help`"></small>
       </div>
     </div>
   </div>
@@ -28,16 +31,10 @@ const props = defineProps({
 const fieldValues: any = ref<object>({})
 </script>
 
-<style lang="scss" scoped>
-@media screen and (max-width: 489px) {
-  .p-formgroup-inline {
-    .p-field {
-      margin-bottom: 1em !important;
-    }
+<style lang="scss">
+.dynamicform {
+  textarea {
+    resize: none;
   }
-}
-
-textarea {
-  resize: none;
 }
 </style>
