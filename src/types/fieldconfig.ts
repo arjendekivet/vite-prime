@@ -1,4 +1,7 @@
-import Option from '@/types/Option'
+import Option from '@/types/option'
+import Validator from '@/types/validator'
+
+type validator = 'required' | 'email' | 'isNumber' | 'isDate'
 
 type Fieldconfig = {
     id: string
@@ -9,6 +12,7 @@ type Fieldconfig = {
     help?: string
     placeholder?: string
     disabled?: boolean
+    validators?: Validator[]
 }
 
 export default Fieldconfig

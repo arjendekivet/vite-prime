@@ -25,7 +25,8 @@ const fields: Fieldconfig[] =
       id: 'title',
       label: 'Title',
       type: 'P-InputText',
-      placeholder: 'Title'
+      placeholder: 'Title',
+      validators: ['required']
     },
     {
       id: 'type',
