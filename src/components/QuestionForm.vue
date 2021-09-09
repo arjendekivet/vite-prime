@@ -5,13 +5,14 @@
 <script setup lang="ts">
 import DynamicForm from '@/components/DynamicForm.vue'
 import Fieldconfig from '@/types/fieldconfig'
+import Option from '@/types/Option'
 
-const states = [
-  { name: 'Arizona', code: 'Arizona' },
-  { name: 'California', value: 'California' },
-  { name: 'Florida', code: 'Florida' },
-  { name: 'Ohio', code: 'Ohio' },
-  { name: 'Washington', code: 'Washington' }
+const states: Option[] = [
+  { label: 'Arizona', value: 'Arizona' },
+  { label: 'California', value: 'California' },
+  { label: 'Florida', value: 'Florida' },
+  { label: 'Ohio', value: 'Ohio' },
+  { label: 'Washington', value: 'Washington' }
 ];
 
 const fields: Fieldconfig[] =
@@ -33,7 +34,7 @@ const fields: Fieldconfig[] =
       label: 'State',
       type: 'P-Dropdown',
       options: states,
-      optionLabel: "name",
+      optionLabel: "label",
       placeholder: 'States'
     }
   ]
