@@ -70,11 +70,10 @@ function validateField(field: Fieldconfig) {
   }
 }
 
-
 </script>
 
 <style lang="scss">
-@import "@/css/fieldicons.scss";
+@import "./fieldicons.scss";
 
 .dynamicform {
   textarea {

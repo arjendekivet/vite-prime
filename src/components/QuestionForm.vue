@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import DynamicForm from '@/components/DynamicForm.vue'
+import DynamicForm from '@/components/dynamic-form/DynamicForm.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import Option from '@/types/Option'
 
