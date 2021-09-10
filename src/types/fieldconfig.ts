@@ -1,7 +1,10 @@
 import Option from '@/types/option'
 import Validator from '@/types/validator'
 
-type validator = 'required' | 'email' | 'isNumber' | 'isDate'
+type FieldIcon = {
+    type: 'left' | 'right'
+    name: string
+}
 
 type Fieldconfig = {
     id: string
@@ -13,6 +16,8 @@ type Fieldconfig = {
     placeholder?: string
     disabled?: boolean
     validators?: Validator[]
+    maxColumns?: number
+    icon?: FieldIcon
 }
 
 export default Fieldconfig

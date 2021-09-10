@@ -26,7 +26,8 @@ const fields: Fieldconfig[] =
       label: 'Title',
       type: 'P-InputText',
       placeholder: 'Title',
-      validators: ['required']
+      validators: ['required'],
+      icon: { type: 'right', name: 'pi-search' }
     },
     {
       id: 'type',
@@ -34,12 +35,15 @@ const fields: Fieldconfig[] =
       type: 'P-Dropdown',
       options: questionType,
       optionLabel: "label",
+      validators: ['required']
     },
     {
       id: 'description',
       label: 'Description',
       type: 'P-Textarea',
-      placeholder: 'Description'
+      placeholder: 'Description',
+      validators: ['required'],
+      maxColumns: 1
     }
   ]
 
