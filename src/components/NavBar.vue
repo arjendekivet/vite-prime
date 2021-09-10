@@ -1,12 +1,10 @@
 <template>
-  <div class="parent" :class="direction">
-    <component :is="getComponent(direction)" :model="menuitems"></component>
-  </div>
+  <component :is="getComponent(direction)" :model="menuitems" v-model:expandedKeys="expandedKeys"></component>
 </template>
 
 <script setup lang="ts">
 import router from '@/routes'
-import { PropType } from 'vue'
+import { ref, PropType } from 'vue'
 import routes from '@/data/NavigationItems'
 import menuitems from '@/data/MenuItems'
 
@@ -17,6 +15,8 @@ const props = defineProps({
   }
 })
 
+const expandedKeys = ref({});
+
 function getComponent(direction: string) {
   return direction === 'row' ? 'PanelMenu' : 'Menubar'
 }
@@ -24,33 +24,7 @@ function getComponent(direction: string) {
 </script>
 
 <style lang="scss">
-.parent {
-  display: flex;
-}
-.nav-item {
-  cursor: pointer;
-  background-color: green;
-  color: white;
-  font-weight: 700;
-  margin: 0.5em;
-  padding: 0.25em 0.5em;
-}
-.row {
-  flex-direction: row;
-  // flex-grow: 1;
-  .nav-item {
-    min-width: 150px;
-    // flex-grow: 1;
-  }
-}
-
-.column {
-  flex-direction: column;
-  overflow: hidden;
-  .nav-item {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+.p-menubar {
+  overflow: auto;
 }
 </style>
