@@ -1,9 +1,9 @@
 <template>
   <div class="p-grid">
-    <div :class="direction === 'column' ? '' : 'p-col-12 p-lg-2'">
-      <NavBar :direction="direction === 'column' ? 'row' : 'column'" style="flex: 1" />
+    <div class="p-col-12" :class="direction === 'row' ? 'p-lg-2' : ''">
+      <NavBar :direction="direction === 'row' ? 'row' : 'column'" style="flex: 1" />
     </div>
-    <div :class="direction === 'column' ? '' : 'p-col-12 p-lg-10'">
+    <div class="p-col-12" :class="direction === 'row' ? 'p-lg-10' : ''">
       <router-view />
     </div>
   </div>

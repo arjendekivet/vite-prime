@@ -16,6 +16,8 @@ import Column from 'primevue/column';
 import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
 import Textarea from 'primevue/textarea';
+import PanelMenu from 'primevue/panelmenu';
+import Menubar from 'primevue/menubar';
 
 const app = createApp(App);
 
@@ -28,5 +30,7 @@ app.component('Column', Column);
 app.component('P-InputText', InputText);
 app.component('P-Dropdown', Dropdown);
 app.component('P-Textarea', Textarea);
+app.component('PanelMenu', PanelMenu);
+app.component('Menubar', Menubar);
 
 app.mount('#app')

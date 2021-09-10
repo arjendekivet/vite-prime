@@ -1,6 +1,11 @@
 <template>
   <div class="parent" :class="direction">
-    <component :is="getComponent(direction)" :model="menuitems"></component>
+    <div
+      v-for="route in routes"
+      :key="route.name"
+      class="nav-item"
+      @click="goToRoute(route.name)"
+    >{{ route.name }}</div>
   </div>
 </template>
 
@@ -8,7 +13,6 @@
 import router from '@/routes'
 import { PropType } from 'vue'
 import routes from '@/data/NavigationItems'
-import menuitems from '@/data/MenuItems'
 
 const props = defineProps({
   direction: {
@@ -17,8 +21,8 @@ const props = defineProps({
   }
 })
 
-function getComponent(direction: string) {
-  return direction === 'row' ? 'PanelMenu' : 'Menubar'
+function goToRoute(route: string) {
+  router.push({ name: route })
 }
 
 </script>
