@@ -6,27 +6,12 @@
         <Column field="category" header="Category"></Column>
         <Column field="date" header="Date"></Column>
     </DataTable>
-    <span>--{{ foo }}--</span>
-    <Button @click="log"></Button>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import EventService from '@/services/EventService'
 import { Event, EventResponse } from '@/types/event'
-
-const props = defineProps({
-    foo: { type: String, default: 'test' }
-})
-
-const emit = defineEmits<{
-    (e: 'pipo', value: Record<'id', number>): void
-}>()
-
-function log() {
-    emit('pipo', { id: 4 })
-    console.log('called ....')
-}
 
 const events = ref<Event[]>()
 const selectedEvents = ref<Event[]>();
