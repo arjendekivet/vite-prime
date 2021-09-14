@@ -12,7 +12,7 @@ export default defineConfig({
       "/api": {
         target: "http://localhost:4321", //3001 for MongoDB and 3004 for Mock JSON-server
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+        rewrite: (path) => path.replace(/^\/api/, "/api"),
       },
     },
   },

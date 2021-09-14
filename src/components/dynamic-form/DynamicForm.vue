@@ -87,26 +87,38 @@ function convertData(data: any): object {
 function getSubmitValue(myFieldValues: object): object {
   const submitValue: any = {}
 
-  _.each(myFieldValues, function (fieldValue: unknown, key: string) {
+  _.each(myFieldValues, function (fieldValue: any, key: string) {
     if (myFieldValues.hasOwnProperty(key)) {
-      submitValue[key] = _.isObject(fieldValue) && fieldValue.value ? fieldValue.value : fieldValue
+      submitValue[key] = fieldValue && fieldValue.value ? fieldValue.value : fieldValue
     }
   });
 
-  debugger
   return submitValue
 }
 
 function submitForm() {
-  const submitValue: object = getSubmitValue(fieldValues._rawValue)
+  const submitValue: any = getSubmitValue(fieldValues._rawValue)
+  const id: string = submitValue._id
 
-  EventService.postForm(props.dataType, submitValue)
-    .then((response) => {
-      console.log('Submit succesfull ...', response)
-    })
-    .catch((error) => {
-      console.error('There was an error!', error);
-    })
+  if (id) {
+    debugger
+    EventService.putForm(props.dataType, id, submitValue)
+      .then((response) => {
+        console.log('Submit succesfull ...', response)
+      })
+      .catch((error) => {
+        console.error('There was an error!', error);
+      })
+  } else {
+    EventService.postForm(props.dataType, submitValue)
+      .then((response) => {
+        console.log('Submit succesfull ...', response)
+        fieldValues.value['_id'] = response.data._id
+      })
+      .catch((error) => {
+        console.error('There was an error!', error);
+      })
+  }
 }
 
 </script>

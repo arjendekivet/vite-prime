@@ -1,5 +1,5 @@
 <template>
-    <DataTable :value="events" v-model:selection="selectedEvents" data-key="id">
+    <DataTable :value="questions" v-model:selection="selected" data-key="id">
         <Column selectionMode="multiple" headerStyle="width: 3em"></Column>
         <Column field="id" header="Id"></Column>
         <Column field="title" header="Title" :sortable="true"></Column>
@@ -11,21 +11,20 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import EventService from '@/services/EventService'
-import { Event, EventResponse } from '@/types/event'
+import Question from '@/types/question'
 
-const events = ref<Event[]>()
-const selectedEvents = ref<Event[]>();
+const questions = ref<Question[]>()
+const selected = ref<Question[]>();
 
-EventService.getEvents(false, 0)
+EventService.getQuestions(false, 0)
     .then((response) => {
         const names = response.data.map(function (item) {
-            if (item.date && item.date !== '') {
-                item.date = new Date(item.date).toLocaleDateString('nl-NL')
-            }
-
+            // if (item.date && item.date !== '') {
+            //     item.date = new Date(item.date).toLocaleDateString('nl-NL')
+            // }
             return item;
         });
-        events.value = response.data
+        questions.value = response.data
     })
     .catch((error) => {
         console.log(error)

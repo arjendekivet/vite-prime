@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import EventService from '@/services/EventService'
-import { Event, EventResponse } from '@/types/event'
+import { Event } from '@/types/event'
 
 const events = ref<Event[]>()
 const selectedEvents = ref<Event[]>();

@@ -1,5 +1,5 @@
 <template>
-  <DynamicForm :fields="fields" data-type="question" :columns="2" />
+  <DynamicForm :fields="fields" data-type="questions" :columns="2" />
 </template>
 
 <script setup lang="ts">
@@ -18,6 +18,12 @@ const fields: Fieldconfig[] =
     {
       id: 'id',
       label: 'Id',
+      type: 'P-InputText',
+      disabled: true,
+    },
+    {
+      id: '_id',
+      label: '_Id',
       type: 'P-InputText',
       disabled: true,
     },

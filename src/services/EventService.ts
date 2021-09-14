@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { Event, EventResponse } from '@/types/event'
+import Question from '@/types/question'
 
 const apiClient = axios.create({
     baseURL: `/api`,
@@ -10,6 +11,10 @@ const apiClient = axios.create({
     },
 })
 
+type QuestionResponse = {
+    data: Question[]
+}
+
 export default {
     getEvents(perPage: boolean, page: number): Promise<EventResponse> {
         return apiClient.get('/events?_limit=' + perPage + '&_page=' + page)
@@ -17,7 +22,16 @@ export default {
     getEvent(id: number) {
         return apiClient.get('/events/' + id)
     },
-    postForm(type: string, question: object) {
-        return apiClient.post('/question', question)
+    getQuestions(perPage: boolean, page: number): Promise<QuestionResponse> {
+        return apiClient.get('/questions?_limit=' + perPage + '&_page=' + page)
+    },
+    getQuestionById(id: number) {
+        return apiClient.get('/questions/' + id)
+    },
+    postForm(type: string, submitValues: object) {
+        return apiClient.post('/' + type, submitValues)
+    },
+    putForm(type: string, id: string, submitValues: object) {
+        return apiClient.put('/' + type + '/' + id, submitValues)
     },
 }
