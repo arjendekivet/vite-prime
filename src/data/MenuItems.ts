@@ -1,7 +1,8 @@
 import MenuItem from '@/types/menuitem'
 import { ref } from 'vue';
 
-const menuItems: MenuItem[] = ref([{
+const menuItems = ref<MenuItem[]>()
+menuItems.value = [{
     key: '0',
     label: 'Home',
     icon: 'pi pi-fw pi-home',
@@ -16,6 +17,12 @@ const menuItems: MenuItem[] = ref([{
         label: 'Events',
         icon: 'pi pi-fw pi-list',
         to: '/events'
+    },
+    {
+        key: '1_1',
+        label: 'Questions',
+        icon: 'pi pi-fw pi-list',
+        to: '/questions'
     }
     ]
 },
@@ -107,6 +114,6 @@ const menuItems: MenuItem[] = ref([{
     }
     ]
 }
-]);
+];
 
 export default menuItems

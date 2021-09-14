@@ -2,11 +2,11 @@ import { createRouter, createWebHistory } from "vue-router";
 // import App from "@/App.vue";
 import Hello from "@/components/HelloWorld.vue";
 import Events from "@/components/EventsTable.vue";
+import Questions from "@/components/QuestionsTable.vue";
 import NavLayout from "@/components/NavLayout.vue";
 import QuestionForm from "@/components/QuestionForm.vue";
 import AnswerForm from "@/components/AnswerForm.vue";
 import Test from "@/pages/Test.vue";
-import MenuBar from "@/pages/MenuBar.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -24,6 +24,11 @@ const router = createRouter({
       path: "/events",
       name: "events",
       component: Events,
+    },
+    {
+      path: "/questions",
+      name: "questions",
+      component: Questions,
     },
     {
       path: "/nav",

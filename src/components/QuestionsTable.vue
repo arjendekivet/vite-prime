@@ -1,10 +1,10 @@
 <template>
-    <DataTable :value="questions" v-model:selection="selected" data-key="id">
+    <DataTable :value="questions" v-model:selection="selected" data-key="_id">
         <Column selectionMode="multiple" headerStyle="width: 3em"></Column>
-        <Column field="id" header="Id"></Column>
+        <Column field="_id" header="_Id"></Column>
         <Column field="title" header="Title" :sortable="true"></Column>
-        <Column field="category" header="Category"></Column>
-        <Column field="date" header="Date"></Column>
+        <Column field="type" header="Type"></Column>
+        <Column field="description" header="Description"></Column>
     </DataTable>
 </template>
 

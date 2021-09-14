@@ -20,12 +20,14 @@ const fields: Fieldconfig[] =
       label: 'Id',
       type: 'P-InputText',
       disabled: true,
+      icon: { type: 'right', name: 'pi-lock' }
     },
     {
       id: '_id',
       label: '_Id',
       type: 'P-InputText',
       disabled: true,
+      icon: { type: 'right', name: 'pi-lock' }
     },
     {
       id: 'title',
@@ -33,7 +35,7 @@ const fields: Fieldconfig[] =
       type: 'P-InputText',
       placeholder: 'Title',
       validators: ['required'],
-      icon: { type: 'right', name: 'pi-search' }
+      icon: { type: 'right', name: 'pi-bookmark' }
     },
     {
       id: 'type',
@@ -41,14 +43,14 @@ const fields: Fieldconfig[] =
       type: 'P-Dropdown',
       options: questionType,
       optionLabel: "label",
-      validators: ['required']
+      validators: ['required'],
+      icon: { type: 'left', name: 'pi-bookmark' }
     },
     {
       id: 'description',
       label: 'Description',
       type: 'P-Textarea',
       placeholder: 'Description',
-      validators: ['required'],
       maxColumns: 1
     }
   ]

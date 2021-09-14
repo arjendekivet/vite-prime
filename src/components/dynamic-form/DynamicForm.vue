@@ -5,7 +5,7 @@
         v-for="field in fields"
         :class="`p-field ${getIconType(field)} p-col-12 p-md-${12 / getColumns(columns, field.maxColumns)}`"
       >
-        <label :for="field.id">{{ field.label }}</label>
+        <label :for="field.id">{{ field.label }}{{ getRequired(field) }}</label>
         <i v-if="getIconName(field)" :class="`pi ${getIconName(field)}`" />
         <component
           :is="field.type"
@@ -49,6 +49,10 @@ const errorFieldsInfo: any = ref<object>({})
 const props = withDefaults(defineProps<formPropTypes>(), {
   columns: 2
 })
+
+function getRequired(field: Fieldconfig) {
+  return _.isArray(field.validators) && _.indexOf(field.validators, 'required') > -1 ? ' *' : null
+}
 
 function getColumns(columns: number, maxColumns: number | undefined) {
   return maxColumns && maxColumns < columns ? maxColumns : columns
@@ -101,7 +105,6 @@ function submitForm() {
   const id: string = submitValue._id
 
   if (id) {
-    debugger
     EventService.putForm(props.dataType, id, submitValue)
       .then((response) => {
         console.log('Submit succesfull ...', response)
@@ -129,6 +132,10 @@ function submitForm() {
 .dynamicform {
   textarea {
     resize: none;
+  }
+
+  .pi {
+    z-index: 1;
   }
 }
 </style>

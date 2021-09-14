@@ -18,9 +18,9 @@ const selectedEvents = ref<Event[]>();
 
 EventService.getEvents(false, 0)
     .then((response) => {
-        const names = response.data.map(function (item) {
+        response.data.map(function (item) {
             if (item.date && item.date !== '') {
-                item.date = new Date(item.date).toLocaleDateString('nl-NL')
+                item.date = new Date(item.date).toLocaleDateString()
             }
 
             return item;
