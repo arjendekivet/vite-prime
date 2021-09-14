@@ -17,7 +17,7 @@ export default {
     getEvent(id: number) {
         return apiClient.get('/events/' + id)
     },
-    // postEvent(event) {
-    //     return apiClient.post('/events', event)
-    // },
+    postForm(type: string, question: object) {
+        return apiClient.post('/question', question)
+    },
 }

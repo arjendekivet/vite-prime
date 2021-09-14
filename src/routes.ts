@@ -6,6 +6,7 @@ import NavLayout from "@/components/NavLayout.vue";
 import QuestionForm from "@/components/QuestionForm.vue";
 import AnswerForm from "@/components/AnswerForm.vue";
 import Test from "@/pages/Test.vue";
+import MenuBar from "@/pages/MenuBar.vue";
 
 const router = createRouter({
   history: createWebHistory(),

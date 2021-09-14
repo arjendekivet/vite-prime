@@ -23,17 +23,31 @@
         <small :id="`${field.id}-help`" class="p-error">{{ errorFieldsInfo[field.id] }}</small>
       </div>
     </div>
+    <Button type="button" label="Submit" @click="submitForm" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { PropType, ref } from 'vue'
+import { computed, PropType, ref } from 'vue'
 import Fieldconfig from '@/types/fieldconfig'
 import { validate } from '@/modules/validate'
+import EventService from '@/services/EventService'
+import _ from 'lodash'
 
-const props = defineProps({
-  fields: { type: Object as PropType<Fieldconfig[]>, default: 2 },
-  columns: { type: Number, default: 2 }
+type formPropTypes = {
+  fields: Fieldconfig[],
+  columns?: number,
+  dataType: string
+}
+
+const fieldValues: any = ref<object>({})
+const errorFields: any = ref<object>({})
+const errorFieldsInfo: any = ref<object>({})
+
+// const compFieldValues = computed(() => fieldValues)
+
+const props = withDefaults(defineProps<formPropTypes>(), {
+  columns: 2
 })
 
 function getColumns(columns: number, maxColumns: number | undefined) {
@@ -47,10 +61,6 @@ function getIconType(field: Fieldconfig) {
 function getIconName(field: Fieldconfig) {
   return field.icon && field.icon.name
 }
-
-const fieldValues: any = ref<object>({})
-const errorFields: any = ref<object>({})
-const errorFieldsInfo: any = ref<object>({})
 
 function fieldChangeHandler(field: Fieldconfig) {
   validateField(field)
@@ -68,6 +78,35 @@ function validateField(field: Fieldconfig) {
       errorFieldsInfo.value[field.id] = null
     }
   }
+}
+
+function convertData(data: any): object {
+  return data.value ? data.value : data
+}
+
+function getSubmitValue(myFieldValues: object): object {
+  const submitValue: any = {}
+
+  _.each(myFieldValues, function (fieldValue: unknown, key: string) {
+    if (myFieldValues.hasOwnProperty(key)) {
+      submitValue[key] = _.isObject(fieldValue) && fieldValue.value ? fieldValue.value : fieldValue
+    }
+  });
+
+  debugger
+  return submitValue
+}
+
+function submitForm() {
+  const submitValue: object = getSubmitValue(fieldValues._rawValue)
+
+  EventService.postForm(props.dataType, submitValue)
+    .then((response) => {
+      console.log('Submit succesfull ...', response)
+    })
+    .catch((error) => {
+      console.error('There was an error!', error);
+    })
 }
 
 </script>

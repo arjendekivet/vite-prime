@@ -20,11 +20,4 @@ const expandedKeys = ref({});
 function getComponent(direction: string) {
   return direction === 'row' ? 'PanelMenu' : 'Menubar'
 }
-
 </script>
-
-<style lang="scss">
-.p-menubar {
-  overflow: auto;
-}
-</style>
