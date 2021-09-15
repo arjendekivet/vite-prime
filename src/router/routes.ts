@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from "vue-router";
-// import App from "@/App.vue";
 import Hello from "@/components/HelloWorld.vue";
 import Events from "@/components/EventsTable.vue";
 import Questions from "@/components/QuestionsTable.vue";

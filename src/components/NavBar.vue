@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import router from '@/routes'
+import router from '@/router/routes'
 import { ref, PropType } from 'vue'
 import routes from '@/data/NavigationItems'
 import menuitems from '@/data/MenuItems'
