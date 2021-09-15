@@ -87,6 +87,21 @@ function validateField(field: Fieldconfig) {
   }
 }
 
+function convertResponseData(responseData: object): object {
+  const converted: any = {}
+  _.each(responseData, function (fieldValue: any, key: string) {
+    const field = _.find(props.fields, { 'id': key })
+    const fieldType: string | undefined = field && field.type
+
+    if (fieldType === 'Calendar') {
+      converted[key] = Date.parse(fieldValue) !== NaN ? new Date(fieldValue) : fieldValue
+    } else {
+      converted[key] = fieldValue
+    }
+  });
+  return converted
+}
+
 // Not really used at this point
 function getSubmitValue(myFieldValues: object): object {
   const submitValue: any = {}
@@ -105,8 +120,8 @@ function submitForm() {
   if (id) {
     EventService.putForm(props.dataType, id, submitValue)
       .then((response) => {
-        console.log('Submit succesfull ...', response)
-        fieldValues.value = response.data
+        const convertedResponseData = convertResponseData(response.data)
+        fieldValues.value = convertedResponseData
       })
       .catch((error) => {
         console.error('There was an error!', error);
@@ -114,26 +129,14 @@ function submitForm() {
   } else {
     EventService.postForm(props.dataType, submitValue)
       .then((response) => {
-        console.log('Submit succesfull ...', response)
-        fieldValues.value = response.data
+        const convertedResponseData = convertResponseData(response.data)
+        fieldValues.value = convertedResponseData
       })
       .catch((error) => {
         console.error('There was an error!', error);
       })
   }
 }
-
-// function getFormValues(submitValues: any) {
-//   _.each(submitValues, function (submitValue: any, key: string) {
-//     // const field = _.find(props.fields, { 'id': key })
-//     if (props.dataType === 'questions' && key === 'type') {
-//       const questionType = _.find(questionTypes, { 'value': submitValue })
-//       fieldValues.value[key] = questionType
-//     } else {
-//       fieldValues.value[key] = submitValues.data[key]
-//     }
-//   });
-// }
 
 </script>
 
