@@ -46,7 +46,6 @@ const fields: Fieldconfig[] =
       label: 'Created on',
       type: 'Calendar',
       showIcon: true,
-
     },
     {
       id: 'description',

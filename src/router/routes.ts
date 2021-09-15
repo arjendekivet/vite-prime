@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Hello from "@/components/HelloWorld.vue";
-import Events from "@/components/EventsTable.vue";
-import Questions from "@/components/QuestionsTable.vue";
+import Hello from "@/components/other/Home.vue";
+import Events from "@/components/tables/EventsTable.vue";
+import Questions from "@/components/tables/QuestionsTable.vue";
 import NavLayout from "@/components/navigation/NavLayout.vue";
 import QuestionForm from "@/components/forms/QuestionForm.vue";
 import AnswerForm from "@/components/forms/AnswerForm.vue";
