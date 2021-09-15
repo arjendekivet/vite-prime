@@ -1,5 +1,6 @@
 <template>
-  <div class="card dynamicform">
+  <div class="dynamicform">
+    <h3 v-if="title">{{ title }}</h3>
     <div class="p-fluid p-formgrid p-grid">
       <div
         v-for="field in fields"
@@ -39,8 +40,9 @@ import questionTypes from '@/enums/questionTypes'
 
 type formPropTypes = {
   fields: Fieldconfig[],
+  dataType: string,
   columns?: number,
-  dataType: string
+  title?: string,
 }
 
 const fieldValues: any = ref<object>({})

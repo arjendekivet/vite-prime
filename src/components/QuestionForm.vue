@@ -1,5 +1,5 @@
 <template>
-  <DynamicForm :fields="fields" data-type="questions" :columns="2" />
+  <DynamicForm :fields="fields" data-type="questions" :columns="2" title="Question" />
 </template>
 
 <script setup lang="ts">
