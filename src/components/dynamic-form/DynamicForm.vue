@@ -20,6 +20,7 @@
           :placeholder="field.placeholder"
           :class="errorFields[field.id] ? 'p-invalid' : ''"
           :aria-describedby="`${field.id}-help`"
+          :showIcon="field.showIcon"
         ></component>
         <small :id="`${field.id}-help`" class="p-error">{{ errorFieldsInfo[field.id] }}</small>
       </div>

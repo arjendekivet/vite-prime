@@ -18,7 +18,8 @@ import Dropdown from 'primevue/dropdown';
 import Textarea from 'primevue/textarea';
 import PanelMenu from 'primevue/panelmenu';
 import Menubar from 'primevue/menubar';
-import Card from 'primevue/card';
+// import Card from 'primevue/card';
+import Calendar from 'primevue/calendar';
 
 const app = createApp(App);
 
@@ -33,6 +34,7 @@ app.component('P-Dropdown', Dropdown);
 app.component('P-Textarea', Textarea);
 app.component('PanelMenu', PanelMenu);
 app.component('Menubar', Menubar);
-app.component('Card', Card);
+// app.component('Card', Card);
+app.component('Calendar', Calendar);
 
 app.mount('#app')

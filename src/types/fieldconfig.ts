@@ -9,7 +9,7 @@ type FieldIcon = {
 type Fieldconfig = {
     id: string
     label: string
-    type: 'P-InputText' | 'P-Dropdown' | 'P-Textarea'
+    type: 'P-InputText' | 'P-Dropdown' | 'P-Textarea' | 'Calendar'
     options?: Option[]
     optionLabel?: keyof Option
     optionValue?: keyof Option
@@ -19,6 +19,7 @@ type Fieldconfig = {
     validators?: Validator[]
     maxColumns?: number
     icon?: FieldIcon
+    showIcon?: boolean
 }
 
 export default Fieldconfig

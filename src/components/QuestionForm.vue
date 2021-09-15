@@ -42,6 +42,13 @@ const fields: Fieldconfig[] =
       icon: { type: 'left', name: 'pi-bookmark' }
     },
     {
+      id: 'created',
+      label: 'Created on',
+      type: 'Calendar',
+      showIcon: true,
+
+    },
+    {
       id: 'description',
       label: 'Description',
       type: 'P-Textarea',
