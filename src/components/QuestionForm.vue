@@ -5,13 +5,7 @@
 <script setup lang="ts">
 import DynamicForm from '@/components/dynamic-form/DynamicForm.vue'
 import Fieldconfig from '@/types/fieldconfig'
-import Option from '@/types/Option'
-
-const questionType: Option[] = [
-  { label: 'Open', value: 'open' },
-  { label: 'Multiple choice', value: 'mc' },
-  { label: 'Rating scale', value: 'rs' },
-];
+import questionType from '@/enums/questionTypes'
 
 const fields: Fieldconfig[] =
   [
@@ -43,6 +37,7 @@ const fields: Fieldconfig[] =
       type: 'P-Dropdown',
       options: questionType,
       optionLabel: "label",
+      optionValue: "value",
       validators: ['required'],
       icon: { type: 'left', name: 'pi-bookmark' }
     },

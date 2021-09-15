@@ -16,6 +16,7 @@
           :disabled="field.disabled"
           :options="field.options ? field.options : null"
           :optionLabel="field.optionLabel"
+          :optionValue="field.optionValue"
           :placeholder="field.placeholder"
           :class="errorFields[field.id] ? 'p-invalid' : ''"
           :aria-describedby="`${field.id}-help`"
@@ -33,6 +34,7 @@ import Fieldconfig from '@/types/fieldconfig'
 import { validate } from '@/modules/validate'
 import EventService from '@/services/EventService'
 import _ from 'lodash'
+import questionTypes from '@/enums/questionTypes'
 
 type formPropTypes = {
   fields: Fieldconfig[],
@@ -84,19 +86,14 @@ function validateField(field: Fieldconfig) {
   }
 }
 
-function convertData(data: any): object {
-  return data.value ? data.value : data
-}
-
+// Not really used at this point
 function getSubmitValue(myFieldValues: object): object {
   const submitValue: any = {}
-
   _.each(myFieldValues, function (fieldValue: any, key: string) {
     if (myFieldValues.hasOwnProperty(key)) {
       submitValue[key] = fieldValue && fieldValue.value ? fieldValue.value : fieldValue
     }
   });
-
   return submitValue
 }
 
@@ -108,6 +105,7 @@ function submitForm() {
     EventService.putForm(props.dataType, id, submitValue)
       .then((response) => {
         console.log('Submit succesfull ...', response)
+        fieldValues.value = response.data
       })
       .catch((error) => {
         console.error('There was an error!', error);
@@ -116,13 +114,25 @@ function submitForm() {
     EventService.postForm(props.dataType, submitValue)
       .then((response) => {
         console.log('Submit succesfull ...', response)
-        fieldValues.value['_id'] = response.data._id
+        fieldValues.value = response.data
       })
       .catch((error) => {
         console.error('There was an error!', error);
       })
   }
 }
+
+// function getFormValues(submitValues: any) {
+//   _.each(submitValues, function (submitValue: any, key: string) {
+//     // const field = _.find(props.fields, { 'id': key })
+//     if (props.dataType === 'questions' && key === 'type') {
+//       const questionType = _.find(questionTypes, { 'value': submitValue })
+//       fieldValues.value[key] = questionType
+//     } else {
+//       fieldValues.value[key] = submitValues.data[key]
+//     }
+//   });
+// }
 
 </script>
 

@@ -12,6 +12,7 @@ type Fieldconfig = {
     type: 'P-InputText' | 'P-Dropdown' | 'P-Textarea'
     options?: Option[]
     optionLabel?: keyof Option
+    optionValue?: keyof Option
     help?: string
     placeholder?: string
     disabled?: boolean
