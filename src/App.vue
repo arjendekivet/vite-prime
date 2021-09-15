@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import NavLayout from '@/components/NavLayout.vue'
+import NavLayout from '@/components/navigation/NavLayout.vue'
 </script>
 
 <style lang="scss">
