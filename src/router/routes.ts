@@ -3,8 +3,8 @@ import Hello from "@/components/HelloWorld.vue";
 import Events from "@/components/EventsTable.vue";
 import Questions from "@/components/QuestionsTable.vue";
 import NavLayout from "@/components/navigation/NavLayout.vue";
-import QuestionForm from "@/components/QuestionForm.vue";
-import AnswerForm from "@/components/AnswerForm.vue";
+import QuestionForm from "@/components/forms/QuestionForm.vue";
+import AnswerForm from "@/components/forms/AnswerForm.vue";
 import Test from "@/pages/Test.vue";
 
 const router = createRouter({
