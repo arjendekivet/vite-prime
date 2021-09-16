@@ -25,7 +25,7 @@ export default {
     getQuestions(perPage: boolean, page: number): Promise<QuestionResponse> {
         return apiClient.get('/questions?_limit=' + perPage + '&_page=' + page)
     },
-    getQuestionById(id: number) {
+    getQuestionById(id: string) {
         return apiClient.get('/questions/' + id)
     },
     postForm(type: string, submitValues: object) {

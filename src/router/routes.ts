@@ -40,6 +40,12 @@ const router = createRouter({
       component: QuestionForm,
     },
     {
+      path: "/questionform/:id",
+      name: "questionformbyid",
+      component: QuestionForm,
+      props: true,
+    },
+    {
       path: "/answerform",
       name: "answerform",
       component: AnswerForm,

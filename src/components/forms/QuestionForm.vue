@@ -1,11 +1,19 @@
 <template>
-  <DynamicForm :fields="fields" data-type="questions" :columns="2" title="Question" />
+  <DynamicForm :fields="fields" data-type="questions" :columns="2" title="Question" :id="id" />
 </template>
 
 <script setup lang="ts">
 import DynamicForm from '@/components/dynamic-form/DynamicForm.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import questionType from '@/enums/questionTypes'
+
+type formPropTypes = {
+  id?: string,
+}
+
+const props = withDefaults(defineProps<formPropTypes>(), {
+  id: undefined
+})
 
 const fields: Fieldconfig[] =
   [

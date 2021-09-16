@@ -45,6 +45,7 @@ import questionTypes from '@/enums/questionTypes'
 type formPropTypes = {
   fields: Fieldconfig[],
   dataType: string,
+  id?: string,
   columns?: number,
   title?: string,
 }
@@ -58,6 +59,17 @@ const errorFieldsInfo: any = ref<object>({})
 const props = withDefaults(defineProps<formPropTypes>(), {
   columns: 2
 })
+
+if (props.id) {
+  const record = EventService.getQuestionById(props.id)
+    .then((response) => {
+      const convertedResponseData = convertResponseData(response.data)
+      fieldValues.value = convertedResponseData
+    })
+    .catch((error) => {
+      console.error('There was an error!', error);
+    })
+}
 
 function getRequired(field: Fieldconfig) {
   return _.isArray(field.validators) && _.indexOf(field.validators, 'required') > -1 ? ' *' : null
