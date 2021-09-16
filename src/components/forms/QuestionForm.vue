@@ -10,15 +10,8 @@ import questionType from '@/enums/questionTypes'
 const fields: Fieldconfig[] =
   [
     {
-      id: 'id',
-      label: 'Id',
-      type: 'P-InputText',
-      disabled: true,
-      icon: { type: 'right', name: 'pi-lock' }
-    },
-    {
       id: '_id',
-      label: '_Id',
+      label: 'Id',
       type: 'P-InputText',
       disabled: true,
       icon: { type: 'right', name: 'pi-lock' }
@@ -42,8 +35,8 @@ const fields: Fieldconfig[] =
       icon: { type: 'left', name: 'pi-bookmark' }
     },
     {
-      id: 'created',
-      label: 'Created on',
+      id: 'due',
+      label: 'Due on',
       type: 'Calendar',
       showIcon: true,
     },
@@ -52,6 +45,13 @@ const fields: Fieldconfig[] =
       label: 'Description',
       type: 'P-Textarea',
       placeholder: 'Description',
+      maxColumns: 1
+    },
+    {
+      id: 'answer',
+      label: 'Answer',
+      type: 'P-Textarea',
+      placeholder: 'Answer',
       maxColumns: 1
     }
   ]
