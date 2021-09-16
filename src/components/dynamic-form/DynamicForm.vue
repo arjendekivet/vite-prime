@@ -26,7 +26,11 @@
         <small :id="`${field.id}-help`" class="p-error">{{ errorFieldsInfo[field.id] }}</small>
       </div>
     </div>
-    <Button type="button" label="Submit" @click="submitForm" />
+    <Toolbar>
+      <template #left>
+        <Button type="button" label="Submit" @click="submitForm" />
+      </template>
+    </Toolbar>
   </div>
 </template>
 

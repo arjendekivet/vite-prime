@@ -1,18 +1,27 @@
 <template>
-  <NavLayout direction="row" />
+  <NavSplitter />
+  <!--<NavLayout direction="row" />-->
 </template>
 
 <script setup lang="ts">
-import NavLayout from '@/components/navigation/NavLayout.vue'
+// import NavLayout from '@/components/navigation/NavLayout.vue'
+import NavSplitter from '@/components/navigation/NavSplitter.vue'
 </script>
 
 <style lang="scss">
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 10px;
+  margin: 0;
+  height: 100%;
 }
 </style>

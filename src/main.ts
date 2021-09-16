@@ -20,6 +20,9 @@ import PanelMenu from 'primevue/panelmenu';
 import Menubar from 'primevue/menubar';
 // import Card from 'primevue/card';
 import Calendar from 'primevue/calendar';
+import Splitter from 'primevue/splitter';
+import SplitterPanel from 'primevue/splitterpanel';
+import Toolbar from 'primevue/toolbar';
 
 const app = createApp(App);
 
@@ -36,5 +39,8 @@ app.component('PanelMenu', PanelMenu);
 app.component('Menubar', Menubar);
 // app.component('Card', Card);
 app.component('Calendar', Calendar);
+app.component('Splitter', Splitter);
+app.component('SplitterPanel', SplitterPanel);
+app.component('Toolbar', Toolbar);
 
 app.mount('#app')
