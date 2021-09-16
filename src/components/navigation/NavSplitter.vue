@@ -1,15 +1,10 @@
 <template>
-  <div class="navigation">
+  <div class="router-frame">
     <Splitter style="height: 100%;">
-      <SplitterPanel
-        class="p-d-flex"
-        :size="20"
-        style="padding: 10px;"
-        :class="navVisible ? '' : 'navHide'"
-      >
+      <SplitterPanel class="p-d-flex navigation" :size="20" :class="navVisible ? '' : 'navHide'">
         <NavBar :direction="direction === 'row' ? 'row' : 'column'" style="flex: 1" />
       </SplitterPanel>
-      <SplitterPanel class="p-d-flex" :size="80" style="flex-direction: column; padding: 10px;">
+      <SplitterPanel class="p-d-flex body-panel" :size="80">
         <AppTopbar @menu-toggle="menuToggle"></AppTopbar>
         <router-view />
       </SplitterPanel>
@@ -37,11 +32,22 @@ function menuToggle() {
 </script>
 
 <style lang="scss">
-.navigation {
+.router-frame {
   height: 100%;
+  overflow: hidden;
 
   .navHide {
     display: none !important;
+  }
+
+  .body-panel,
+  .navigation {
+    overflow: auto;
+    padding: 10px;
+  }
+
+  .body-panel {
+    flex-direction: column;
   }
 }
 </style>
