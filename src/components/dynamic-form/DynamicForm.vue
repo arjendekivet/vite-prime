@@ -4,31 +4,48 @@
     <div class="p-fluid p-formgrid p-grid">
       <div
         v-for="field in fields"
-        :class="`p-field ${getIconType(field)} p-col-12 p-md-${12 / getColumns(columns, field.maxColumns)}`"
+        :class="`p-field p-text-left ${getIconType(field)} p-col-12 p-md-${12 / getColumns(columns, field.maxColumns)}`"
       >
         <label :for="field.id">{{ field.label }}{{ getRequired(field) }}</label>
-        <i v-if="getIconName(field)" :class="`pi ${getIconName(field)}`" />
-        <component
-          :is="field.type"
-          :id="field.id"
-          v-model="fieldValues[field.id]"
-          @blur="fieldChangeHandler(field)"
-          @change="fieldChangeHandler(field)"
-          :disabled="field.disabled"
-          :options="field.options ? field.options : null"
-          :optionLabel="field.optionLabel"
-          :optionValue="field.optionValue"
-          :placeholder="field.placeholder"
-          :class="errorFields[field.id] ? 'p-invalid' : ''"
-          :aria-describedby="`${field.id}-help`"
-          :showIcon="field.showIcon"
-        ></component>
-        <small :id="`${field.id}-help`" class="p-error">{{ errorFieldsInfo[field.id] }}</small>
+        <template v-if="readOnly">
+          <div>{{ fieldValues[field.id] }}</div>
+        </template>
+        <template v-else>
+          <i v-if="getIconName(field)" :class="`pi ${getIconName(field)}`" />
+          <component
+            :is="field.type"
+            :id="field.id"
+            v-model="fieldValues[field.id]"
+            @blur="fieldChangeHandler(field)"
+            @change="fieldChangeHandler(field)"
+            :disabled="field.disabled"
+            :options="field.options ? field.options : null"
+            :optionLabel="field.optionLabel"
+            :optionValue="field.optionValue"
+            :placeholder="field.placeholder"
+            :class="errorFields[field.id] ? 'p-invalid' : ''"
+            :aria-describedby="`${field.id}-help`"
+            :showIcon="field.showIcon"
+          ></component>
+          <small :id="`${field.id}-help`" class="p-error">{{ errorFieldsInfo[field.id] }}</small>
+        </template>
       </div>
     </div>
     <Toolbar>
       <template #left>
-        <Button type="button" label="Submit" @click="submitForm" />
+        <template v-if="readOnly">
+          <Button type="button" label="Edit" @click="readOnly = false" icon="pi pi-pencil" />
+        </template>
+        <template v-else>
+          <Button type="button" label="Submit" @click="submitForm" icon="pi pi-check" />
+        </template>
+        <Button
+          type="button"
+          label="Close"
+          @click="router.back"
+          icon="pi pi-times"
+          class="p-button-secondary"
+        />
       </template>
     </Toolbar>
   </div>
@@ -41,6 +58,7 @@ import { validate } from '@/modules/validate'
 import EventService from '@/services/EventService'
 import _ from 'lodash'
 import questionTypes from '@/enums/questionTypes'
+import router from '@/router/routes';
 
 type formPropTypes = {
   fields: Fieldconfig[],
@@ -48,6 +66,7 @@ type formPropTypes = {
   id?: string,
   columns?: number,
   title?: string,
+  readOnly?: boolean,
 }
 
 const fieldValues: any = ref<object>({})
@@ -57,7 +76,8 @@ const errorFieldsInfo: any = ref<object>({})
 // const compFieldValues = computed(() => fieldValues)
 
 const props = withDefaults(defineProps<formPropTypes>(), {
-  columns: 2
+  columns: 2,
+  readOnly: true
 })
 
 if (props.id) {
@@ -168,6 +188,14 @@ function submitForm() {
 
   .pi {
     z-index: 1;
+  }
+
+  .p-field > label {
+    margin-left: 0.25rem;
+  }
+
+  .p-button {
+    margin-right: 0.5rem;
   }
 }
 </style>

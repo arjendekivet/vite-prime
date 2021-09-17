@@ -13,7 +13,12 @@
         <Column field="description" header="Description"></Column>
         <Column headerStyle="width: 8em;" bodyStyle="text-align: right">
             <template #body="slotProps">
-                <Button type="button" icon="pi pi-eye" @click="openDocument(slotProps.data)"></Button>
+                <Button type="button" icon="pi pi-eye" @click="openDocument(slotProps.data, true)"></Button>
+                <Button
+                    type="button"
+                    icon="pi pi-pencil"
+                    @click="openDocument(slotProps.data, false)"
+                ></Button>
             </template>
         </Column>
     </DataTable>
@@ -42,10 +47,10 @@ EventService.getQuestions(false, 0)
         console.log(error)
     })
 
-function openDocument(rowData: Question) {
+function openDocument(rowData: Question, readOnly: boolean) {
     const id = rowData._id
     if (id) {
-        router.push({ name: 'questionformbyid', params: { id: id } })
+        router.push({ name: 'questionformbyid', params: { id: id }, query: { readOnly: readOnly.toString() } })
     }
 }
 </script>
@@ -56,6 +61,12 @@ function openDocument(rowData: Question) {
         &.p-datatable .p-datatable-tbody > tr > td:last-child {
             border-width: 0 0 1px 0;
         }
+    }
+}
+
+.question-table {
+    td .p-button {
+        margin-right: 0.5rem;
     }
 }
 </style>

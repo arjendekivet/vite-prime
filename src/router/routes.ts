@@ -43,7 +43,7 @@ const router = createRouter({
       path: "/questionform/:id",
       name: "questionformbyid",
       component: QuestionForm,
-      props: true,
+      props: route => ({ id: route.params.id, readOnly: route.query.readOnly === 'false' ? false : true })
     },
     {
       path: "/answerform",

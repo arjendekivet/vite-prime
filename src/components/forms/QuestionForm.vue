@@ -1,5 +1,12 @@
 <template>
-  <DynamicForm :fields="fields" data-type="questions" :columns="2" title="Question" :id="id" />
+  <DynamicForm
+    :fields="fields"
+    data-type="questions"
+    :columns="2"
+    title="Question"
+    :id="id"
+    :readOnly="readOnly"
+  />
 </template>
 
 <script setup lang="ts">
@@ -9,6 +16,7 @@ import questionType from '@/enums/questionTypes'
 
 type formPropTypes = {
   id?: string,
+  readOnly?: boolean,
 }
 
 const props = withDefaults(defineProps<formPropTypes>(), {

@@ -20,7 +20,7 @@ import { PropType, ref } from 'vue';
 let navVisible = ref(true)
 
 type propTypes = {
-  direction: 'row' | 'column'
+  direction?: 'row' | 'column'
 }
 const props = withDefaults(defineProps<propTypes>(), {
   direction: 'row'
