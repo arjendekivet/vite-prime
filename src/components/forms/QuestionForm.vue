@@ -26,6 +26,20 @@ const catOne: OptionType[] = [
   { label: 'Frans', value: 'FR' },
 ];
 
+const catTwo: OptionType[] = [
+  { label: 'Chapter one', value: 'Ch-1' },
+  { label: 'Chapter two', value: 'Ch-2' },
+  { label: 'Chapter five', value: 'Ch-5' },
+];
+
+const catThree: OptionType[] = [
+  { label: 'A', value: 'A' },
+  { label: 'B', value: 'B' },
+  { label: 'D', value: 'D' },
+  { label: 'F', value: 'F' },
+  { label: 'G', value: 'G' },
+];
+
 const props = withDefaults(defineProps<formPropTypes>(), {
   id: undefined
 })
@@ -72,7 +86,7 @@ const fields: Fieldconfig[] =
       id: 'cat_2',
       label: 'Category 2',
       type: 'P-Dropdown',
-      options: catOne,
+      options: catTwo,
       optionLabel: "label",
       optionValue: "value",
       editable: true,
@@ -81,7 +95,7 @@ const fields: Fieldconfig[] =
       id: 'cat_3',
       label: 'Category 3',
       type: 'P-Dropdown',
-      options: catOne,
+      options: catThree,
       optionLabel: "label",
       optionValue: "value",
       editable: true,
