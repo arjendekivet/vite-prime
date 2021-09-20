@@ -13,6 +13,7 @@ type Fieldconfig = {
     options?: Option[]
     optionLabel?: keyof Option
     optionValue?: keyof Option
+    editable?: boolean
     help?: string
     placeholder?: string
     disabled?: boolean
@@ -20,6 +21,7 @@ type Fieldconfig = {
     maxColumns?: number
     icon?: FieldIcon
     showIcon?: boolean
+    defaultValue?: string | number | Date
 }
 
 export default Fieldconfig

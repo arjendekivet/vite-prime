@@ -12,12 +12,19 @@
 <script setup lang="ts">
 import DynamicForm from '@/components/dynamic-form/DynamicForm.vue'
 import Fieldconfig from '@/types/fieldconfig'
-import questionType from '@/enums/questionTypes'
+import QuestionType from '@/enums/questionTypes'
+import OptionType from '@/types/Option'
 
 type formPropTypes = {
   id?: string,
   readOnly?: boolean,
 }
+
+const catOne: OptionType[] = [
+  { label: 'Duits', value: 'DE' },
+  { label: 'Engels', value: 'EN' },
+  { label: 'Frans', value: 'FR' },
+];
 
 const props = withDefaults(defineProps<formPropTypes>(), {
   id: undefined
@@ -44,11 +51,40 @@ const fields: Fieldconfig[] =
       id: 'type',
       label: 'Question type',
       type: 'P-Dropdown',
-      options: questionType,
+      options: QuestionType,
       optionLabel: "label",
       optionValue: "value",
       validators: ['required'],
-      icon: { type: 'left', name: 'pi-bookmark' }
+      icon: { type: 'left', name: 'pi-bookmark' },
+      defaultValue: 'open'
+    },
+    {
+      id: 'cat_1',
+      label: 'Category 1',
+      type: 'P-Dropdown',
+      options: catOne,
+      optionLabel: "label",
+      optionValue: "value",
+      editable: true,
+      validators: ['required'],
+    },
+    {
+      id: 'cat_2',
+      label: 'Category 2',
+      type: 'P-Dropdown',
+      options: catOne,
+      optionLabel: "label",
+      optionValue: "value",
+      editable: true,
+    },
+    {
+      id: 'cat_3',
+      label: 'Category 3',
+      type: 'P-Dropdown',
+      options: catOne,
+      optionLabel: "label",
+      optionValue: "value",
+      editable: true,
     },
     {
       id: 'due',

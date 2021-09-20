@@ -1,6 +1,16 @@
 <template>
   <div class="dynamicform">
     <h3 v-if="title">{{ title }}</h3>
+    <transition-group name="p-message" tag="div">
+      <Message
+        v-for="msg of messages"
+        :severity="msg.severity"
+        :key="msg.id"
+        :life="msg.life"
+        :sticky="msg.sticky"
+        @close="removeMessage(msg.id)"
+      >{{ msg.content }}</Message>
+    </transition-group>
     <div class="p-fluid p-formgrid p-grid">
       <div
         v-for="field in fields"
@@ -26,6 +36,7 @@
             :class="errorFields[field.id] ? 'p-invalid' : ''"
             :aria-describedby="`${field.id}-help`"
             :showIcon="field.showIcon"
+            :editable="field.editable"
           ></component>
           <small :id="`${field.id}-help`" class="p-error">{{ errorFieldsInfo[field.id] }}</small>
         </template>
@@ -60,6 +71,18 @@ import _ from 'lodash'
 import questionTypes from '@/enums/questionTypes'
 import router from '@/router/routes';
 
+type message = {
+  id: number,
+  content: string,
+  severity?: string,
+  closable?: boolean,
+  sticky?: boolean,
+  life?: number,
+}
+
+const messages = ref<message[]>([]);
+const count = ref(0);
+
 type formPropTypes = {
   fields: Fieldconfig[],
   dataType: string,
@@ -89,6 +112,19 @@ if (props.id) {
     .catch((error) => {
       console.error('There was an error!', error);
     })
+} else {
+  props.fields.forEach(function (field) {
+    if (field.defaultValue) {
+      fieldValues.value[field.id] = field.defaultValue
+    }
+  })
+}
+
+function removeMessage(id: number) {
+  const found = _.find(messages.value, { 'id': id })
+  if (found) {
+    messages.value = _.without(messages.value, found)
+  }
 }
 
 function getRequired(field: Fieldconfig) {
@@ -116,11 +152,14 @@ function validateField(field: Fieldconfig) {
 
   if (field.validators) {
     const returnValue = validate(value, field.validators)
-    errorFields.value[field.id] = !returnValue.valid
+    // errorFields.value[field.id] = !returnValue.valid
     if (!returnValue.valid) {
       errorFieldsInfo.value[field.id] = returnValue.info
+      errorFields.value[field.id] = !returnValue.valid
     } else {
-      errorFieldsInfo.value[field.id] = null
+      // errorFieldsInfo.value[field.id] = null
+      delete errorFieldsInfo.value[field.id]
+      delete errorFields.value[field.id]
     }
   }
 }
@@ -141,18 +180,37 @@ function convertResponseData(responseData: object): object {
 }
 
 // Not really used at this point
-function getSubmitValue(myFieldValues: object): object {
-  const submitValue: any = {}
-  _.each(myFieldValues, function (fieldValue: any, key: string) {
-    if (myFieldValues.hasOwnProperty(key)) {
-      submitValue[key] = fieldValue && fieldValue.value ? fieldValue.value : fieldValue
-    }
-  });
-  return submitValue
+// function getSubmitValue(myFieldValues: object): object {
+//   const submitValue: any = {}
+//   _.each(myFieldValues, function (fieldValue: any, key: string) {
+//     if (myFieldValues.hasOwnProperty(key)) {
+//       submitValue[key] = fieldValue && fieldValue.value ? fieldValue.value : fieldValue
+//     }
+//   });
+//   return submitValue
+// }
+
+function addSubmitMessage() {
+  messages.value.push(
+    { severity: 'success', sticky: false, content: 'Form succesfully saved', id: count.value++ },
+  )
+}
+
+function addErrorMessage(error: any) {
+  messages.value.push(
+    { severity: 'error', sticky: true, content: error, id: count.value++ },
+  )
 }
 
 function submitForm() {
-  const submitValue: any = getSubmitValue(fieldValues._rawValue)
+  const hasErrors = Object.keys(errorFields.value).length > 0
+  if (hasErrors) {
+    addErrorMessage(`The following fields have issues: ${Object.keys(errorFields.value).join(', ')}`)
+    return
+  }
+
+  // const submitValue: any = getSubmitValue(fieldValues._rawValue)
+  const submitValue: any = fieldValues._rawValue
   const id: string = submitValue._id
 
   if (id) {
@@ -160,18 +218,26 @@ function submitForm() {
       .then((response) => {
         const convertedResponseData = convertResponseData(response.data)
         fieldValues.value = convertedResponseData
+        addSubmitMessage()
       })
       .catch((error) => {
-        console.error('There was an error!', error);
+        addErrorMessage(
+          error.response && error.response.data && error.response.data.error
+            ? error + " ==> " + error.response.data.error
+            : error)
       })
   } else {
     EventService.postForm(props.dataType, submitValue)
       .then((response) => {
         const convertedResponseData = convertResponseData(response.data)
         fieldValues.value = convertedResponseData
+        addSubmitMessage()
       })
       .catch((error) => {
-        console.error('There was an error!', error);
+        addErrorMessage(
+          error.response && error.response.data && error.response.data.error
+            ? error + " ==> " + error.response.data.error
+            : error)
       })
   }
 }
@@ -192,10 +258,6 @@ function submitForm() {
 
   .p-field > label {
     margin-left: 0.25rem;
-  }
-
-  .p-button {
-    margin-right: 0.5rem;
   }
 }
 </style>

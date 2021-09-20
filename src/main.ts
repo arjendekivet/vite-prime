@@ -23,6 +23,7 @@ import Calendar from 'primevue/calendar';
 import Splitter from 'primevue/splitter';
 import SplitterPanel from 'primevue/splitterpanel';
 import Toolbar from 'primevue/toolbar';
+import Message from 'primevue/message';
 
 const app = createApp(App);
 
@@ -42,5 +43,6 @@ app.component('Calendar', Calendar);
 app.component('Splitter', Splitter);
 app.component('SplitterPanel', SplitterPanel);
 app.component('Toolbar', Toolbar);
+app.component('Message', Message);
 
 app.mount('#app')
