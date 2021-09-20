@@ -22,7 +22,8 @@ type Fieldconfig = {
     maxColumns?: number
     icon?: FieldIcon
     showIcon?: boolean
-    defaultValue?: string | number | Date
+    defaultValue?: string | number | Date | null
+    dependantFields?: string[]
 }
 
 export default Fieldconfig

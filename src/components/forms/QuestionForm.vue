@@ -84,6 +84,7 @@ fields.value =
       optionValue: "value",
       editable: true,
       validators: ['required'],
+      dependantFields: ['cat_2'],
     },
     {
       id: 'cat_2',
@@ -93,6 +94,7 @@ fields.value =
       optionLabel: "label",
       optionValue: "value",
       editable: true,
+      dependantFields: ['cat_3'],
     },
     {
       id: 'cat_3',
@@ -126,9 +128,8 @@ fields.value =
   ]
 
 function fieldValueUpdated(field: Fieldconfig, value: any) {
-  if (field.id === 'cat_1') {
-    fields.value[4].hidden = value ? false : true
-  }
+  console.log(field)
+  console.log(value)
 }
 
 </script>

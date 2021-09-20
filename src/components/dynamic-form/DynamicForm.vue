@@ -146,10 +146,28 @@ function getIconName(field: Fieldconfig) {
   return field.icon && field.icon.name
 }
 
+function calculateDependantFieldState(field: Fieldconfig, fieldValue: any) {
+  field.dependantFields?.forEach(function (fieldId: string) {
+    const myField = _.find(props.fields, { id: fieldId })
+    if (myField) {
+      myField.hidden = fieldValue ? false : true
+
+      // empty field that is being hidden
+      if (!fieldValue) {
+        fieldValues.value[fieldId] = null
+
+        // current field could have dependantFields which have to be hidden now, so call recursively ...
+        calculateDependantFieldState(myField, null)
+      }
+    }
+  })
+}
+
 function fieldUpdateHandler(payload: any, field: Fieldconfig) {
   validateField(field)
   emit('updateFieldValue', field, payload);
 
+  calculateDependantFieldState(field, payload)
 }
 
 function validateField(field: Fieldconfig) {
