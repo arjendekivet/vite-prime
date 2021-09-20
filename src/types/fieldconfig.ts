@@ -17,6 +17,7 @@ type Fieldconfig = {
     help?: string
     placeholder?: string
     disabled?: boolean
+    hidden?: boolean
     validators?: Validator[]
     maxColumns?: number
     icon?: FieldIcon

@@ -12,35 +12,36 @@
       >{{ msg.content }}</Message>
     </transition-group>
     <div class="p-fluid p-formgrid p-grid">
-      <div
-        v-for="field in fields"
-        :class="`p-field p-text-left ${getIconType(field)} p-col-12 p-md-${12 / getColumns(columns, field.maxColumns)}`"
-      >
-        <label :for="field.id">{{ field.label }}{{ getRequired(field) }}</label>
-        <template v-if="readOnly">
-          <div>{{ fieldValues[field.id] }}</div>
-        </template>
-        <template v-else>
-          <i v-if="getIconName(field)" :class="`pi ${getIconName(field)}`" />
-          <component
-            :is="field.type"
-            :id="field.id"
-            v-model="fieldValues[field.id]"
-            @blur="fieldChangeHandler(field)"
-            @change="fieldChangeHandler(field)"
-            :disabled="field.disabled"
-            :options="field.options ? field.options : null"
-            :optionLabel="field.optionLabel"
-            :optionValue="field.optionValue"
-            :placeholder="field.placeholder"
-            :class="errorFields[field.id] ? 'p-invalid' : ''"
-            :aria-describedby="`${field.id}-help`"
-            :showIcon="field.showIcon"
-            :editable="field.editable"
-          ></component>
-          <small :id="`${field.id}-help`" class="p-error">{{ errorFieldsInfo[field.id] }}</small>
-        </template>
-      </div>
+      <template v-for="field in fields">
+        <div
+          v-if="!field.hidden"
+          :class="`p-field p-text-left ${getIconType(field)} p-col-12 p-md-${12 / getColumns(columns, field.maxColumns)}`"
+        >
+          <label :for="field.id">{{ field.label }}{{ getRequired(field) }}</label>
+          <template v-if="readOnly">
+            <div>{{ fieldValues[field.id] }}</div>
+          </template>
+          <template v-else>
+            <i v-if="getIconName(field)" :class="`pi ${getIconName(field)}`" />
+            <component
+              :is="field.type"
+              :id="field.id"
+              v-model="fieldValues[field.id]"
+              @update:modelValue="fieldUpdateHandler($event, field)"
+              :disabled="field.disabled"
+              :options="field.options ? field.options : null"
+              :optionLabel="field.optionLabel"
+              :optionValue="field.optionValue"
+              :placeholder="field.placeholder"
+              :class="errorFields[field.id] ? 'p-invalid' : ''"
+              :aria-describedby="`${field.id}-help`"
+              :showIcon="field.showIcon"
+              :editable="field.editable"
+            ></component>
+            <small :id="`${field.id}-help`" class="p-error">{{ errorFieldsInfo[field.id] }}</small>
+          </template>
+        </div>
+      </template>
     </div>
     <Toolbar>
       <template #left>
@@ -103,6 +104,8 @@ const props = withDefaults(defineProps<formPropTypes>(), {
   readOnly: true
 })
 
+const emit = defineEmits(['updateFieldValue'])
+
 if (props.id) {
   const record = EventService.getQuestionById(props.id)
     .then((response) => {
@@ -143,8 +146,10 @@ function getIconName(field: Fieldconfig) {
   return field.icon && field.icon.name
 }
 
-function fieldChangeHandler(field: Fieldconfig) {
+function fieldUpdateHandler(payload: any, field: Fieldconfig) {
   validateField(field)
+  emit('updateFieldValue', field, payload);
+
 }
 
 function validateField(field: Fieldconfig) {

@@ -6,6 +6,7 @@
     title="Question"
     :id="id"
     :readOnly="readOnly"
+    @update-field-value="fieldValueUpdated"
   />
 </template>
 
@@ -14,6 +15,7 @@ import DynamicForm from '@/components/dynamic-form/DynamicForm.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import QuestionType from '@/enums/questionTypes'
 import OptionType from '@/types/Option'
+import { ref } from 'vue'
 
 type formPropTypes = {
   id?: string,
@@ -44,7 +46,8 @@ const props = withDefaults(defineProps<formPropTypes>(), {
   id: undefined
 })
 
-const fields: Fieldconfig[] =
+const fields = ref<Fieldconfig[]>([])
+fields.value =
   [
     {
       id: '_id',
@@ -121,5 +124,11 @@ const fields: Fieldconfig[] =
       maxColumns: 1
     }
   ]
+
+function fieldValueUpdated(field: Fieldconfig, value: any) {
+  if (field.id === 'cat_1') {
+    fields.value[4].hidden = value ? false : true
+  }
+}
 
 </script>
