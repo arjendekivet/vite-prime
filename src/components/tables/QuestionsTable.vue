@@ -1,5 +1,9 @@
 <template>
-    <TableToolbar newFormRoute="questionform" />
+    <TableToolbar
+        newFormRoute="questionform"
+        routeTableName="questions"
+        @search-update="searchUpdate"
+    />
     <DataTable
         :value="questions"
         v-model:selection="selected"
@@ -30,24 +34,39 @@ import { ref } from 'vue'
 import EventService from '@/services/EventService'
 import Question from '@/types/question'
 import router from '@/router/routes';
-import TableToolbar from '@/components/TableToolbar.vue'
+import { useRoute } from 'vue-router'
+import TableToolbar from '@/components/tables/TableToolbar.vue'
+
+const route = useRoute()
 
 const questions = ref<Question[]>()
 const selected = ref<Question[]>();
 
-EventService.getQuestions(false, 0)
-    .then((response) => {
-        const names = response.data.map(function (item) {
-            // if (item.date && item.date !== '') {
-            //     item.date = new Date(item.date).toLocaleDateString('nl-NL')
-            // }
-            return item;
-        });
-        questions.value = response.data
-    })
-    .catch((error) => {
-        console.log(error)
-    })
+getQuestions()
+
+function getQuestions() {
+    EventService.getQuestions(false, 0)
+        .then((response) => {
+            questions.value = response.data
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+}
+
+function searchUpdate(searchValue: string) {
+    if (searchValue === '') {
+        getQuestions()
+    } else {
+        EventService.getQuestionByFilter(searchValue, false, 0)
+            .then((response) => {
+                questions.value = response.data
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+    }
+}
 
 function openDocument(rowData: Question, readOnly: boolean) {
     const id = rowData._id

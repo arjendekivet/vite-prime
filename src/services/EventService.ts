@@ -28,6 +28,9 @@ export default {
     getQuestionById(id: string) {
         return apiClient.get('/questions/' + id)
     },
+    getQuestionByFilter(filter: string | string[], perPage: boolean, page: number) {
+        return apiClient.get('/questions/filter/' + filter + '?_limit=' + perPage + '&_page=' + page)
+    },
     postForm(type: string, submitValues: object) {
         return apiClient.post('/' + type, submitValues)
     },

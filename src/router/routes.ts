@@ -30,6 +30,11 @@ const router = createRouter({
       component: Questions,
     },
     {
+      path: "/questions/search/:searchText",
+      name: "questionsSearch",
+      component: Questions,
+    },
+    {
       path: "/nav",
       name: "nav",
       component: NavLayout,

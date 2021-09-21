@@ -6,7 +6,9 @@
       </SplitterPanel>
       <SplitterPanel class="p-d-flex body-panel" :size="80">
         <AppTopbar @menu-toggle="menuToggle"></AppTopbar>
-        <router-view />
+        <div class="content">
+          <router-view />
+        </div>
       </SplitterPanel>
     </Splitter>
   </div>
@@ -42,12 +44,16 @@ function menuToggle() {
 
   .body-panel,
   .navigation {
-    overflow: auto;
-    padding: 10px;
+    overflow: hidden;
+    padding: 0px;
   }
 
   .body-panel {
     flex-direction: column;
+    .content {
+      overflow: auto;
+      padding: 20px;
+    }
   }
 }
 </style>
