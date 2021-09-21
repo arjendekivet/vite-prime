@@ -1,4 +1,5 @@
 <template>
+    <TableToolbar newFormRoute="questionform" />
     <DataTable
         :value="questions"
         v-model:selection="selected"
@@ -29,6 +30,7 @@ import { ref } from 'vue'
 import EventService from '@/services/EventService'
 import Question from '@/types/question'
 import router from '@/router/routes';
+import TableToolbar from '@/components/TableToolbar.vue'
 
 const questions = ref<Question[]>()
 const selected = ref<Question[]>();

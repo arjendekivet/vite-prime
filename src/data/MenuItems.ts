@@ -10,20 +10,21 @@ menuItems.value = [{
 },
 {
     key: '1',
-    label: 'Tables',
-    icon: 'pi pi-fw pi-list',
-    items: [{
-        key: '1_0',
-        label: 'Events',
-        icon: 'pi pi-fw pi-list',
-        to: '/events'
-    },
-    {
-        key: '1_1',
-        label: 'Questions',
-        icon: 'pi pi-fw pi-list',
-        to: '/questions'
-    }
+    label: 'Admin',
+    icon: 'pi pi-fw pi-user',
+    items: [
+        {
+            key: '1_1',
+            label: 'Questions',
+            icon: 'pi pi-fw pi-list',
+            to: '/questions'
+        },
+        {
+            key: '1_2',
+            label: 'Events',
+            icon: 'pi pi-fw pi-list',
+            to: '/events'
+        },
     ]
 },
 {
@@ -46,11 +47,11 @@ menuItems.value = [{
 },
 {
     key: '2',
-    label: 'Users',
+    label: 'Test',
     icon: 'pi pi-fw pi-user',
     items: [{
         key: '2_0',
-        label: 'New',
+        label: 'Event',
         icon: 'pi pi-fw pi-user-plus',
 
     },
@@ -82,38 +83,6 @@ menuItems.value = [{
     }
     ]
 },
-{
-    key: '3',
-    label: 'Events',
-    icon: 'pi pi-fw pi-calendar',
-    items: [{
-        key: '3_0',
-        label: 'Edit',
-        icon: 'pi pi-fw pi-pencil',
-        items: [{
-            key: '3_0_0',
-            label: 'Save',
-            icon: 'pi pi-fw pi-calendar-plus'
-        },
-        {
-            key: '3_0_0',
-            label: 'Delete',
-            icon: 'pi pi-fw pi-calendar-minus'
-        }
-        ]
-    },
-    {
-        key: '3_1',
-        label: 'Archieve',
-        icon: 'pi pi-fw pi-calendar-times',
-        items: [{
-            key: '3_1_0',
-            label: 'Remove',
-            icon: 'pi pi-fw pi-calendar-minus'
-        }]
-    }
-    ]
-}
 ];
 
 export default menuItems
