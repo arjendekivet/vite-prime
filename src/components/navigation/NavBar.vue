@@ -1,4 +1,5 @@
 <template>
+  <div class="navbar--title">GIJS</div>
   <component
     :is="getComponent(direction)"
     :model="menuitems"
@@ -10,7 +11,6 @@
 <script setup lang="ts">
 import router from '@/router/routes'
 import { ref, PropType } from 'vue'
-import routes from '@/data/NavigationItems'
 import menuitems from '@/data/MenuItems'
 
 const props = defineProps({
@@ -28,11 +28,16 @@ function getComponent(direction: string) {
 </script>
 
 <style lang="scss">
-.layout-sidebar {
-  background: #0388e5;
-  background: -webkit-gradient(linear, top, bottom, from(#0388e5), to(#07bdf4));
-  background: linear-gradient(180deg, #0388e5 0, #07bdf4);
+.navbar--title {
+  font-family: fantasy;
+  font-size: 1.5rem;
+  letter-spacing: 0.5em;
+  font-weight: 900;
+  height: 68px;
+  line-height: 68px;
+}
 
+.layout-sidebar {
   &.p-panelmenu .p-panelmenu-header > a:focus {
     box-shadow: 0 0 0 0.2rem rgb(0, 0, 22);
   }

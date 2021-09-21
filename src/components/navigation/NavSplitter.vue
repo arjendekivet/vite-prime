@@ -48,6 +48,20 @@ function menuToggle() {
     padding: 0px;
   }
 
+  .navigation {
+    flex-direction: column;
+    color: #ffffff;
+    background: #0388e5;
+    background: -webkit-gradient(
+      linear,
+      top,
+      bottom,
+      from(#0388e5),
+      to(#07bdf4)
+    );
+    background: linear-gradient(180deg, #0388e5 0, #07bdf4);
+  }
+
   .body-panel {
     flex-direction: column;
     .content {
