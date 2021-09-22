@@ -8,7 +8,7 @@
         :key="msg.id"
         :life="msg.life"
         :sticky="msg.sticky"
-        @close="removeMessage(msg.id)"
+        @close="Utils.removeMessage(messages, msg.id)"
       >{{ msg.content }}</Message>
     </transition-group>
     <div class="p-fluid p-formgrid p-grid">
@@ -64,27 +64,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, PropType, ref } from 'vue'
+import { ref } from 'vue'
 import Fieldconfig from '@/types/fieldconfig'
+import MessageType from '@/types/message'
 import { validate } from '@/modules/validate'
 import EventService from '@/services/EventService'
 import _ from 'lodash'
 import questionTypes from '@/enums/questionTypes'
 import router from '@/router/routes';
+import Utils from '@/modules/utils'
+// import Pipo from '@/types/formprops'
 
-type message = {
-  id: number,
-  content: string,
-  severity?: string,
-  closable?: boolean,
-  sticky?: boolean,
-  life?: number,
-}
-
-const messages = ref<message[]>([]);
+const messages = ref<MessageType[]>([]);
 const count = ref(0);
 
-type formPropTypes = {
+const fieldValues: any = ref<object>({})
+const errorFields: any = ref<object>({})
+const errorFieldsInfo: any = ref<object>({})
+
+type FormProp = {
   fields: Fieldconfig[],
   dataType: string,
   id?: string,
@@ -93,13 +91,7 @@ type formPropTypes = {
   readOnly?: boolean,
 }
 
-const fieldValues: any = ref<object>({})
-const errorFields: any = ref<object>({})
-const errorFieldsInfo: any = ref<object>({})
-
-// const compFieldValues = computed(() => fieldValues)
-
-const props = withDefaults(defineProps<formPropTypes>(), {
+const props = withDefaults(defineProps<FormProp>(), {
   columns: 2,
   readOnly: true
 })
@@ -121,13 +113,6 @@ if (props.id) {
       fieldValues.value[field.id] = field.defaultValue
     }
   })
-}
-
-function removeMessage(id: number) {
-  const found = _.find(messages.value, { 'id': id })
-  if (found) {
-    messages.value = _.without(messages.value, found)
-  }
 }
 
 function getRequired(field: Fieldconfig) {

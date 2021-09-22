@@ -3,7 +3,18 @@
         newFormRoute="questionform"
         routeTableName="questions"
         @search-update="searchUpdate"
+        @delete-selection="deleteSelection"
     />
+    <transition-group name="p-message" tag="div">
+        <Message
+            v-for="msg of messages"
+            :severity="msg.severity"
+            :key="msg.id"
+            :life="msg.life"
+            :sticky="msg.sticky"
+            @close="Utils.removeMessage(messages, msg.id)"
+        >{{ msg.content }}</Message>
+    </transition-group>
     <DataTable
         :value="questions"
         v-model:selection="selected"
@@ -14,8 +25,10 @@
         <Column selectionMode="multiple" headerStyle="width: 3em"></Column>
         <Column field="_id" header="_Id" hidden></Column>
         <Column field="title" header="Title" :sortable="true"></Column>
+        <Column field="answer" header="Answer" :sortable="true"></Column>
         <Column field="type" header="Type"></Column>
-        <Column field="description" header="Description"></Column>
+        <Column field="cat_1" header="Category 1"></Column>
+        <Column field="description" header="Description" hidden></Column>
         <Column headerStyle="width: 8em;" bodyStyle="text-align: right">
             <template #body="slotProps">
                 <Button type="button" icon="pi pi-eye" @click="openDocument(slotProps.data, true)"></Button>
@@ -36,11 +49,16 @@ import Question from '@/types/question'
 import router from '@/router/routes';
 import { useRoute } from 'vue-router'
 import TableToolbar from '@/components/tables/TableToolbar.vue'
+import _ from 'lodash';
+import Utils from '@/modules/utils'
+import MessageType from '@/types/message';
+// import MessageType from 'primevue/message';
 
 const route = useRoute()
 
 const questions = ref<Question[]>()
-const selected = ref<Question[]>();
+const selected = ref<Question[]>()
+const messages = ref<MessageType[]>([])
 
 getQuestions()
 
@@ -73,6 +91,18 @@ function openDocument(rowData: Question, readOnly: boolean) {
     if (id) {
         router.push({ name: 'questionformbyid', params: { id: id }, query: { readOnly: readOnly.toString() } })
     }
+}
+
+function deleteSelection() {
+    debugger
+    const selectedIds = _.map(selected.value, '_id')
+    EventService.deleteQuestionsById(selectedIds)
+        .then((response) => {
+            console.log(response.data)
+        })
+        .catch((error) => {
+            console.error(error);
+        })
 }
 </script>
 

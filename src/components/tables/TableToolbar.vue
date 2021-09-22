@@ -2,6 +2,12 @@
     <Toolbar>
         <template #left>
             <Button type="button" icon="pi pi-file" title="New" @click="newDoc" />
+            <Button
+                type="button"
+                icon="pi pi-trash"
+                title="Delete"
+                @click="emit('deleteSelection')"
+            />
         </template>
         <template #right>
             <span class="p-input-icon-right">
@@ -30,7 +36,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['searchUpdate'])
+const emit = defineEmits(['searchUpdate', 'deleteSelection'])
 
 const searchValue = ref<string>()
 

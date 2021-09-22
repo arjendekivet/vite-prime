@@ -2,7 +2,7 @@
   <div class="router-frame">
     <Splitter style="height: 100%;">
       <SplitterPanel class="p-d-flex navigation" :size="20" :class="navVisible ? '' : 'navHide'">
-        <NavBar :direction="direction === 'row' ? 'row' : 'column'" style="flex: 1" />
+        <NavBar :direction="direction === 'row' ? 'row' : 'column'" />
       </SplitterPanel>
       <SplitterPanel class="p-d-flex body-panel" :size="80">
         <AppTopbar @menu-toggle="menuToggle"></AppTopbar>

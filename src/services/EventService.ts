@@ -31,6 +31,9 @@ export default {
     getQuestionByFilter(filter: string | string[], perPage: boolean, page: number) {
         return apiClient.get('/questions/filter/' + filter + '?_limit=' + perPage + '&_page=' + page)
     },
+    deleteQuestionsById(ids: string[]) {
+        return apiClient.delete('/questions/' + ids)
+    },
     postForm(type: string, submitValues: object) {
         return apiClient.post('/' + type, submitValues)
     },

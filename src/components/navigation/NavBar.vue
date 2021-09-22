@@ -1,11 +1,13 @@
 <template>
-  <div class="navbar--title">GIJS</div>
-  <component
-    :is="getComponent(direction)"
-    :model="menuitems"
-    v-model:expandedKeys="expandedKeys"
-    class="layout-sidebar"
-  ></component>
+  <div class="navbar">
+    <div class="navbar--title">GIJS</div>
+    <component
+      :is="getComponent(direction)"
+      :model="menuitems"
+      v-model:expandedKeys="expandedKeys"
+      class="layout-sidebar"
+    ></component>
+  </div>
 </template>
 
 <script setup lang="ts">
