@@ -30,6 +30,13 @@ function getComponent(direction: string) {
 </script>
 
 <style lang="scss">
+.navbar {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
 .navbar--title {
   font-family: fantasy;
   font-size: 1.5rem;
@@ -40,6 +47,8 @@ function getComponent(direction: string) {
 }
 
 .layout-sidebar {
+  overflow: auto;
+
   &.p-panelmenu .p-panelmenu-header > a:focus {
     box-shadow: 0 0 0 0.2rem rgb(0, 0, 22);
   }
