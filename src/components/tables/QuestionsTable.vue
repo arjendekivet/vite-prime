@@ -59,6 +59,7 @@ const route = useRoute()
 const questions = ref<Question[]>()
 const selected = ref<Question[]>()
 const messages = ref<MessageType[]>([])
+const count = ref(0);
 
 getQuestions()
 
@@ -94,11 +95,22 @@ function openDocument(rowData: Question, readOnly: boolean) {
 }
 
 function deleteSelection() {
-    debugger
     const selectedIds = _.map(selected.value, '_id')
+    if (selectedIds.length === 0) {
+        messages.value.push(
+            { severity: 'warn', sticky: false, content: 'No selection was made.', id: count.value++ },
+        )
+        return
+    }
+
     EventService.deleteQuestionsById(selectedIds)
         .then((response) => {
             console.log(response.data)
+            messages.value.push(
+                { severity: 'success', sticky: false, content: `${response.data && response.data.deletedCount | 0} document(s) were deleted.`, id: count.value++ },
+            )
+            // but what if search filter is active ?! Keep track of filter value
+            getQuestions()
         })
         .catch((error) => {
             console.error(error);
