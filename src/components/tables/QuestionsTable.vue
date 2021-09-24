@@ -43,7 +43,7 @@
             </template>
         </Column>
     </DataTable>
-    <Button label="search" @click="searchValue = 'pak'"></Button>
+    <Button label="sync search value to -pak- from table" @click="searchValue = 'pak'"></Button>
 </template>
 
 <script setup lang="ts">

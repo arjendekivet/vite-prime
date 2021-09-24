@@ -36,6 +36,5 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['newDoc', 'deleteSelection', 'update:modelValue'])
-// const searchValue = ref<string>()
 
 </script>
