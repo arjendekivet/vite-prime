@@ -1,8 +1,14 @@
 <template>
-  <h3>Welcome to Arjen's Spaced Repetition Learning App</h3>
-  <img :src="leitner" />
+  <h3>Start</h3>
+
+  <Button type="button" icon="pi pi-file" label="Go to admin page" @click="goToAdmin" />
 </template>
 
 <script setup lang="ts">
-import leitner from '@/assets/leitner.png'
+import router from '@/router/routes';
+
+function goToAdmin() {
+  router.push({ name: 'admin' })
+}
+
 </script>

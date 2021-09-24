@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Welcome from "@/pages/Welcome.vue";
+import Start from "@/pages/Start.vue";
 import Admin from "@/pages/Admin.vue";
 import Events from "@/components/tables/EventsTable.vue";
 import Questions from "@/components/tables/QuestionsTable.vue";
@@ -13,12 +14,12 @@ const router = createRouter({
   routes: [
     {
       path: "/",
-      redirect: { name: "home" },
+      redirect: { name: "admin" },
     },
     {
       path: "/home",
       name: "home",
-      component: Welcome,
+      component: Start,
     },
     {
       path: "/admin",
@@ -26,44 +27,40 @@ const router = createRouter({
       component: Admin,
       children: [{
         path: 'welcome',
+        name: "welcome",
         component: Welcome
-      }]
-    },
-    {
-      path: "/events",
-      name: "events",
-      component: Events,
-    },
-    {
-      path: "/questions",
-      name: "questions",
-      component: Questions,
-    },
-    {
-      path: "/questions/search/:searchText",
-      name: "questionsSearch",
-      component: Questions,
-    },
-    {
-      path: "/nav",
-      name: "nav",
-      component: NavLayout,
-    },
-    {
-      path: "/questionform",
-      name: "questionform",
-      component: QuestionForm,
-    },
-    {
-      path: "/questionform/:id",
-      name: "questionformbyid",
-      component: QuestionForm,
-      props: route => ({ id: route.params.id, readOnly: route.query.readOnly === 'false' ? false : true })
-    },
-    {
-      path: "/answerform",
-      name: "answerform",
-      component: AnswerForm,
+      },
+      {
+        path: "events",
+        name: "events",
+        component: Events,
+      },
+      {
+        path: "questions",
+        name: "questions",
+        component: Questions,
+      },
+      {
+        path: "questions/search/:searchText",
+        name: "questionsSearch",
+        component: Questions,
+      },
+      {
+        path: "questionform",
+        name: "questionform",
+        component: QuestionForm,
+      },
+      {
+        path: "questionform/:id",
+        name: "questionformbyid",
+        component: QuestionForm,
+        props: route => ({ id: route.params.id, readOnly: route.query.readOnly === 'false' ? false : true })
+      },
+      {
+        path: "answerform",
+        name: "answerform",
+        component: AnswerForm,
+      },]
     },
     {
       path: "/test",

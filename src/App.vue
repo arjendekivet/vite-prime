@@ -1,6 +1,6 @@
 <template>
-  <!-- <router-view /> -->
-  <NavSplitter />
+  <router-view />
+  <!-- <NavSplitter /> -->
   <!--<NavLayout direction="row" />-->
 </template>
 
