@@ -15,9 +15,9 @@
                 <i class="pi pi-search" />
                 <P-InputText
                     type="text"
-                    v-model="searchValue"
+                    v-model="modelValue"
                     placeholder="Search"
-                    @keyup="emit('searchUpdate', searchValue)"
+                    @keyup="emit('update:modelValue', modelValue)"
                 />
             </span>
         </template>
@@ -29,13 +29,13 @@ import router from '@/router/routes';
 import { ref } from 'vue';
 
 const props = defineProps({
+    modelValue: String,
     hasSelection: {
         type: Boolean,
     }
 })
 
-const emit = defineEmits(['searchUpdate', 'deleteSelection', 'newDoc'])
-
-const searchValue = ref<string>()
+const emit = defineEmits(['newDoc', 'deleteSelection', 'update:modelValue'])
+// const searchValue = ref<string>()
 
 </script>

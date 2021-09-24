@@ -18,9 +18,9 @@
     >
         <template #header>
             <TableToolbar
+                v-model="searchValue"
                 :hasSelection="selected && selected.length > 0"
                 @new-doc="newDoc"
-                @search-update="searchUpdate"
                 @delete-selection="deleteSelection"
             />
         </template>
@@ -43,10 +43,11 @@
             </template>
         </Column>
     </DataTable>
+    <Button label="search" @click="searchValue = 'pak'"></Button>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import EventService from '@/services/EventService'
 import Question from '@/types/question'
 import router from '@/router/routes';
@@ -62,6 +63,11 @@ const questions = ref<Question[]>()
 const selected = ref<Question[]>()
 const messages = ref<MessageType[]>([])
 const count = ref(0);
+
+const searchValue = ref();
+watch(searchValue, (value, prevValue) => {
+    searchUpdate(value)
+})
 
 getQuestions()
 
