@@ -1,7 +1,6 @@
 <template>
     <TableToolbar
         newFormRoute="questionform"
-        routeTableName="questions"
         @search-update="searchUpdate"
         @delete-selection="deleteSelection"
     />
@@ -52,7 +51,6 @@ import TableToolbar from '@/components/tables/TableToolbar.vue'
 import _ from 'lodash';
 import Utils from '@/modules/utils'
 import MessageType from '@/types/message';
-// import MessageType from 'primevue/message';
 
 const route = useRoute()
 

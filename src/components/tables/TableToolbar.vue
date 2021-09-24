@@ -30,9 +30,6 @@ import { ref } from 'vue';
 const props = defineProps({
     newFormRoute: {
         type: String,
-    },
-    routeTableName: {
-        type: String,
     }
 })
 
@@ -45,6 +42,6 @@ function newDoc() {
 }
 
 function searchUpdate(e: any) {
-    emit('searchUpdate', e.srcElement.value)
+    emit('searchUpdate', searchValue.value)
 }
 </script>
