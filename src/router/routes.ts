@@ -4,7 +4,6 @@ import Start from "@/pages/Start.vue";
 import Admin from "@/pages/Admin.vue";
 import Events from "@/components/tables/EventsTable.vue";
 import Questions from "@/components/tables/QuestionsTable.vue";
-import NavLayout from "@/components/navigation/NavLayout.vue";
 import QuestionForm from "@/components/forms/QuestionForm.vue";
 import AnswerForm from "@/components/forms/AnswerForm.vue";
 import Test from "@/pages/Test.vue";
