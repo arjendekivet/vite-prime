@@ -1,8 +1,9 @@
 <template>
     <Toolbar>
         <template #left>
-            <Button type="button" icon="pi pi-file" title="New" @click="newDoc" />
+            <Button type="button" icon="pi pi-file" title="New" @click="emit('newDoc')" />
             <Button
+                v-show="hasSelection"
                 type="button"
                 icon="pi pi-trash"
                 title="Delete"
@@ -16,7 +17,7 @@
                     type="text"
                     v-model="searchValue"
                     placeholder="Search"
-                    @keyup="searchUpdate"
+                    @keyup="emit('searchUpdate', searchValue)"
                 />
             </span>
         </template>
@@ -28,20 +29,13 @@ import router from '@/router/routes';
 import { ref } from 'vue';
 
 const props = defineProps({
-    newFormRoute: {
-        type: String,
+    hasSelection: {
+        type: Boolean,
     }
 })
 
-const emit = defineEmits(['searchUpdate', 'deleteSelection'])
+const emit = defineEmits(['searchUpdate', 'deleteSelection', 'newDoc'])
 
 const searchValue = ref<string>()
 
-function newDoc() {
-    router.push({ name: props.newFormRoute })
-}
-
-function searchUpdate(e: any) {
-    emit('searchUpdate', searchValue.value)
-}
 </script>

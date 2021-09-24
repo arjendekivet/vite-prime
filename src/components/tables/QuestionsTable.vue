@@ -1,9 +1,4 @@
 <template>
-    <TableToolbar
-        newFormRoute="questionform"
-        @search-update="searchUpdate"
-        @delete-selection="deleteSelection"
-    />
     <transition-group name="p-message" tag="div">
         <Message
             v-for="msg of messages"
@@ -21,6 +16,15 @@
         class="question-table"
         @row-click="openDocument"
     >
+        <template #header>
+            <TableToolbar
+                :hasSelection="selected && selected.length > 0"
+                @new-doc="newDoc"
+                @search-update="searchUpdate"
+                @delete-selection="deleteSelection"
+            />
+        </template>
+        <template #empty>No data found ...</template>
         <Column selectionMode="multiple" headerStyle="width: 3em"></Column>
         <Column field="_id" header="_Id" hidden></Column>
         <Column field="title" header="Title" :sortable="true"></Column>
@@ -92,6 +96,10 @@ function openDocument(rowData: Question, readOnly: boolean) {
     }
 }
 
+function newDoc() {
+    router.push({ name: 'questionform' })
+}
+
 function deleteSelection() {
     const selectedIds = _.map(selected.value, '_id')
     if (selectedIds.length === 0) {
@@ -128,6 +136,13 @@ function deleteSelection() {
 .question-table {
     td .p-button {
         margin-right: 0.5rem;
+    }
+
+    &.p-datatable {
+        .p-datatable-header {
+            padding: 0;
+            border: 0;
+        }
     }
 }
 </style>

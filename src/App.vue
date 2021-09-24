@@ -1,13 +1,6 @@
 <template>
   <router-view />
-  <!-- <NavSplitter /> -->
-  <!--<NavLayout direction="row" />-->
 </template>
-
-<script setup lang="ts">
-// import NavLayout from '@/components/navigation/NavLayout.vue'
-import NavSplitter from '@/components/navigation/NavSplitter.vue'
-</script>
 
 <style lang="scss">
 html,
