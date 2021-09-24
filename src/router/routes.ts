@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Hello from "@/components/other/Home.vue";
+import Welcome from "@/pages/Welcome.vue";
+import Admin from "@/pages/Admin.vue";
 import Events from "@/components/tables/EventsTable.vue";
 import Questions from "@/components/tables/QuestionsTable.vue";
 import NavLayout from "@/components/navigation/NavLayout.vue";
@@ -17,7 +18,16 @@ const router = createRouter({
     {
       path: "/home",
       name: "home",
-      component: Hello,
+      component: Welcome,
+    },
+    {
+      path: "/admin",
+      name: "admin",
+      component: Admin,
+      children: [{
+        path: 'welcome',
+        component: Welcome
+      }]
     },
     {
       path: "/events",

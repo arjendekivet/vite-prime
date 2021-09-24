@@ -1,4 +1,5 @@
 <template>
+  <!-- <router-view /> -->
   <NavSplitter />
   <!--<NavLayout direction="row" />-->
 </template>

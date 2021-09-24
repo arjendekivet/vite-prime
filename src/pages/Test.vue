@@ -22,7 +22,7 @@
 import { ref } from 'vue';
 export default {
     setup() {
-        const expandedKeys = ref({});
+        const expandedKeys = ref<any>({});
         const items = ref([{
             key: '0',
             label: 'File',
@@ -154,7 +154,7 @@ export default {
         ]);
 
         const expandAll = () => {
-            for (let node of nodes.value) {
+            for (let node of items.value) {
                 expandNode(node);
             }
 
@@ -163,7 +163,7 @@ export default {
         const collapseAll = () => {
             expandedKeys.value = {};
         };
-        const expandNode = (node) => {
+        const expandNode = (node: any) => {
             if (node.children && node.children.length) {
                 expandedKeys.value[node.key] = true;
 
