@@ -20,19 +20,19 @@ const fields: Fieldconfig[] =
     {
       id: 'firstname',
       label: 'Firstname',
-      type: 'P-InputText',
+      type: 'P_InputText',
       placeholder: 'Firstname'
     },
     {
       id: 'lastname',
       label: 'Lastname',
-      type: 'P-InputText',
+      type: 'P_InputText',
       placeholder: 'Lastname'
     },
     {
       id: 'state',
       label: 'State',
-      type: 'P-Dropdown',
+      type: 'P_Dropdown',
       options: states,
       optionLabel: "label",
       optionValue: "value",

@@ -3,10 +3,8 @@ import router from '@/router/routes'
 import App from '@/App.vue';
 import PrimeVue from 'primevue/config';
 
-import 'primevue/resources/themes/bootstrap4-light-blue/theme.css'
-// import 'primevue/resources/themes/saga-blue/theme.css'  //theme
+import 'primevue/resources/themes/bootstrap4-light-blue/theme.css' //theme
 import 'primevue/resources/primevue.min.css'            //core css
-
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';                     //icons
 
@@ -18,7 +16,6 @@ import Dropdown from 'primevue/dropdown';
 import Textarea from 'primevue/textarea';
 import PanelMenu from 'primevue/panelmenu';
 import Menubar from 'primevue/menubar';
-// import Card from 'primevue/card';
 import Calendar from 'primevue/calendar';
 import Splitter from 'primevue/splitter';
 import SplitterPanel from 'primevue/splitterpanel';
@@ -33,12 +30,11 @@ app.use(PrimeVue);
 app.component('Button', Button);
 app.component('DataTable', DataTable);
 app.component('Column', Column);
-app.component('P-InputText', InputText);
-app.component('P-Dropdown', Dropdown);
-app.component('P-Textarea', Textarea);
+app.component('P_InputText', InputText);
+app.component('P_Dropdown', Dropdown);
+app.component('P_Textarea', Textarea);
 app.component('PanelMenu', PanelMenu);
 app.component('Menubar', Menubar);
-// app.component('Card', Card);
 app.component('Calendar', Calendar);
 app.component('Splitter', Splitter);
 app.component('SplitterPanel', SplitterPanel);

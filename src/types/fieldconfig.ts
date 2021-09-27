@@ -9,7 +9,7 @@ type FieldIcon = {
 type Fieldconfig = {
     id: string
     label: string
-    type: 'P-InputText' | 'P-Dropdown' | 'P-Textarea' | 'Calendar'
+    type: 'P_InputText' | 'P_Dropdown' | 'P_Textarea' | 'Calendar'
     options?: Option[]
     optionLabel?: keyof Option
     optionValue?: keyof Option
