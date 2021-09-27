@@ -1,5 +1,5 @@
 <template>
-    <Toolbar>
+    <Toolbar class="table--toolbar">
         <template #left>
             <Button type="button" icon="pi pi-file" title="New" @click="emit('newDoc')" />
             <Button
@@ -42,3 +42,19 @@ const props = defineProps({
 const emit = defineEmits(['newDoc', 'deleteSelection', 'update:searchValue'])
 
 </script>
+
+<style lang="scss">
+.table--toolbar.p-toolbar {
+    .p-toolbar-group-left {
+        .p-button {
+            margin-right: 0.5rem;
+        }
+    }
+
+    .p-toolbar-group-right {
+        .p-button {
+            margin-left: 0.5rem;
+        }
+    }
+}
+</style>
