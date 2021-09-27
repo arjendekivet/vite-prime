@@ -18,16 +18,4 @@ body {
   margin: 0;
   height: 100%;
 }
-
-.p-toolbar-group-left {
-  .p-button {
-    margin-right: 0.5rem;
-  }
-}
-
-.p-toolbar-group-right {
-  .p-button {
-    margin-left: 0.5rem;
-  }
-}
 </style>
