@@ -18,7 +18,7 @@
     >
         <template #header>
             <TableToolbar
-                v-model="searchValue"
+                v-model:searchValue="searchValue"
                 :hasSelection="selected && selected.length > 0"
                 @new-doc="newDoc"
                 @delete-selection="deleteSelection"
@@ -43,7 +43,8 @@
             </template>
         </Column>
     </DataTable>
-    <Button label="sync search value to -pak- from table" @click="searchValue = 'pak'"></Button>
+    <!-- Programmatically set search value from table. This will be synced to TableToolbar and from there to P-InputText -->
+    <!-- <Button label="searchValue = 'pak'" @click="searchValue = 'pak'"></Button> -->
 </template>
 
 <script setup lang="ts">
