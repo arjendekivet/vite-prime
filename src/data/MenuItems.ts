@@ -6,7 +6,7 @@ menuItems.value = [{
     key: '0',
     label: 'Home',
     icon: 'pi pi-fw pi-home',
-    to: '/home'
+    to: { name: 'welcome' }
 },
 {
     key: '1',
@@ -17,13 +17,13 @@ menuItems.value = [{
             key: '1_1',
             label: 'Questions',
             icon: 'pi pi-fw pi-list',
-            to: '/questions'
+            to: { name: 'questions' }
         },
         {
             key: '1_2',
             label: 'Events',
             icon: 'pi pi-fw pi-list',
-            to: '/events'
+            to: { name: 'events' }
         },
     ]
 },
@@ -35,13 +35,13 @@ menuItems.value = [{
         key: '4_0',
         label: 'Question form',
         icon: 'pi pi-fw pi-list',
-        to: '/questionform'
+        to: { name: 'questionform' }
     },
     {
         key: '4_1',
         label: 'Answer form',
         icon: 'pi pi-fw pi-list',
-        to: '/answerform'
+        to: { name: 'answerform' }
     }
     ]
 },

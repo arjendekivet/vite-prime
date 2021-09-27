@@ -2,7 +2,7 @@ type MenuItem = {
     label: string
     key?: string
     icon?: string
-    to?: string
+    to?: string | object
     items?: MenuItem[]
 }
 

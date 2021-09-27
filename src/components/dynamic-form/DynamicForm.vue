@@ -73,7 +73,6 @@ import _ from 'lodash'
 import questionTypes from '@/enums/questionTypes'
 import router from '@/router/routes';
 import Utils from '@/modules/utils'
-// import Pipo from '@/types/formprops'
 
 const messages = ref<MessageType[]>([]);
 const count = ref(0);

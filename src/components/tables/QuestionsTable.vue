@@ -1,10 +1,4 @@
 <template>
-    <TableToolbar
-        newFormRoute="questionform"
-        routeTableName="questions"
-        @search-update="searchUpdate"
-        @delete-selection="deleteSelection"
-    />
     <transition-group name="p-message" tag="div">
         <Message
             v-for="msg of messages"
@@ -22,6 +16,15 @@
         class="question-table"
         @row-click="openDocument"
     >
+        <template #header>
+            <TableToolbar
+                v-model:searchValue="searchValue"
+                :hasSelection="selected && selected.length > 0"
+                @new-doc="newDoc"
+                @delete-selection="deleteSelection"
+            />
+        </template>
+        <template #empty>No data found ...</template>
         <Column selectionMode="multiple" headerStyle="width: 3em"></Column>
         <Column field="_id" header="_Id" hidden></Column>
         <Column field="title" header="Title" :sortable="true"></Column>
@@ -40,10 +43,12 @@
             </template>
         </Column>
     </DataTable>
+    <!-- Programmatically set search value from table. This will be synced to TableToolbar and from there to P-InputText -->
+    <!-- <Button label="searchValue = 'pak'" @click="searchValue = 'pak'"></Button> -->
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import EventService from '@/services/EventService'
 import Question from '@/types/question'
 import router from '@/router/routes';
@@ -52,13 +57,18 @@ import TableToolbar from '@/components/tables/TableToolbar.vue'
 import _ from 'lodash';
 import Utils from '@/modules/utils'
 import MessageType from '@/types/message';
-// import MessageType from 'primevue/message';
 
 const route = useRoute()
 
 const questions = ref<Question[]>()
 const selected = ref<Question[]>()
 const messages = ref<MessageType[]>([])
+const count = ref(0);
+
+const searchValue = ref();
+watch(searchValue, (value, prevValue) => {
+    searchUpdate(value)
+})
 
 getQuestions()
 
@@ -93,12 +103,27 @@ function openDocument(rowData: Question, readOnly: boolean) {
     }
 }
 
+function newDoc() {
+    router.push({ name: 'questionform' })
+}
+
 function deleteSelection() {
-    debugger
     const selectedIds = _.map(selected.value, '_id')
+    if (selectedIds.length === 0) {
+        messages.value.push(
+            { severity: 'warn', sticky: false, content: 'No selection was made.', id: count.value++ },
+        )
+        return
+    }
+
     EventService.deleteQuestionsById(selectedIds)
         .then((response) => {
             console.log(response.data)
+            messages.value.push(
+                { severity: 'success', sticky: false, content: `${response.data && response.data.deletedCount | 0} document(s) were deleted.`, id: count.value++ },
+            )
+            // but what if search filter is active ?! Keep track of filter value
+            getQuestions()
         })
         .catch((error) => {
             console.error(error);
@@ -118,6 +143,13 @@ function deleteSelection() {
 .question-table {
     td .p-button {
         margin-right: 0.5rem;
+    }
+
+    &.p-datatable {
+        .p-datatable-header {
+            padding: 0;
+            border: 0;
+        }
     }
 }
 </style>
