@@ -52,14 +52,14 @@ fields.value =
     {
       id: '_id',
       label: 'Id',
-      type: 'P-InputText',
+      type: 'P_InputText',
       disabled: true,
       icon: { type: 'right', name: 'pi-lock' }
     },
     {
       id: 'title',
       label: 'Title',
-      type: 'P-InputText',
+      type: 'P_InputText',
       placeholder: 'Title',
       validators: ['required'],
       icon: { type: 'right', name: 'pi-bookmark' }
@@ -67,7 +67,7 @@ fields.value =
     {
       id: 'type',
       label: 'Question type',
-      type: 'P-Dropdown',
+      type: 'P_Dropdown',
       options: QuestionType,
       optionLabel: "label",
       optionValue: "value",
@@ -78,7 +78,7 @@ fields.value =
     {
       id: 'cat_1',
       label: 'Category 1',
-      type: 'P-Dropdown',
+      type: 'P_Dropdown',
       options: catOne,
       optionLabel: "label",
       optionValue: "value",
@@ -89,7 +89,7 @@ fields.value =
     {
       id: 'cat_2',
       label: 'Category 2',
-      type: 'P-Dropdown',
+      type: 'P_Dropdown',
       options: catTwo,
       optionLabel: "label",
       optionValue: "value",
@@ -99,7 +99,7 @@ fields.value =
     {
       id: 'cat_3',
       label: 'Category 3',
-      type: 'P-Dropdown',
+      type: 'P_Dropdown',
       options: catThree,
       optionLabel: "label",
       optionValue: "value",
@@ -114,14 +114,14 @@ fields.value =
     {
       id: 'description',
       label: 'Description',
-      type: 'P-Textarea',
+      type: 'P_Textarea',
       placeholder: 'Description',
       maxColumns: 1
     },
     {
       id: 'answer',
       label: 'Answer',
-      type: 'P-Textarea',
+      type: 'P_Textarea',
       placeholder: 'Answer',
       maxColumns: 1
     }

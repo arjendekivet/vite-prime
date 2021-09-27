@@ -13,7 +13,7 @@
         <template #right>
             <span class="p-input-icon-right">
                 <i class="pi pi-search" />
-                <P-InputText
+                <P_InputText
                     type="text"
                     v-model:modelValue="searchValue"
                     placeholder="Search"

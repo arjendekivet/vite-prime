@@ -11,13 +11,13 @@ const fields: Fieldconfig[] =
     {
       id: 'title',
       label: 'Title',
-      type: 'P-InputText',
+      type: 'P_InputText',
       placeholder: 'Title'
     },
     {
       id: 'answer',
       label: 'Answer',
-      type: 'P-InputText',
+      type: 'P_InputText',
       placeholder: 'Answer'
     }
   ]

@@ -43,7 +43,7 @@
             </template>
         </Column>
     </DataTable>
-    <!-- Programmatically set search value from table. This will be synced to TableToolbar and from there to P-InputText -->
+    <!-- Programmatically set search value from table. This will be synced to TableToolbar and from there to P_InputText -->
     <!-- <Button label="searchValue = 'pak'" @click="searchValue = 'pak'"></Button> -->
 </template>
 
