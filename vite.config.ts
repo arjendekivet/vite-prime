@@ -10,7 +10,7 @@ export default defineConfig({
     proxy: {
       // with options
       "/api": {
-        target: "http://localhost:4321", //3001 for MongoDB and 3004 for Mock JSON-server
+        target: "http://localhost:4321", //4321 for MongoDB and 3004 for Mock JSON-server
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, "/api"),
       },
@@ -20,5 +20,8 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+  },
+  optimizeDeps: {
+    include: ['slash', 'lodash/startCase']
   },
 })
