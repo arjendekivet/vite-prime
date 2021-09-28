@@ -266,5 +266,17 @@ function submitForm() {
   .p-field > label {
     margin-left: 0.25rem;
   }
+
+  .p-toolbar-group-left {
+    .p-button {
+      margin-right: 0.5rem;
+    }
+  }
+
+  .p-toolbar-group-right {
+    .p-button {
+      margin-left: 0.5rem;
+    }
+  }
 }
 </style>
