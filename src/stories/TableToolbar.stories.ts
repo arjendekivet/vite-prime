@@ -1,14 +1,14 @@
 import TableToolbar from '@/components/tables/TableToolbar.vue';
 
 export default {
-  title: 'Custom/TableToolbar',
+  title: 'Cynapps/TableToolbar',
   component: TableToolbar,
   argTypes: {
     hasSelection: { control: 'boolean' },
   },
 };
 
-const Template = (args: any) => ({
+const Template: any = (args: any) => ({
   // Components used in your story `template` are defined in the `components` object
   components: { TableToolbar },
   // The story's `args` need to be mapped into the template through the `setup()` method
