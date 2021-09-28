@@ -28,10 +28,6 @@
 import router from '@/router/routes';
 import { ref } from 'vue';
 
-import Button from 'primevue/button';
-import P_InputText from 'primevue/inputtext';
-import Toolbar from 'primevue/toolbar';
-
 const props = defineProps({
     searchValue: String,
     hasSelection: {
