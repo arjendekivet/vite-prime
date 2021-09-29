@@ -24,11 +24,11 @@ const router = createRouter({
       path: "/admin",
       name: "admin",
       component: Admin,
-      redirect: { name: "admin-welcome" },
+      redirect: { name: "questions" },
       children: [
         {
           path: 'welcome',
-          name: "admin-welcome",
+          name: "admin_welcome",
           component: Welcome
         },
         {
