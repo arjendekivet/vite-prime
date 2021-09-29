@@ -4,10 +4,8 @@
     <transition-group name="p-message" tag="div">
       <Message
         v-for="msg of messages"
-        :severity="msg.severity"
-        :key="msg.id"
-        :life="msg.life"
-        :sticky="msg.sticky"
+        v-bind=msg 
+        :key="msg.id" 
         @close="Utils.removeMessage(messages, msg.id)"
       >{{ msg.content }}</Message>
     </transition-group>
@@ -21,22 +19,18 @@
           <template v-if="readOnly">
             <div>{{ fieldValues[field.id] }}</div>
           </template>
+          <!-- 1. v-model is using dynamic specification of which property to bind to v-model="fieldValues[field.id]"-->
+          <!-- 2. since v-model will trigger an emit('update:modelValue', event, DynamicForm instance listens to that event from that field component !!! -->
+          <!-- in order to be able for example to do some validation and/or calculate dependendencies and/or emit another custom event on form level: emit('updateFieldValue' -->
           <template v-else>
             <i v-if="getIconName(field)" :class="`pi ${getIconName(field)}`" />
-            <component
-              :is="field.type"
-              :id="field.id"
+            <component 
+              v-bind=field
+              :is="field.type"  
               v-model="fieldValues[field.id]"
               @update:modelValue="fieldUpdateHandler($event, field)"
-              :disabled="field.disabled"
-              :options="field.options ? field.options : null"
-              :optionLabel="field.optionLabel"
-              :optionValue="field.optionValue"
-              :placeholder="field.placeholder"
               :class="errorFields[field.id] ? 'p-invalid' : ''"
               :aria-describedby="`${field.id}-help`"
-              :showIcon="field.showIcon"
-              :editable="field.editable"
             ></component>
             <small :id="`${field.id}-help`" class="p-error">{{ errorFieldsInfo[field.id] }}</small>
           </template>
@@ -134,6 +128,8 @@ function calculateDependantFieldState(field: Fieldconfig, fieldValue: any) {
   field.dependantFields?.forEach(function (fieldId: string) {
     const myField = _.find(props.fields, { id: fieldId })
     if (myField) {
+      // ohe: moet dit zijn fieldValue ?? true
+      // als fieldValue nu undefined is of null of boolean false of 0 dan geldt die nu as hidden?
       myField.hidden = fieldValue ? false : true
 
       // empty field that is being hidden
@@ -147,8 +143,16 @@ function calculateDependantFieldState(field: Fieldconfig, fieldValue: any) {
   })
 }
 
+/**
+ * TODO: do we want to call this update always, id est also when the field does not qualify?
+ */
 function fieldUpdateHandler(payload: any, field: Fieldconfig) {
+  debugger
   validateField(field)
+  // Is this necessary and or is it used at this moment? Yes, listened to eg by Question form.
+  // Should we only emit when stuff is valid?
+  // If we always emit, while also the regular v-model update:<propName>has been triggered 
+  // should it be before calling calculateDependantFieldState?
   emit('updateFieldValue', field, payload);
 
   calculateDependantFieldState(field, payload)

@@ -128,6 +128,7 @@ fields.value =
   ]
 
 function fieldValueUpdated(field: Fieldconfig, value: any) {
+  console.log('running fieldValueUpdated in QuestionForm via @update-field-value on <DynamicForm')
   console.log(field)
   console.log(value)
 }
