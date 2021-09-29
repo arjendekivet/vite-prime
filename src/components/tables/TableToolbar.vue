@@ -16,8 +16,8 @@
                 <P_InputText
                     type="text"
                     v-model:modelValue="searchValue"
-                    placeholder="Search"
                     @keyup="emit('update:searchValue', searchValue)"
+                    placeholder="Search"
                 />
             </span>
         </template>
