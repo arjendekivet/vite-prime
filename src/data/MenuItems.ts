@@ -6,7 +6,7 @@ menuItems.value = [{
     key: '0',
     label: 'Home',
     icon: 'pi pi-fw pi-home',
-    to: { name: 'welcome' }
+    to: { name: 'home' }
 },
 {
     key: '1',
