@@ -4,9 +4,9 @@ import { ref } from 'vue';
 const menuItems = ref<MenuItem[]>()
 menuItems.value = [{
     key: '0',
-    label: 'Home',
+    label: 'Welcome',
     icon: 'pi pi-fw pi-home',
-    to: { name: 'home' }
+    to: { name: 'admin_welcome' }
 },
 {
     key: '1',
