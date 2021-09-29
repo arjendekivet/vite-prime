@@ -50,11 +50,11 @@ import MessageType from '@/types/message';
 import ColumnConfig from "@/types/columnconfig"
 
 type FormProps = {
-    tableData: unknown,
-    searchValue: string,
-    selectionMode: string,
-    openDocumentRow: Boolean,
     columns: ColumnConfig[],
+    tableData: unknown,
+    searchValue?: string,
+    selectionMode?: string,
+    openDocumentRow?: Boolean,
 }
 
 const props = defineProps<FormProps>()
