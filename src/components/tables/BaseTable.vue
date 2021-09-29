@@ -26,13 +26,8 @@
             />
         </template>
         <template #empty>No data found ...</template>
-        <Column selectionMode="multiple" headerStyle="width: 3em"></Column>
-        <Column field="_id" header="_Id" hidden></Column>
-        <Column field="title" header="Title" :sortable="true"></Column>
-        <Column field="answer" header="Answer" :sortable="true"></Column>
-        <Column field="type" header="Type"></Column>
-        <Column field="cat_1" header="Category 1"></Column>
-        <Column field="description" header="Description" hidden></Column>
+        <Column v-if="selectionMode" :selectionMode="selectionMode" headerStyle="width: 3em"></Column>
+        <Column v-for="col of columns" :field="col.field" :header="col.header" :key="col.field"></Column>
         <Column v-if="openDocumentRow" headerStyle="width: 8em;" bodyStyle="text-align: right">
             <template #body="slotProps">
                 <Button type="button" icon="pi pi-eye" @click="openDocument(slotProps.data, true)"></Button>
@@ -52,12 +47,17 @@ import TableToolbar from '@/components/tables/TableToolbar.vue'
 import _ from 'lodash';
 import Utils from '@/modules/utils'
 import MessageType from '@/types/message';
+import ColumnConfig from "@/types/columnconfig"
 
-const props = defineProps({
-    tableData: Array,
-    searchValue: String,
+type FormProps = {
+    tableData: unknown,
+    searchValue: string,
+    selectionMode: string,
     openDocumentRow: Boolean,
-})
+    columns: ColumnConfig[],
+}
+
+const props = defineProps<FormProps>()
 
 const emit = defineEmits(['openDoc', 'newDoc', 'deleteSelection', 'update:searchValue'])
 

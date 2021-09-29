@@ -2,6 +2,8 @@
     <BaseTable
         :tableData="questions"
         :openDocumentRow="true"
+        selectionMode="multiple"
+        :columns="columns"
         v-model:searchValue="searchValue"
         @delete-selection="deleteSelection"
         @new-doc="newDoc"
@@ -17,10 +19,28 @@ import router from '@/router/routes';
 import { useRoute } from 'vue-router'
 import BaseTable from '@/components/tables/BaseTable.vue'
 import _ from 'lodash';
-// import Utils from '@/modules/utils'
 import MessageType from '@/types/message';
 
 const route = useRoute()
+
+const columns = [
+    {
+        field: 'title',
+        header: 'Title'
+    },
+    {
+        field: 'type',
+        header: 'Type'
+    },
+    {
+        field: 'answer',
+        header: 'answer'
+    },
+    {
+        field: 'cat_1',
+        header: 'Category 1'
+    },
+]
 
 const questions = ref<Question[]>()
 const selected = ref<Question[]>()
