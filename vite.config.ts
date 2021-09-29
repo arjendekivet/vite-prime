@@ -24,4 +24,8 @@ export default defineConfig({
   optimizeDeps: {
     include: ['slash', 'lodash/startCase']
   },
+  build: {
+    // needed for StoryBook Build --> large vendor chunks ...
+    // chunkSizeWarningLimit: 5000,
+  }
 })

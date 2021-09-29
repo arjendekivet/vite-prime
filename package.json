@@ -6,7 +6,8 @@
     "build": "vue-tsc --noEmit && vite build",
     "serve": "vite preview",
     "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "storybook-build": "build-storybook",
+    "storybook-build-preview": "serve storybook-static"
   },
   "dependencies": {
     "axios": "^0.21.1",
