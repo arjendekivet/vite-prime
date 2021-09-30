@@ -13,7 +13,7 @@ const router = createRouter({
   routes: [
     {
       path: "/",
-      redirect: { name: "admin" },
+      redirect: { name: "home" },
     },
     {
       path: "/home",
@@ -24,42 +24,44 @@ const router = createRouter({
       path: "/admin",
       name: "admin",
       component: Admin,
-      children: [{
-        path: 'welcome',
-        name: "welcome",
-        component: Welcome
-      },
-      {
-        path: "events",
-        name: "events",
-        component: Events,
-      },
-      {
-        path: "questions",
-        name: "questions",
-        component: Questions,
-      },
-      {
-        path: "questions/search/:searchText",
-        name: "questionsSearch",
-        component: Questions,
-      },
-      {
-        path: "questionform",
-        name: "questionform",
-        component: QuestionForm,
-      },
-      {
-        path: "questionform/:id",
-        name: "questionformbyid",
-        component: QuestionForm,
-        props: route => ({ id: route.params.id, readOnly: route.query.readOnly === 'false' ? false : true })
-      },
-      {
-        path: "answerform",
-        name: "answerform",
-        component: AnswerForm,
-      },]
+      redirect: { name: "questions" },
+      children: [
+        {
+          path: 'welcome',
+          name: "admin_welcome",
+          component: Welcome
+        },
+        {
+          path: "events",
+          name: "events",
+          component: Events,
+        },
+        {
+          path: "questions",
+          name: "questions",
+          component: Questions,
+        },
+        {
+          path: "questions/search/:searchText",
+          name: "questionsSearch",
+          component: Questions,
+        },
+        {
+          path: "questionform",
+          name: "questionform",
+          component: QuestionForm,
+        },
+        {
+          path: "questionform/:id",
+          name: "questionformbyid",
+          component: QuestionForm,
+          props: route => ({ id: route.params.id, readOnly: route.query.readOnly === 'false' ? false : true })
+        },
+        {
+          path: "answerform",
+          name: "answerform",
+          component: AnswerForm,
+        },]
     },
     {
       path: "/test",

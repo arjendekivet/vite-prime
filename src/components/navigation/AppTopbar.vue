@@ -6,6 +6,8 @@
             <Button type="button" icon="pi pi-directions" @click="router.forward()" />
         </div>
         <div class="right">
+            <Button type="button" icon="pi pi-sliders-h" @click="router.push({ name: 'admin' })" />
+            <Button type="button" icon="pi pi-home" @click="router.push({ name: 'home' })" />
             <Button type="button" icon="pi pi-cog" />
             <Button type="button" icon="pi pi-user" />
         </div>
