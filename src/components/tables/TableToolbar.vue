@@ -16,8 +16,8 @@
                 <P_InputText
                     type="text"
                     v-model:modelValue="searchValue"
-                    placeholder="Search"
                     @keyup="emit('update:searchValue', searchValue)"
+                    placeholder="Search"
                 />
             </span>
         </template>
@@ -27,10 +27,6 @@
 <script setup lang="ts">
 import router from '@/router/routes';
 import { ref } from 'vue';
-
-import Button from 'primevue/button';
-import P_InputText from 'primevue/inputtext';
-import Toolbar from 'primevue/toolbar';
 
 const props = defineProps({
     searchValue: String,

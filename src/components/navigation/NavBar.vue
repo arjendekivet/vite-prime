@@ -1,6 +1,6 @@
 <template>
   <div class="navbar">
-    <div class="navbar--title">GIJS</div>
+    <div class="navbar--title">Cynapps</div>
     <component
       :is="getComponent(direction)"
       :model="menuitems"
