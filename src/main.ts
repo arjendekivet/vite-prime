@@ -22,6 +22,13 @@ import SplitterPanel from 'primevue/splitterpanel';
 import Toolbar from 'primevue/toolbar';
 import Message from 'primevue/message';
 
+// Form "layout" components:
+import FieldSet from 'primevue/fieldset';
+import Accordion from 'primevue/accordion';
+import AccordionTab from 'primevue/accordiontab';
+import TabView from 'primevue/tabview';
+import TabPanel from 'primevue/tabpanel';
+
 const app = createApp(App);
 
 app.use(router)
@@ -40,5 +47,12 @@ app.component('Splitter', Splitter);
 app.component('SplitterPanel', SplitterPanel);
 app.component('Toolbar', Toolbar);
 app.component('Message', Message);
+
+// Form "layout" components:
+app.component('FieldSet', FieldSet);
+app.component('Accordion', Accordion);
+app.component('AccordionTab', AccordionTab);
+app.component('TabView', TabView);
+app.component('TabPanel', TabPanel);
 
 app.mount('#app')

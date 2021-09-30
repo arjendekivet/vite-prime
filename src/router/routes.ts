@@ -6,6 +6,7 @@ import Events from "@/components/tables/EventsTable.vue";
 import Questions from "@/components/tables/QuestionsTable.vue";
 import QuestionForm from "@/components/forms/QuestionForm.vue";
 import AnswerForm from "@/components/forms/AnswerForm.vue";
+import ExampleForm from "@/components/forms/ExampleForm.vue";
 import Test from "@/pages/Test.vue";
 
 const router = createRouter({
@@ -59,7 +60,12 @@ const router = createRouter({
         path: "answerform",
         name: "answerform",
         component: AnswerForm,
-      },]
+      },
+      {
+        path: "exampleform",
+        name: "exampleform",
+        component: ExampleForm,
+      }]
     },
     {
       path: "/test",

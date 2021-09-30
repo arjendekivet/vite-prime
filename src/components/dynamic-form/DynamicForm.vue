@@ -10,6 +10,9 @@
       >{{ msg.content }}</Message>
     </transition-group>
     <div class="p-fluid p-formgrid p-grid">
+      <!-- iterate over the entries of 'fields', which could either be containers or formfields (for now) -->
+      <!-- if a container, within that container do another iteration over container.items ... -->
+      <!-- if a form field, do the form field templating -->
       <template v-for="field in fields">
         <div
           v-if="!field.hidden"

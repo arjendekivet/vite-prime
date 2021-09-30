@@ -1,0 +1,28 @@
+.dynamicformlayout {
+  .aki-input-icon-left > i,
+  .aki-input-icon-right > i {
+    position: absolute;
+    top: 2.25rem;
+    margin-top: 0;
+  }
+
+  .aki-input-icon-left > i:first-of-type {
+    left: 1rem;
+  }
+
+  .aki-input-icon-right > i:last-of-type {
+    right: 1rem;
+  }
+
+  .aki-input-icon-left {
+    .p-inputtext {
+      padding-left: 2rem;
+    }
+  }
+
+  .aki-input-icon-left,
+  .aki-input-icon-right {
+    position: relative;
+    // display: inline-block;
+  }
+}

@@ -42,6 +42,12 @@ menuItems.value = [{
         label: 'Answer form',
         icon: 'pi pi-fw pi-list',
         to: { name: 'answerform' }
+    },
+    {
+        key: '4_2',
+        label: 'Example form',
+        icon: 'pi pi-fw pi-list',
+        to: { name: 'exampleform' }
     }
     ]
 },
