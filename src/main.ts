@@ -29,6 +29,10 @@ import AccordionTab from 'primevue/accordiontab';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 
+import Recursor from '@/components/recursor/Recursor.vue'
+import Recursor2 from '@/components/recursor/Recursor2.vue'
+import Recursor3 from '@/components/recursor/Recursor3.vue'
+
 const app = createApp(App);
 
 app.use(router)
@@ -54,5 +58,9 @@ app.component('Accordion', Accordion);
 app.component('AccordionTab', AccordionTab);
 app.component('TabView', TabView);
 app.component('TabPanel', TabPanel);
+
+app.component('Recursor', Recursor);
+app.component('Recursor2', Recursor2);
+app.component('Recursor3', Recursor3);
 
 app.mount('#app')

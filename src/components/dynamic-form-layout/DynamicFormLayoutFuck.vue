@@ -1,34 +1,192 @@
 <template>
   <div class="dynamicformlayout">
-    <h3>{{ fields }}</h3>
+    <h3 v-if="title">{{ title }}</h3>
+    <transition-group name="p-message" tag="div">
+      <Message
+        v-for="msg of messages"
+        v-bind=msg 
+        :key="msg.id" 
+        @close="Utils.removeMessage(messages, msg.id)"
+      >{{ msg.content }}</Message>
+    </transition-group>
 
-      <!-- <slot v-bind="fields" ></slot> -->
-      <Recursor3 :items="fields" :label="items[0]?.label">
-        <!-- <template v-slot:default="entity"> -->
-              <!-- <component 
-                v-if="item.type"
-                v-bind="item" 
-                :is="dynamicComponentMapper[item.type.toLowerCase()]"
-                :header="item.label"
-              >{{ item.label }}</component> -->
-            <!-- </template> -->
-      </Recursor3>
-
-<!-- 
-      <Recursor :nodes="fields" :label="fields[0]?.label || 'stuff'">
-            <template scope="entity">
-            <template v-slot="entity">
-              <p>uhh paragraph 2</p>
-              <component 
-                v-if="entity.type"
+    <p>hard coded tabpanel</p>
+      <!-- <div class="card">
+        <h5>Default</h5>
+        <TabView ref="tabview1">
+      <TabPanel header="Header I">
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+          ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+          aliquip ex ea commodo consequat. Duis aute irure dolor in
+          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+          culpa qui officia deserunt mollit anim id est laborum.
+        </p>
+      </TabPanel>
+      <TabPanel header="Header II">
+        <Accordion :activeIndex="0">
+          <AccordionTab header="Header I">
+            <InputText id="100" placeholder="InputText test 1 input" />
+            <input id="101" type="text" placeholder="test2 input" />
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+              enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
+              in reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est laborum.
+            </p>
+            <Accordion>
+              <AccordionTab header="NESTED Header I_I">
+                <input id="103" placeholder="test 3 input" />
+                <input id="104" type="text" placeholder="test4 input" />
+                <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+                  do eiusmod tempor incididunt ut labore et dolore magna
+                  aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+                  ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                  Duis aute irure dolor in reprehenderit in voluptate velit
+                  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+                  occaecat cupidatat non proident, sunt in culpa qui officia
+                  deserunt mollit anim id est laborum.
+                </p>
+              </AccordionTab>
+              <AccordionTab header="NESTED Header I_II">
+                <input id="105" placeholder="test 5 input" />
+                <input id="106" type="text" placeholder="test6 input" />
+                <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+                  do eiusmod tempor incididunt ut labore et dolore magna
+                  aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+                  ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                  Duis aute irure dolor in reprehenderit in voluptate velit
+                  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+                  occaecat cupidatat non proident, sunt in culpa qui officia
+                  deserunt mollit anim id est laborum.
+                </p>
+              </AccordionTab>
+            </Accordion>
+          </AccordionTab>
+          <AccordionTab header="Header II">
+            <p>
+              Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+              accusantium doloremque laudantium, totam rem aperiam, eaque ipsa
+              quae ab illo inventore veritatis et quasi architecto beatae
+              vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia
+              voluptas sit aspernatur aut odit aut fugit, sed quia
+              consequuntur magni dolores eos qui ratione voluptatem sequi
+              nesciunt. Consectetur, adipisci velit, sed quia non numquam eius
+              modi.
+            </p>
+          </AccordionTab>
+          <AccordionTab header="Header III">
+            <p>
+              At vero eos et accusamus et iusto odio dignissimos ducimus qui
+              blanditiis praesentium voluptatum deleniti atque corrupti quos
+              dolores et quas molestias excepturi sint occaecati cupiditate
+              non provident, similique sunt in culpa qui officia deserunt
+              mollitia animi, id est laborum et dolorum fuga. Et harum quidem
+              rerum facilis est et expedita distinctio. Nam libero tempore,
+              cum soluta nobis est eligendi optio cumque nihil impedit quo
+              minus.
+            </p>
+          </AccordionTab>
+        </Accordion>
+      </TabPanel>
+      <TabPanel header="Header III">
+        <p>
+          At vero eos et accusamus et iusto odio dignissimos ducimus qui
+          blanditiis praesentium voluptatum deleniti atque corrupti quos
+          dolores et quas molestias excepturi sint occaecati cupiditate non
+          provident, similique sunt in culpa qui officia deserunt mollitia
+          animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis
+          est et expedita distinctio. Nam libero tempore, cum soluta nobis est
+          eligendi optio cumque nihil impedit quo minus.
+        </p>
+      </TabPanel>
+        </TabView>
+      </div> -->
+      <div class="card">
+        <h5>"The Recursor????"</h5>
+        <Recursor :nodes="fields" :label="fields[0]?.label||'stuff'">
+          <!-- <template scope="entity"> -->
+            <template v-slot:default="entity"> -->
+              <component
                 v-bind="entity" 
                 :is="dynamicComponentMapper[entity.type.toLowerCase()]"
                 :header="entity.label"
               >{{ entity.label }}</component>
             </template>
-      </Recursor> 
-      -->
+        </Recursor>
+      </div>
 
+      <p>Somethinggggg from DynamicFormlayout</p><br>
+    <div class="p-fluid p-formgrid p-grid">
+      <!-- iterate over the entries of 'fields', which could either be containers or formfields (for now) -->
+      <!-- if a container, within that container do another iteration over container.nodes ... -->
+      <!-- if a form field, do the form field templating -->
+    <template v-for="entry in fields" :key="entry.id">
+        <!-- @before-mount or @beforeMount="genericOnBeforeMount" on component will not work ? -->
+        <!-- say TabView (level 1) :tabs="entry.nodes" ?????????? :activeIndex="0" ??????????? -->
+        <component v-bind="entry"  :is="dynamicComponentMapper[entry.type.toLowerCase()]" :header="entry.type === 'TabView' ? entry.label : ''">
+          
+          <!-- within this component, as it's default slot? / content, we have to check if it is a container with nodes we have to iterate -->
+          <template v-if="entry.isContainer" >
+            <template v-for="item in entry.nodes" :key="item.id">
+              <component
+                :is="dynamicComponentMapper[item.type.toLowerCase()]"
+                v-bind="item"
+                :header="item.type === 'TabPanel' ? item.label : ''"
+              >
+                <template v-if="item.isContainer">
+                  <template v-for="subItem in item.nodes" :key="subItem.id">
+                    <!-- say Accordion (level 3) -->
+                    <component
+                      v-bind="subItem"
+                      :is="dynamicComponentMapper[subItem.type.toLowerCase()]"
+                      :activeIndex="0"
+                      :header="
+                        subItem.type === 'TabPanel' ||
+                        subItem.type === 'AccordionTab' || subItem.type === 'Accordion'
+                          ? subItem.label
+                          : ''
+                      "
+                    >
+                      <template v-if="subItem.isContainer">
+                        <template
+                          v-for="subsubItem in subItem.nodes"
+                          :key="subsubItem.id"
+                        >
+                          <!-- say AccordionTab (level 4) -->
+                          <component
+                            v-bind="subsubItem"
+                            :is="dynamicComponentMapper[subsubItem.type.toLowerCase()]"
+                            :header="
+                              subsubItem.type === 'TabPanel' ||
+                              subsubItem.type === 'AccordionTab'
+                                ? subsubItem.label
+                                : ''
+                            "
+                          >
+                          </component>
+                        </template>
+                      </template>
+                    </component>
+                  </template>
+                </template>
+                <template v-else>
+                  <!-- todo when at this level -->
+                </template>
+              </component>
+            </template>
+          </template>
+        </component>
+    </template>
+    
+    </div>
     <Toolbar>
       <template #left>
         <template v-if="readOnly">
@@ -61,8 +219,6 @@ import router from '@/router/routes';
 import Utils from '@/modules/utils'
 
 import Recursor from '@/components/recursor/Recursor.vue'
-import Recursor3 from '@/components/recursor/Recursor3.vue'
-import Recursor2 from '@/components/recursor/Recursor2.vue'
 
 //These should be brought into scope again explicitely for the :is bindings?....
 import Accordion from 'primevue/accordion';
@@ -70,7 +226,6 @@ import AccordionTab from 'primevue/accordiontab';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 import InputText from 'primevue/inputtext';
-import NavSplitter from '../navigation/NavSplitter.vue'
 
 const messages = ref<MessageType[]>([]);
 const count = ref(0);

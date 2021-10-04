@@ -1,5 +1,6 @@
 import Option from '@/types/option'
 import Validator from '@/types/validator'
+import TabPanel from 'primevue/tabpanel'
 
 type FieldIcon = {
     type: 'left' | 'right'
@@ -12,8 +13,9 @@ type FieldIcon = {
 type Fieldconfig = {
     id: string
     label: string
-    type: 'P_InputText' | 'P_Dropdown' | 'P_Textarea' | 'Calendar' | 'FieldSet'
+    type: 'P_InputText' | 'P_Dropdown' | 'P_Textarea' | 'Calendar' | 'FieldSet' | 'Accordion' | 'AccordionTab' | 'TabView' | 'TabPanel' | 'InputText'
     items?: Fieldconfig[]
+    nodes?: Fieldconfig[]
     isContainer?: boolean // true when type is a form field "container" like FieldSet or Tab or Accordion etc AND fieldConfig has 'items' as array of FieldConfigs
     options?: Option[]
     optionLabel?: keyof Option
