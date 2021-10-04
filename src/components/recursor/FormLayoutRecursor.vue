@@ -3,17 +3,20 @@
     <div class="FormLayoutRecursor card">
         <div>{{ config.label || "No Label ..." }} ({{ config.type || "No Type ..." }})</div>
         <component :is="config.type">
-            <slot>PIPO</slot>
+            <FormLayoutRecursor
+                v-for="item in config.items"
+                :key="item.id"
+                :config="item"
+                :label="item.label || 'uhhhhh'"
+            />
+            <!-- <slot></slot> -->
         </component>
-
         <FormLayoutRecursor
             v-for="item in config.items"
             :key="item.id"
             :config="item"
             :label="item.label || 'uhhhhh'"
-        >
-            <slot>Recursor</slot>
-        </FormLayoutRecursor>
+        />
     </div>
 </template>
 <script setup lang="ts">
