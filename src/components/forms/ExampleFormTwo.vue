@@ -120,7 +120,7 @@ const formConfig2 = [
           {
             id: "firstname6",
             label: "Firstname666",
-            type: "InputText",
+            type: "P_InputText",
             level: 3,
             placeholder: "Firstname6",
           },

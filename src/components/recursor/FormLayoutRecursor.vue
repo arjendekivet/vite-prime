@@ -1,14 +1,44 @@
 <template>
     <div class="FormLayoutRecursor card">
-        {{ config.label || "No Label ..." }} ({{ config.type || "No Type ..." }})
-        <component :is="SlotTest" :config="config">
-            <FormLayoutRecursor
-                v-for="item in config.items"
-                :key="item.id"
-                :config="item"
-                :label="item.label || 'uhhhhh'"
-            ></FormLayoutRecursor>
-        </component>
+        <!-- {{ config.label || "No Label ..." }} ({{ config.type || "No Type ..." }}) -->
+        <template v-if="config.type === 'TabView'">
+            <TabView>
+                <TabPanel v-for="tab in config.items" :key="tab.id" :header="tab.label">
+                    <FormLayoutRecursor
+                        v-for="item in tab.items"
+                        :key="tab.id"
+                        :config="tab"
+                        :label="tab.label"
+                    ></FormLayoutRecursor>
+                </TabPanel>
+            </TabView>
+        </template>
+        <template v-if="config.type === 'Accordion'">
+            <Accordion>
+                <AccordionTab v-for="tab in config.items" :key="tab.id" :header="tab.label">
+                    <FormLayoutRecursor
+                        v-for="item in tab.items"
+                        :key="tab.id"
+                        :config="tab"
+                        :label="tab.label"
+                    ></FormLayoutRecursor>
+                </AccordionTab>
+            </Accordion>
+        </template>
+        <template v-else>
+            <label
+                v-if="config.label && !(config.type === 'TabPanel' || config.type === 'AccordionTab')"
+                :for="config.id"
+            >{{ config.label }}</label>
+            <component :is="config.type">
+                <FormLayoutRecursor
+                    v-for="item in config.items"
+                    :key="item.id"
+                    :config="item"
+                    :label="item.label"
+                ></FormLayoutRecursor>
+            </component>
+        </template>
     </div>
 </template>
 <script setup lang="ts">
@@ -44,6 +74,6 @@ const props = withDefaults(defineProps<FormProp>(), {
 <style lang="scss">
 .FormLayoutRecursor {
     text-align: left;
-    margin: 5px 0px 0px 15px;
+    // margin: 5px 0px 0px 15px;
 }
 </style>
