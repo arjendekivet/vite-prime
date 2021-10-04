@@ -26,10 +26,7 @@
             </Accordion>
         </template>
         <template v-else>
-            <label
-                v-if="config.label && !(config.type === 'TabPanel' || config.type === 'AccordionTab')"
-                :for="config.id"
-            >{{ config.label }}</label>
+            <label v-if="!config.isContainer" :for="config.id">{{ config.label }}</label>
             <component :is="config.type">
                 <FormLayoutRecursor
                     v-for="item in config.items"
