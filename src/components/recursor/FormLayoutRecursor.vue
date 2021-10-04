@@ -1,26 +1,19 @@
-<!-- This Component should act as a recursive component to resolve hierarchical dynamic components -->
 <template>
     <div class="FormLayoutRecursor card">
-        <div>{{ config.label || "No Label ..." }} ({{ config.type || "No Type ..." }})</div>
-        <component :is="config.type">
+        {{ config.label || "No Label ..." }} ({{ config.type || "No Type ..." }})
+        <component :is="SlotTest" :config="config">
             <FormLayoutRecursor
                 v-for="item in config.items"
                 :key="item.id"
                 :config="item"
                 :label="item.label || 'uhhhhh'"
-            />
-            <!-- <slot></slot> -->
+            ></FormLayoutRecursor>
         </component>
-        <FormLayoutRecursor
-            v-for="item in config.items"
-            :key="item.id"
-            :config="item"
-            :label="item.label || 'uhhhhh'"
-        />
     </div>
 </template>
 <script setup lang="ts">
 import { defineProps } from 'vue'
+import SlotTest from '@/components/SlotTest.vue'
 
 type configContainer = {
     items?: configContainer[],
