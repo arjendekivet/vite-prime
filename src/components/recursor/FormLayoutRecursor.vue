@@ -33,13 +33,11 @@
 </template>
 <script setup lang="ts">
 import { defineProps } from 'vue'
-import SlotTest from '@/components/SlotTest.vue'
 
 type configContainer = {
     items?: configContainer[],
     id?: string,
     componentType?: string,
-    level?: number,
     isContainer?: boolean,
     placeholder?: string,
     label?: string,
@@ -55,9 +53,7 @@ type FormProp = {
     label?: string,
 }
 
-const props = withDefaults(defineProps<FormProp>(), {
-    level: 0,
-})
+const props = withDefaults(defineProps<FormProp>(), {})
 
 </script>
 

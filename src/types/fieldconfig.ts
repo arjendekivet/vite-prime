@@ -1,6 +1,5 @@
 import Option from '@/types/option'
 import Validator from '@/types/validator'
-import TabPanel from 'primevue/tabpanel'
 
 type FieldIcon = {
     type: 'left' | 'right'

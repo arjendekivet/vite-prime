@@ -18,7 +18,6 @@ type configContainer = {
   items?: configContainer[],
   id?: string,
   componentType?: string,
-  level?: number,
   isContainer?: boolean,
   placeholder?: string,
   label?: string,
