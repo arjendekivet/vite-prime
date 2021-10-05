@@ -20,7 +20,7 @@
         </template>
         <template v-else>
             <label v-if="!config.isContainer" :for="config.id">{{ config.label }}</label>
-            <component :is="config.componentType" :key="config.id" :header="config.label">
+            <component :is="config.componentType" :key="config.id">
                 <FormLayoutRecursor
                     v-for="item in config.items"
                     :key="item.id"
