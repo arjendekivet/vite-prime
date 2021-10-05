@@ -1,11 +1,10 @@
 <template>
     <div class="FormLayoutRecursor card">
-        <!-- {{ config.label || "No Label ..." }} ({{ config.componentType || "No Type ..." }}) -->
-        <template v-if="config.componentType === 'TabView' || config.componentType === 'Accordion'">
-            <component :is="config.componentType">
+        <template v-if="config.type === 'TabView' || config.type === 'Accordion'">
+            <component :is="config.type">
                 <component
                     v-for="tab in config.items"
-                    :is="tab.componentType"
+                    :is="tab.type"
                     :key="tab.id"
                     :header="tab.label"
                 >
@@ -20,7 +19,7 @@
         </template>
         <template v-else>
             <label v-if="!config.isContainer" :for="config.id">{{ config.label }}</label>
-            <component :is="config.componentType" :key="config.id">
+            <component :is="config.type" :key="config.id">
                 <FormLayoutRecursor
                     v-for="item in config.items"
                     :key="item.id"
@@ -37,7 +36,7 @@ import { defineProps } from 'vue'
 type configContainer = {
     items?: configContainer[],
     id?: string,
-    componentType?: string,
+    type?: string,
     isContainer?: boolean,
     placeholder?: string,
     label?: string,

@@ -16,31 +16,31 @@ const formConfig2 = [
   {
     id: "tabview1",
     label: "TabView 1",
-    componentType: "TabView",
+    type: "TabView",
     isContainer: true,
     items: [
       {
         id: "tabpanel1",
         label: "TabPanel 1",
-        componentType: "TabPanel",
+        type: "TabPanel",
         isContainer: true,
         items: [
           {
             id: "firstname",
             label: "Firstname 11111",
-            componentType: "P_InputText",
+            type: "P_InputText",
             placeholder: "Firstname",
           },
           {
             id: "lastname",
             label: "Last Name",
-            componentType: "P_InputText",
+            type: "P_InputText",
             placeholder: "Last name",
           },
           {
             id: "fullname",
             label: "Full Name",
-            componentType: "P_InputText",
+            type: "P_InputText",
             placeholder: "Full name",
           },
         ],
@@ -48,13 +48,13 @@ const formConfig2 = [
       {
         id: "tabpanel2",
         label: "TabPanel 2",
-        componentType: "TabPanel",
+        type: "TabPanel",
         isContainer: true,
         items: [
           {
             id: "firstname2",
             label: "Firstname2",
-            componentType: "P_InputText",
+            type: "P_InputText",
             placeholder: "Firstname2",
           },
         ],
@@ -62,25 +62,25 @@ const formConfig2 = [
       {
         id: "tabpanel3",
         label: "TabPanel 3",
-        componentType: "TabPanel",
+        type: "TabPanel",
         isContainer: true,
         items: [
           {
             id: "acordion1",
             label: "Accordion XXXXX",
-            componentType: "Accordion",
+            type: "Accordion",
             isContainer: false,
             items: [
               {
                 id: "acordiontab1",
                 label: "Accordion Tab XXX",
-                componentType: "AccordionTab",
+                type: "AccordionTab",
                 isContainer: true,
                 items: [
                   {
                     id: "firstnamertx",
                     label: "Firstnamertx",
-                    componentType: "P_InputText",
+                    type: "P_InputText",
                     placeholder: "Firstnamertx",
                     isContainer: false,
                     items: []
@@ -88,7 +88,7 @@ const formConfig2 = [
                   {
                     id: "firstnamex",
                     label: "Firstnamex",
-                    componentType: "P_InputText",
+                    type: "P_InputText",
                     placeholder: "Firstnamex",
                     isContainer: false,
                     items: []
@@ -102,13 +102,13 @@ const formConfig2 = [
       {
         id: "tabpanel4",
         label: "TabPanel 4",
-        componentType: "TabPanel",
+        type: "TabPanel",
         isContainer: true,
         items: [
           {
             id: "firstname6",
             label: "Firstname666",
-            componentType: "P_InputText",
+            type: "P_InputText",
             placeholder: "Firstname6",
           },
         ],
