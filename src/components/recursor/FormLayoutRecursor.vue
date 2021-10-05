@@ -45,12 +45,6 @@ type configContainer = {
 
 type FormProp = {
     config: configContainer,
-    id?: string,
-    componentType?: string,
-    level?: number,
-    isContainer?: boolean,
-    placeholder?: string,
-    label?: string,
 }
 
 const props = withDefaults(defineProps<FormProp>(), {})
