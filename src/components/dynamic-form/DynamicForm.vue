@@ -4,15 +4,12 @@
     <transition-group name="p-message" tag="div">
       <Message
         v-for="msg of messages"
-        v-bind=msg 
-        :key="msg.id" 
+        v-bind="msg"
+        :key="msg.id"
         @close="Utils.removeMessage(messages, msg.id)"
       >{{ msg.content }}</Message>
     </transition-group>
     <div class="p-fluid p-formgrid p-grid">
-      <!-- iterate over the entries of 'fields', which could either be containers or formfields (for now) -->
-      <!-- if a container, within that container do another iteration over container.items ... -->
-      <!-- if a form field, do the form field templating -->
       <template v-for="field in fields">
         <div
           v-if="!field.hidden"
@@ -22,14 +19,11 @@
           <template v-if="readOnly">
             <div>{{ fieldValues[field.id] }}</div>
           </template>
-          <!-- 1. v-model is using dynamic specification of which property to bind to v-model="fieldValues[field.id]"-->
-          <!-- 2. since v-model will trigger an emit('update:modelValue', event, DynamicForm instance listens to that event from that field component !!! -->
-          <!-- in order to be able for example to do some validation and/or calculate dependendencies and/or emit another custom event on form level: emit('updateFieldValue' -->
           <template v-else>
             <i v-if="getIconName(field)" :class="`pi ${getIconName(field)}`" />
-            <component 
-              v-bind=field
-              :is="field.type"  
+            <component
+              v-bind="field"
+              :is="field.type"
               v-model="fieldValues[field.id]"
               @update:modelValue="fieldUpdateHandler($event, field)"
               :class="errorFields[field.id] ? 'p-invalid' : ''"
@@ -67,7 +61,6 @@ import MessageType from '@/types/message'
 import { validate } from '@/modules/validate'
 import EventService from '@/services/EventService'
 import _ from 'lodash'
-import questionTypes from '@/enums/questionTypes'
 import router from '@/router/routes';
 import Utils from '@/modules/utils'
 

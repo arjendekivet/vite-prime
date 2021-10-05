@@ -16,22 +16,48 @@ formConfig.value = [
                 isContainer: true,
                 items: [
                     {
-                        id: "firstname",
-                        label: "Firstname 11111",
-                        type: "P_InputText",
-                        placeholder: "Firstname",
+                        id: "FieldSet1",
+                        label: "FieldSet 1",
+                        type: "FieldSet",
+                        isContainer: true,
+                        items: [
+                            {
+                                id: 'title',
+                                label: 'Title',
+                                type: 'P_InputText',
+                                placeholder: 'Title',
+                                validators: ['required'],
+                                icon: { type: 'right', name: 'pi-bookmark' }
+                            },
+                        ]
                     },
                     {
-                        id: "lastname",
-                        label: "Last Name",
-                        type: "P_InputText",
-                        placeholder: "Last name",
-                    },
-                    {
-                        id: "fullname",
-                        label: "Full Name",
-                        type: "P_InputText",
-                        placeholder: "Full name",
+                        id: "FieldSet2",
+                        label: "FieldSet 2",
+                        type: "FieldSet",
+                        isContainer: true,
+                        items: [
+                            {
+                                id: 'firstname',
+                                label: 'Firstname',
+                                type: 'P_InputText',
+                                placeholder: 'Firstname',
+                                validators: ['required'],
+                                icon: { type: 'right', name: 'pi-bookmark' }
+                            },
+                            {
+                                id: "lastname",
+                                label: "Last Name",
+                                type: "P_InputText",
+                                placeholder: "Last name",
+                            },
+                            {
+                                id: "fullname",
+                                label: "Full Name",
+                                type: "P_InputText",
+                                placeholder: "Full name",
+                            },
+                        ]
                     },
                 ],
             },

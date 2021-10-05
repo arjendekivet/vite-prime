@@ -17,9 +17,8 @@
                 </component>
             </component>
         </template>
-        <template v-else>
-            <label v-if="!config.isContainer" :for="config.id">{{ config.label }}</label>
-            <component :is="config.type" :key="config.id">
+        <template v-else-if="config.isContainer">
+            <component :is="config.type" :key="config.id" :legend="config.label">
                 <FormLayoutRecursor
                     v-for="item in config.items"
                     :key="item.id"
@@ -27,6 +26,10 @@
                     :label="item.label"
                 ></FormLayoutRecursor>
             </component>
+        </template>
+        <template v-else>
+            <label :for="config.id">{{ config.label }}</label>
+            <component :is="config.type" :key="config.id" v-bind="config"></component>
         </template>
     </div>
 </template>
