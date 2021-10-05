@@ -1,11 +1,11 @@
 <template>
   <div class="dynamicformlayout">
-    <FormLayoutRecursor v-for="config in formConfig" :config="config"></FormLayoutRecursor>
+    <FormLayoutRecursorTwo v-for="config in formConfig" :config="config"></FormLayoutRecursorTwo>
   </div>
 </template>
 
 <script setup lang="ts">
-import FormLayoutRecursor from '@/components/recursor/FormLayoutRecursor.vue'
+import FormLayoutRecursorTwo from '@/components/recursor/FormLayoutRecursorTwo.vue'
 import formConfig from '@/data/FormLayoutOne'
 
 </script>
