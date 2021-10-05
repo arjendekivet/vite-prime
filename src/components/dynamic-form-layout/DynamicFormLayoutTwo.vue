@@ -17,7 +17,7 @@ import FormLayoutRecursor from '@/components/recursor/FormLayoutRecursor.vue'
 type configContainer = {
   items?: configContainer[],
   id?: string,
-  type: string,
+  componentType?: string,
   level?: number,
   isContainer?: boolean,
   placeholder?: string,

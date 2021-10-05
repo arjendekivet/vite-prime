@@ -1,33 +1,26 @@
 <template>
     <div class="FormLayoutRecursor card">
-        <!-- {{ config.label || "No Label ..." }} ({{ config.type || "No Type ..." }}) -->
-        <template v-if="config.type === 'TabView'">
-            <TabView>
-                <TabPanel v-for="tab in config.items" :key="tab.id" :header="tab.label">
+        <!-- {{ config.label || "No Label ..." }} ({{ config.componentType || "No Type ..." }}) -->
+        <template v-if="config.componentType === 'TabView' || config.componentType === 'Accordion'">
+            <component :is="config.componentType">
+                <component
+                    v-for="tab in config.items"
+                    :is="tab.componentType"
+                    :key="tab.id"
+                    :header="tab.label"
+                >
                     <FormLayoutRecursor
                         v-for="item in tab.items"
-                        :key="tab.id"
-                        :config="tab"
-                        :label="tab.label"
+                        :key="item.id"
+                        :config="item"
+                        :label="item.label"
                     ></FormLayoutRecursor>
-                </TabPanel>
-            </TabView>
-        </template>
-        <template v-if="config.type === 'Accordion'">
-            <Accordion>
-                <AccordionTab v-for="tab in config.items" :key="tab.id" :header="tab.label">
-                    <FormLayoutRecursor
-                        v-for="item in tab.items"
-                        :key="tab.id"
-                        :config="tab"
-                        :label="tab.label"
-                    ></FormLayoutRecursor>
-                </AccordionTab>
-            </Accordion>
+                </component>
+            </component>
         </template>
         <template v-else>
             <label v-if="!config.isContainer" :for="config.id">{{ config.label }}</label>
-            <component :is="config.type">
+            <component :is="config.componentType" :key="config.id" :header="config.label">
                 <FormLayoutRecursor
                     v-for="item in config.items"
                     :key="item.id"
@@ -45,7 +38,7 @@ import SlotTest from '@/components/SlotTest.vue'
 type configContainer = {
     items?: configContainer[],
     id?: string,
-    type: string,
+    componentType?: string,
     level?: number,
     isContainer?: boolean,
     placeholder?: string,
@@ -55,7 +48,7 @@ type configContainer = {
 type FormProp = {
     config: configContainer,
     id?: string,
-    type?: string,
+    componentType?: string,
     level?: number,
     isContainer?: boolean,
     placeholder?: string,
