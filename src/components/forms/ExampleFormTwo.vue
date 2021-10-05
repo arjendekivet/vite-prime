@@ -1,7 +1,8 @@
 <template>
   <div>
     <DynamicFormLayoutTwo
-      :fields="formConfig2[0]"
+      v-for="config in formConfig"
+      :config="config"
       :columns="2"
       data-type="examples"
       title="My Title"
@@ -11,8 +12,9 @@
 
 <script setup lang="ts">
 import DynamicFormLayoutTwo from '@/components/dynamic-form-layout/DynamicFormLayoutTwo.vue'
+import Fieldconfig from '@/types/fieldconfig'
 
-const formConfig2 = [
+const formConfig: Fieldconfig[] = [
   {
     id: "tabview1",
     label: "TabView 1",

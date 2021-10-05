@@ -14,7 +14,6 @@ type Fieldconfig = {
     label: string
     type: 'P_InputText' | 'P_Dropdown' | 'P_Textarea' | 'Calendar' | 'FieldSet' | 'Accordion' | 'AccordionTab' | 'TabView' | 'TabPanel' | 'InputText'
     items?: Fieldconfig[]
-    nodes?: Fieldconfig[]
     isContainer?: boolean // true when type is a form field "container" like FieldSet or Tab or Accordion etc AND fieldConfig has 'items' as array of FieldConfigs
     options?: Option[]
     optionLabel?: keyof Option

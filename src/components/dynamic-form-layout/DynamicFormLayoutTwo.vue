@@ -1,30 +1,15 @@
 <template>
   <div class="dynamicformlayout">
-    <FormLayoutRecursor :config="fields"></FormLayoutRecursor>
-
-    <!-- <Recursor3
-      v-for="item in fields.items"
-      :key="item.id"
-      :config="item"
-      :label="item.label || 'uhhhhh'"
-    ></Recursor3>-->
+    <FormLayoutRecursor :config="config"></FormLayoutRecursor>
   </div>
 </template>
 
 <script setup lang="ts">
 import FormLayoutRecursor from '@/components/recursor/FormLayoutRecursor.vue'
-
-type configContainer = {
-  items?: configContainer[],
-  id?: string,
-  type?: string,
-  isContainer?: boolean,
-  placeholder?: string,
-  label?: string,
-}
+import Fieldconfig from '@/types/fieldconfig'
 
 type FormProp = {
-  fields: configContainer,
+  config: Fieldconfig,
 }
 const props = withDefaults(defineProps<FormProp>(), {})
 

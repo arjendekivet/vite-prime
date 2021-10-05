@@ -32,18 +32,10 @@
 </template>
 <script setup lang="ts">
 import { defineProps } from 'vue'
-
-type configContainer = {
-    items?: configContainer[],
-    id?: string,
-    type?: string,
-    isContainer?: boolean,
-    placeholder?: string,
-    label?: string,
-}
+import Fieldconfig from '@/types/fieldconfig'
 
 type FormProp = {
-    config: configContainer,
+    config: Fieldconfig,
 }
 
 const props = withDefaults(defineProps<FormProp>(), {})
