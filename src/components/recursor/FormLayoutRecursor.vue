@@ -72,5 +72,17 @@ const props = withDefaults(defineProps<FormProp>(), {
 .FormLayoutRecursor {
     text-align: left;
     // margin: 5px 0px 0px 15px;
+
+    label {
+        display: inline-block;
+        margin-bottom: 0.5rem;
+        margin-left: 0.25rem;
+    }
+
+    input {
+        display: block;
+        margin-bottom: 0.5rem;
+        margin-left: 0.25rem;
+    }
 }
 </style>
