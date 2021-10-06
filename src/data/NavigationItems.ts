@@ -4,7 +4,8 @@ const navItems: Route[] = [
     { name: 'home' },
     { name: 'events' },
     { name: 'questionform' },
-    { name: 'answerform' }
+    { name: 'answerform' },
+    { name: 'exampleform' }
 ]
 
 export default navItems

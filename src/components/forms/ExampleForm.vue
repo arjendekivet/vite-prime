@@ -21,22 +21,32 @@ const fields: Fieldconfig[] =
       id: 'firstname',
       label: 'Firstname',
       type: 'P_InputText',
-      placeholder: 'Firstname'
+      placeholder: 'Firstname',
+      validators: ['required']
     },
     {
       id: 'lastname',
       label: 'Lastname',
       type: 'P_InputText',
-      placeholder: 'Lastname'
+      placeholder: 'Lastname',
+      validators: ['required']
     },
     {
-      id: 'state',
-      label: 'State',
+      id: 'email',
+      label: 'Email',
+      type: 'P_InputText',
+      placeholder: 'Email address',
+      validators: ['required', 'email']
+    },
+    {
+      id: 'countrystate',
+      label: 'Country State',
       type: 'P_Dropdown',
       options: states,
       optionLabel: "label",
       optionValue: "value",
-      placeholder: 'States'
+      placeholder: 'Country States',
+      validators: ['required']
     }
   ]
 

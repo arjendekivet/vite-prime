@@ -1,14 +1,24 @@
 <template>
   <div class="dynamicform">
     <h3 v-if="title">{{ title }}</h3>
-    <transition-group name="p-message" tag="div">
+      <transition-group name="p-message" tag="div">
       <Message
+        v-for="msg of v$.$errors"
+        :key="msg.$uid"
+        :id="msg.$uid"
+        :sticky="true"
+        :severity="'error'"
+        :content="msg.$message"
+      >{{ msg.$message }}</Message>
+      </transition-group>
+    <!-- <transition-group name="p-message" tag="div"> -->
+      <!-- <Message
         v-for="msg of messages"
         v-bind=msg 
         :key="msg.id" 
         @close="Utils.removeMessage(messages, msg.id)"
-      >{{ msg.content }}</Message>
-    </transition-group>
+      >{{ msg.content }}</Message> -->
+    <!-- </transition-group> -->
     <div class="p-fluid p-formgrid p-grid">
       <template v-for="field in fields">
         <div
@@ -29,10 +39,10 @@
               :is="field.type"  
               v-model="fieldValues[field.id]"
               @update:modelValue="fieldUpdateHandler($event, field)"
-              :class="errorFields[field.id] ? 'p-invalid' : ''"
+              :class="errorFields[field.id] || v$[field.id].$error ? 'p-invalid' : ''"
               :aria-describedby="`${field.id}-help`"
             ></component>
-            <small :id="`${field.id}-help`" class="p-error">{{ errorFieldsInfo[field.id] }}</small>
+            <small :id="`${field.id}-help`" class="p-error">{{ errorFieldsInfo[field.id] || v$[field.id]?.$errors[0]?.$message }}</small>
           </template>
         </div>
       </template>
@@ -58,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref , reactive , computed } from 'vue'
 import Fieldconfig from '@/types/fieldconfig'
 import MessageType from '@/types/message'
 import { validate } from '@/modules/validate'
@@ -68,10 +78,41 @@ import questionTypes from '@/enums/questionTypes'
 import router from '@/router/routes';
 import Utils from '@/modules/utils'
 
+import useVuelidate from '@vuelidate/core'
+import { required, email } from '@vuelidate/validators'
+
 const messages = ref<MessageType[]>([]);
 const count = ref(0);
 
-const fieldValues: any = ref<object>({})
+//use some reactive object that maps ALL fields to be possibly validated to some reactive rules object that contains ALL the relevant validations for vuelidate.
+//TODO: should / could we use the same object for submit purposes etc, where we v-model to, id est.
+const fieldValidations = reactive({
+  firstname: '',
+  lastname: '' ,
+  countrystate: '',
+  email: ''
+})
+
+// rules: we should apparently compose this based on the metadata about the form: which fields are present that actually need to be monitored for validation 
+const rules = computed(() => {
+  return {
+    firstname: { required },
+    lastname: { required },
+    countrystate: {required },
+    email: { required, email }
+  }
+})
+
+// should we use reactive?? if we use ref, we need to unwrap it where we use it etc
+const fieldValues: any = ref<object>({
+  firstname: '',
+  lastname: '' ,
+  countrystate: '',
+  email: ''
+})
+
+const v$ = useVuelidate(rules, fieldValues)
+
 const errorFields: any = ref<object>({})
 const errorFieldsInfo: any = ref<object>({})
 
@@ -159,19 +200,29 @@ function fieldUpdateHandler(payload: any, field: Fieldconfig) {
 }
 
 function validateField(field: Fieldconfig) {
+  debugger
   const value = fieldValues.value[field.id]
 
   if (field.validators) {
-    const returnValue = validate(value, field.validators)
-    // errorFields.value[field.id] = !returnValue.valid
-    if (!returnValue.valid) {
-      errorFieldsInfo.value[field.id] = returnValue.info
-      errorFields.value[field.id] = !returnValue.valid
-    } else {
-      // errorFieldsInfo.value[field.id] = null
-      delete errorFieldsInfo.value[field.id]
-      delete errorFields.value[field.id]
+    //call v$[field.id].$validate(value)
+    const vField = v$.value[field.id]
+
+    try { vField?.$validate(value) }
+    catch(e) {
+      debugger;
     }
+
+    //temporarily disable the regular validation
+    // const returnValue = validate(value, field.validators)
+    // // errorFields.value[field.id] = !returnValue.valid
+    // if (!returnValue.valid) {
+    //   errorFieldsInfo.value[field.id] = returnValue.info
+    //   errorFields.value[field.id] = !returnValue.valid
+    // } else {
+    //   // errorFieldsInfo.value[field.id] = null
+    //   delete errorFieldsInfo.value[field.id]
+    //   delete errorFields.value[field.id]
+    // }
   }
 }
 
@@ -214,9 +265,17 @@ function addErrorMessage(error: any) {
 }
 
 function submitForm() {
-  const hasErrors = Object.keys(errorFields.value).length > 0
+  debugger;
+  // use vuelidate to validate the form v$.validate()
+  // 1. Call $touch() to indicate it should mark all monitored fields as dirty/touched
+  //v$.$touch()
+  // 2. Then it should call the validation
+  const hasErrors = v$.value.$validate()
+  //const hasErrors = Object.keys(errorFields.value).length > 0
   if (hasErrors) {
-    addErrorMessage(`The following fields have issues: ${Object.keys(errorFields.value).join(', ')}`)
+    //TODO: walk v$.value.$errors and compose an Object for addErrorMessage?
+    //addErrorMessage(`The following fields have issues: ${Object.keys(errorFields.value).join(', ')}`)
+    addErrorMessage(`The following fields have issues: ${Object.keys(v$.value.$errors).join(', ')}`)
     return
   }
 
