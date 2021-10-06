@@ -1,7 +1,7 @@
 <template>
   <div class="dynamicform">
     <h3 v-if="title">{{ title }}</h3>
-      <transition-group name="p-message" tag="div">
+      <transition-group name="p-message-x" tag="div">
       <Message
         v-for="msg of v$.$errors"
         :key="msg.$uid"
@@ -11,14 +11,14 @@
         :content="msg.$message"
       >{{ msg.$message }}</Message>
       </transition-group>
-    <!-- <transition-group name="p-message" tag="div"> -->
-      <!-- <Message
+    <transition-group name="p-message" tag="div">
+      <Message
         v-for="msg of messages"
         v-bind=msg 
         :key="msg.id" 
         @close="Utils.removeMessage(messages, msg.id)"
-      >{{ msg.content }}</Message> -->
-    <!-- </transition-group> -->
+      >{{ msg.content }}</Message>
+    </transition-group>
     <div class="p-fluid p-formgrid p-grid">
       <template v-for="field in fields">
         <div
@@ -32,12 +32,14 @@
           <!-- 1. v-model is using dynamic specification of which property to bind to v-model="fieldValues[field.id]"-->
           <!-- 2. since v-model will trigger an emit('update:modelValue', event, DynamicForm instance listens to that event from that field component !!! -->
           <!-- in order to be able for example to do some validation and/or calculate dependendencies and/or emit another custom event on form level: emit('updateFieldValue' -->
+          <!-- v-model="fieldValues[field.id]" -->
           <template v-else>
             <i v-if="getIconName(field)" :class="`pi ${getIconName(field)}`" />
             <component 
               v-bind=field
               :is="field.type"  
-              v-model="fieldValues[field.id]"
+    
+              v-model="v$[field.id].$model"
               @update:modelValue="fieldUpdateHandler($event, field)"
               :class="errorFields[field.id] || v$[field.id].$error ? 'p-invalid' : ''"
               :aria-describedby="`${field.id}-help`"
@@ -53,7 +55,7 @@
           <Button type="button" label="Edit" @click="readOnly = false" icon="pi pi-pencil" />
         </template>
         <template v-else>
-          <Button type="button" label="Submit" @click="submitForm" icon="pi pi-check" />
+          <Button type="button" label="Submit" :disabled="v$.$invalid" @click="submitForm" icon="pi pi-check" />
         </template>
         <Button
           type="button"
@@ -84,6 +86,10 @@ import { required, email } from '@vuelidate/validators'
 const messages = ref<MessageType[]>([]);
 const count = ref(0);
 
+// TODO: iterate over props.fields to dynamically populate the fieldValues and the rules object
+function populateVueValidateConfig(){
+}
+
 //use some reactive object that maps ALL fields to be possibly validated to some reactive rules object that contains ALL the relevant validations for vuelidate.
 //TODO: should / could we use the same object for submit purposes etc, where we v-model to, id est.
 const fieldValidations = reactive({
@@ -94,7 +100,7 @@ const fieldValidations = reactive({
 })
 
 // rules: we should apparently compose this based on the metadata about the form: which fields are present that actually need to be monitored for validation 
-const rules = computed(() => {
+const rulesx = computed(() => {
   return {
     firstname: { required },
     lastname: { required },
@@ -110,8 +116,6 @@ const fieldValues: any = ref<object>({
   countrystate: '',
   email: ''
 })
-
-const v$ = useVuelidate(rules, fieldValues)
 
 const errorFields: any = ref<object>({})
 const errorFieldsInfo: any = ref<object>({})
@@ -146,8 +150,24 @@ if (props.id) {
     if (field.defaultValue) {
       fieldValues.value[field.id] = field.defaultValue
     }
+    else { 
+      fieldValues.value[field.id] = '' 
+    }
   })
 }
+
+//TODO: if we have a populated fieldValues object and we have an inner rules object we could populate in the iteration above and modify/return in the rules computed
+// rules: we should apparently compose this based on the metadata about the form: which fields are present that actually need to be monitored for validation 
+const rules = computed(() => {
+  return {
+    firstname: { required },
+    lastname: { required },
+    countrystate: {required },
+    email: { required, email }
+  }
+})
+
+const v$ = useVuelidate(rules, fieldValues)
 
 function getRequired(field: Fieldconfig) {
   return _.isArray(field.validators) && _.indexOf(field.validators, 'required') > -1 ? ' *' : null
@@ -264,18 +284,18 @@ function addErrorMessage(error: any) {
   )
 }
 
-function submitForm() {
+async function submitForm() {
   debugger;
   // use vuelidate to validate the form v$.validate()
   // 1. Call $touch() to indicate it should mark all monitored fields as dirty/touched
   //v$.$touch()
   // 2. Then it should call the validation
-  const hasErrors = v$.value.$validate()
+  const hasErrors = await v$.value.$validate()
   //const hasErrors = Object.keys(errorFields.value).length > 0
   if (hasErrors) {
-    //TODO: walk v$.value.$errors and compose an Object for addErrorMessage?
-    //addErrorMessage(`The following fields have issues: ${Object.keys(errorFields.value).join(', ')}`)
-    addErrorMessage(`The following fields have issues: ${Object.keys(v$.value.$errors).join(', ')}`)
+    //   //TODO: walk v$.value.$errors and compose an Object for addErrorMessage?
+    //   //addErrorMessage(`The following fields have issues: ${Object.keys(errorFields.value).join(', ')}`)
+    //   addErrorMessage(`The following fields have issues: ${Object.keys(v$.value.$errors).join(', ')}`)
     return
   }
 
