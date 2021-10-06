@@ -7,7 +7,7 @@ import _ from 'lodash'
 
 const messages = ref<MessageType[]>([]);
 const count = ref(0);
-const fieldValues: any = ref<object>({})
+// const fieldValues: any = ref<object>({})
 const errorFields: any = ref<object>({})
 const errorFieldsInfo: any = ref<object>({})
 
@@ -47,16 +47,15 @@ const formactions = {
     /**
      * TODO: do we want to call this update always, id est also when the field does not qualify?
      */
-    fieldUpdateHandler(payload: any, field: Fieldconfig) {
-        formactions.validateField(field)
-        // console.log(field, payload)
-        // emit('updateFieldValue', field, payload)
-        // formactions.calculateDependantFieldState(props, field, payload)
-    },
+    // fieldUpdateHandler(payload: any, field: Fieldconfig) {
+    //     formactions.validateField(field)
+    //     // console.log(field, payload)
+    //     // emit('updateFieldValue', field, payload)
+    //     // formactions.calculateDependantFieldState(props, field, payload)
+    // },
 
-    validateField(field: Fieldconfig) {
-        const value = fieldValues.value[field.id]
-
+    validateField(field: Fieldconfig, value: any) {
+        // const value = fieldValues.value[field.id]
         if (field.validators) {
             const returnValue = validate(value, field.validators)
             if (!returnValue.valid) {
@@ -139,4 +138,4 @@ const formactions = {
     },
 }
 
-export { formactions, messages, count, fieldValues, errorFields, errorFieldsInfo }
+export { formactions, messages, count, errorFields, errorFieldsInfo }

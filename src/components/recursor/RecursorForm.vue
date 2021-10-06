@@ -42,14 +42,14 @@
 </template>
 
 <script setup lang="ts">
-import { provide, readonly } from 'vue'
+import { ref, provide, readonly } from 'vue'
 import FormLayoutRecursor from '@/components/recursor/FormLayoutRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
 import router from '@/router/routes';
 import Utils from '@/modules/utils'
 
-import { formactions, messages, count, fieldValues, errorFields, errorFieldsInfo } from '@/modules/formactionsrecursor'
+import { formactions, messages, count, errorFields, errorFieldsInfo } from '@/modules/formactionsrecursor'
 
 type FormProp = {
   config: Fieldconfig[],
@@ -64,11 +64,12 @@ type FormProp = {
 const props = withDefaults(defineProps<FormProp>(), {
   columns: 2,
 })
-
 const emit = defineEmits(['updateFieldValue'])
 
-const updateFieldValue = (field: any, value: any) => {
-  fieldValues.value[field.id] = value
+const fieldValues: any = ref<object>({})
+
+const updateFieldValue = (fieldId: string, value: any) => {
+  fieldValues.value[fieldId] = value
 }
 
 provide('fieldValues', readonly(fieldValues))

@@ -48,6 +48,7 @@
                         :is="config.type"
                         :modelValue="fieldValues[config.id]"
                         @update:modelValue="updateFieldValue(config, $event)"
+                        @blur="validateField(config, fieldValues[config.id])"
                         :class="errorFields[config.id] ? 'p-invalid' : ''"
                         :aria-describedby="`${config.id}-help`"
                     ></component>
@@ -63,7 +64,7 @@
 <script setup lang="ts">
 import { inject } from 'vue'
 import Fieldconfig from '@/types/fieldconfig'
-
+import { validate } from '@/modules/validate'
 import { formactions, errorFields, errorFieldsInfo } from '@/modules/formactionsrecursor'
 
 type FormProp = {
@@ -83,9 +84,28 @@ const props = withDefaults(defineProps<FormProp>(), {
 const emit = defineEmits(['updateFieldValue'])
 
 // inject from Form (provided)
-const fieldValues = inject('fieldValues')
-const updateFieldValue: any = inject('updateFieldValue')
+const fieldValues: any = inject('fieldValues')
+const updateFormFieldValue: any = inject('updateFieldValue')
 
+function updateFieldValue(field: any, value: any) {
+    // injected method on parent
+    updateFormFieldValue(field.id, value)
+    // validate UI field
+    validateField(field, value)
+}
+
+function validateField(field: Fieldconfig, value: any) {
+    if (field.validators) {
+        const returnValue = validate(value, field.validators)
+        if (!returnValue.valid) {
+            errorFieldsInfo.value[field.id] = returnValue.info
+            errorFields.value[field.id] = !returnValue.valid
+        } else {
+            delete errorFieldsInfo.value[field.id]
+            delete errorFields.value[field.id]
+        }
+    }
+}
 </script>
 
 <style lang="scss">
