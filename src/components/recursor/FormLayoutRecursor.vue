@@ -13,6 +13,7 @@
                         :key="item.id"
                         :config="item"
                         :label="item.label"
+                        :readOnly="readOnly"
                     ></FormLayoutRecursor>
                 </component>
             </component>
@@ -24,23 +25,61 @@
                     :key="item.id"
                     :config="item"
                     :label="item.label"
+                    :readOnly="readOnly"
                 ></FormLayoutRecursor>
             </component>
         </template>
         <template v-else>
-            <label :for="config.id">{{ config.label }}</label>
-            <component :is="config.type" :key="config.id" v-bind="config"></component>
+            <div
+                v-if="!config.hidden"
+                :class="`p-field p-text-left ${formactions.getIconType(config)} p-col-12 p-md-12`"
+            >
+                <label :for="config.id">{{ config.label }}{{ formactions.getRequired(config) }}</label>
+                <template v-if="readOnly">
+                    <div>{{ fieldValues[config.id] }}</div>
+                </template>
+                <template v-else>
+                    <i
+                        v-if="formactions.getIconName(config)"
+                        :class="`pi ${formactions.getIconName(config)}`"
+                    />
+                    <component
+                        v-bind="config"
+                        :is="config.type"
+                        v-model="fieldValues[config.id]"
+                        @update:modelValue="formactions.fieldUpdateHandler($event, config)"
+                        :class="errorFields[config.id] ? 'p-invalid' : ''"
+                        :aria-describedby="`${config.id}-help`"
+                    ></component>
+                    <small
+                        :id="`${config.id}-help`"
+                        class="p-error"
+                    >{{ errorFieldsInfo[config.id] }}</small>
+                </template>
+            </div>
         </template>
     </div>
 </template>
 <script setup lang="ts">
 import Fieldconfig from '@/types/fieldconfig'
 
+import { formactions, fieldValues, errorFields, errorFieldsInfo } from '@/modules/formactionsrecursor'
+
 type FormProp = {
     config: Fieldconfig,
+    fields?: Fieldconfig[],
+    dataType?: string,
+    id?: string,
+    columns?: number,
+    title?: string,
+    readOnly?: boolean,
 }
 
-const props = withDefaults(defineProps<FormProp>(), {})
+const props = withDefaults(defineProps<FormProp>(), {
+    columns: 2
+})
+
+const emit = defineEmits(['updateFieldValue'])
 
 </script>
 

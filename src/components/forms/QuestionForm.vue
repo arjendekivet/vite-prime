@@ -22,6 +22,10 @@ type formPropTypes = {
   readOnly?: boolean,
 }
 
+const props = withDefaults(defineProps<formPropTypes>(), {
+  id: undefined
+})
+
 const catOne: OptionType[] = [
   { label: 'Duits', value: 'DE' },
   { label: 'Engels', value: 'EN' },
@@ -41,10 +45,6 @@ const catThree: OptionType[] = [
   { label: 'F', value: 'F' },
   { label: 'G', value: 'G' },
 ];
-
-const props = withDefaults(defineProps<formPropTypes>(), {
-  id: undefined
-})
 
 const fields = ref<Fieldconfig[]>([])
 fields.value =

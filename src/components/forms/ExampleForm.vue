@@ -1,12 +1,27 @@
 <template>
   <div class="dynamicformlayout">
-    <FormLayoutRecursor v-for="config in formConfig" :config="config"></FormLayoutRecursor>
+    <RecursorForm
+      :config="formConfig"
+      data-type="questions"
+      title="Question"
+      :id="id"
+      :readOnly="readOnly"
+    ></RecursorForm>
   </div>
 </template>
 
 <script setup lang="ts">
-import FormLayoutRecursor from '@/components/recursor/FormLayoutRecursor.vue'
+import RecursorForm from '@/components/recursor/RecursorForm.vue'
 import formConfig from '@/data/FormLayoutOne'
+
+type formPropTypes = {
+  id?: string,
+  readOnly?: boolean,
+}
+
+const props = withDefaults(defineProps<formPropTypes>(), {
+  id: undefined
+})
 
 </script>
 
