@@ -46,8 +46,8 @@
                     <component
                         v-bind="config"
                         :is="config.type"
-                        v-model="fieldValues[config.id]"
-                        @update:modelValue="formactions.fieldUpdateHandler($event, config)"
+                        :modelValue="fieldValues[config.id]"
+                        @update:modelValue="updateFieldValue(config, $event)"
                         :class="errorFields[config.id] ? 'p-invalid' : ''"
                         :aria-describedby="`${config.id}-help`"
                     ></component>
@@ -61,9 +61,10 @@
     </div>
 </template>
 <script setup lang="ts">
+import { inject } from 'vue'
 import Fieldconfig from '@/types/fieldconfig'
 
-import { formactions, fieldValues, errorFields, errorFieldsInfo } from '@/modules/formactionsrecursor'
+import { formactions, errorFields, errorFieldsInfo } from '@/modules/formactionsrecursor'
 
 type FormProp = {
     config: Fieldconfig,
@@ -80,6 +81,10 @@ const props = withDefaults(defineProps<FormProp>(), {
 })
 
 const emit = defineEmits(['updateFieldValue'])
+
+// inject from Form (provided)
+const fieldValues = inject('fieldValues')
+const updateFieldValue: any = inject('updateFieldValue')
 
 </script>
 

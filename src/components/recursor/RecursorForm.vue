@@ -42,6 +42,7 @@
 </template>
 
 <script setup lang="ts">
+import { provide, readonly } from 'vue'
 import FormLayoutRecursor from '@/components/recursor/FormLayoutRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
@@ -65,6 +66,15 @@ const props = withDefaults(defineProps<FormProp>(), {
 })
 
 const emit = defineEmits(['updateFieldValue'])
+
+const updateFieldValue = (field: any, value: any) => {
+  fieldValues.value[field.id] = value
+}
+
+provide('fieldValues', readonly(fieldValues))
+// provide('errorFields', errorFields)
+// provide('errorFieldsInfo', errorFieldsInfo)
+provide('updateFieldValue', updateFieldValue)
 
 </script>
 
