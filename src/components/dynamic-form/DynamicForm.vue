@@ -81,14 +81,17 @@ import router from '@/router/routes';
 import Utils from '@/modules/utils'
 
 import useVuelidate from '@vuelidate/core'
-import { required, email } from '@vuelidate/validators'
+import { required, email , minLength, maxLength } from '@vuelidate/validators'
 
+// create a map to be able to dynamically refer to the vuelidate validators
+const mapValidators = {
+  'required': required,
+  'email': email,
+  'minLength': minLength,
+  'maxLength': maxLength
+}
 const messages = ref<MessageType[]>([]);
 const count = ref(0);
-
-// TODO: iterate over props.fields to dynamically populate the fieldValues and the rules object
-function populateVueValidateConfig(){
-}
 
 //use some reactive object that maps ALL fields to be possibly validated to some reactive rules object that contains ALL the relevant validations for vuelidate.
 //TODO: should / could we use the same object for submit purposes etc, where we v-model to, id est.
@@ -110,12 +113,7 @@ const rulesx = computed(() => {
 })
 
 // should we use reactive?? if we use ref, we need to unwrap it where we use it etc
-const fieldValues: any = ref<object>({
-  firstname: '',
-  lastname: '' ,
-  countrystate: '',
-  email: ''
-})
+const fieldValues: any = ref<object>({})
 
 const errorFields: any = ref<object>({})
 const errorFieldsInfo: any = ref<object>({})
@@ -136,6 +134,9 @@ const props = withDefaults(defineProps<FormProp>(), {
 
 const emit = defineEmits(['updateFieldValue'])
 
+// prepare an object to receive validator rules ...
+const validatorRules = {};
+
 if (props.id) {
   const record = EventService.getQuestionById(props.id)
     .then((response) => {
@@ -153,21 +154,77 @@ if (props.id) {
     else { 
       fieldValues.value[field.id] = '' 
     }
+
+    // while we are at it, we should iterate the field validators config and map these to vuelidate validators implementations and add these to the rules object for useVuelidate()
+    setValidators(field)
   })
 }
 
 //TODO: if we have a populated fieldValues object and we have an inner rules object we could populate in the iteration above and modify/return in the rules computed
 // rules: we should apparently compose this based on the metadata about the form: which fields are present that actually need to be monitored for validation 
 const rules = computed(() => {
-  return {
-    firstname: { required },
-    lastname: { required },
-    countrystate: {required },
-    email: { required, email }
-  }
+  // mutate validatorRules manually first
+  // validatorRules.firstname = { required }
+  // validatorRules.lastname = { required }
+  // validatorRules.countrystate = { required }
+  // validatorRules.email = { required, email }
+  return validatorRules
+  // return {
+  //   firstname: { required },
+  //   lastname: { required },
+  //   countrystate: {required },
+  //   email: { required, email }
+  // }
 })
 
 const v$ = useVuelidate(rules, fieldValues)
+
+/**
+ * Sets the validators for useVuelidate
+ * Iterates the field validators config and populates validatorRules with the mapped -vuelidate/custom- validators.
+ * TODO: must validatorRules become a reactive objective itself first?
+ */
+function setValidators(field: Fieldconfig) {
+  let fieldName = field.id
+  let objValidator = validatorRules[fieldName] || {}
+
+  field.validators?.forEach(function (cfgValidator) {
+    debugger
+    let tag
+    let isMapped = false
+    let mappedEntry
+    // 1 Get a previous object of validators, if it existed, since there may be multiple per field.
+    objValidator = validatorRules[fieldName] || {}
+    //if the validator is configured as a string and that mapping exists, we can directly map it
+    let lisString = typeof cfgValidator === 'string'
+    tag = lisString ? cfgValidator : typeof cfgValidator?.type === 'string' ? cfgValidator?.type : null
+    let isParam = !lisString && mapValidators[tag] && Object.keys(cfgValidator.params).length > 0
+    if (lisString === true) {
+      objValidator[tag] = mapValidators[tag]
+    }
+    // TODO if validator was configured as an object or a function, and we have it mapped, we need a different, more complex mapping for the rule entry...
+    else if (isParam === true) {
+      debugger
+      isMapped = !!mapValidators[tag]
+      mappedEntry = mapValidators[tag]
+      //if it is a built in vuelidate validator, it already knows how to take params, but if there are multiple params, how do we know how to pass them ... e.g. which param in which order?
+      // should we only allow for an array of param values to be configured ? like, for 'between', two values, [min max] ?
+      let params = Object.keys(cfgValidator.params)
+      let paramValues = []
+      params.forEach(function (paramValue) {
+        debugger
+        // get the proper param value ...
+        let paramX = cfgValidator.params[paramValue]
+          paramValues.push(paramX)
+      })
+      // set the validator the parameterized invocation of it, since apparently we have params ...
+      //objValidator[tag]= () => mapValidators[tag](...paramValues)
+      objValidator[tag] = mapValidators[tag](...paramValues)
+    }
+  // and add objValidator to validatorRules ...  for usage in rules = computed()
+  validatorRules[fieldName] = objValidator
+  })
+}
 
 function getRequired(field: Fieldconfig) {
   return _.isArray(field.validators) && _.indexOf(field.validators, 'required') > -1 ? ' *' : null
@@ -223,15 +280,9 @@ function validateField(field: Fieldconfig) {
   debugger
   const value = fieldValues.value[field.id]
 
-  if (field.validators) {
-    //call v$[field.id].$validate(value)
-    const vField = v$.value[field.id]
-
-    try { vField?.$validate(value) }
-    catch(e) {
-      debugger;
-    }
-
+  if (v$.value[field.id]) {
+    v$.value[field.id].$validate(value)
+  }
     //temporarily disable the regular validation
     // const returnValue = validate(value, field.validators)
     // // errorFields.value[field.id] = !returnValue.valid
@@ -243,7 +294,6 @@ function validateField(field: Fieldconfig) {
     //   delete errorFieldsInfo.value[field.id]
     //   delete errorFields.value[field.id]
     // }
-  }
 }
 
 function convertResponseData(responseData: object): object {

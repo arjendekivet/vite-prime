@@ -22,21 +22,21 @@ const fields: Fieldconfig[] =
       label: 'Firstname',
       type: 'P_InputText',
       placeholder: 'Firstname',
-      validators: ['required']
+      validators: [ 'required', { type: 'minLength', params: { min: 2 } }, { type: 'maxLength', params:{ max: 10 } } ]
     },
     {
       id: 'lastname',
       label: 'Lastname',
       type: 'P_InputText',
       placeholder: 'Lastname',
-      validators: ['required']
+      validators: [ 'required', { type: 'minLength', params: { min: 2 } }, { type: 'maxLength', params:{ max: 100 } } ]
     },
     {
       id: 'email',
       label: 'Email',
       type: 'P_InputText',
       placeholder: 'Email address',
-      validators: ['required', 'email']
+      validators: [ 'required', 'email']
     },
     {
       id: 'countrystate',
