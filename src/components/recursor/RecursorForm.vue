@@ -74,14 +74,20 @@ if (props.id) {
     .then((response) => {
       const convertedResponseData = convertResponseData(response.data)
       fieldValues.value = convertedResponseData
+
+      _.forIn(fields.value, function (field, fieldId) {
+        const fieldValue = fieldValues.value[fieldId]
+        calculateDependantFieldState(field, fieldValue)
+      })
     })
     .catch((error) => {
       console.error('There was an error!', error);
     })
 } else {
-  _.forIn(fields, function (field, fieldId) {
+  _.forIn(fields.value, function (field, fieldId) {
     if (field && field.defaultValue) {
       fieldValues.value[field.id] = field.defaultValue
+      calculateDependantFieldState(field, fieldValues.value[field.id])
     }
   })
 }
@@ -103,15 +109,6 @@ const updateFieldErrors = (fieldId: string, valid: boolean, info: string) => {
     delete errorFields.value[fieldId]
   }
 }
-
-provide('fieldValues', readonly(fieldValues))
-provide('fields', readonly(fields))
-provide('errorFields', errorFields)
-provide('errorFieldsInfo', errorFieldsInfo)
-provide('updateFieldValue', updateFieldValue)
-provide('updateFieldErrors', updateFieldErrors)
-provide('addField', addField)
-provide('calculateDependantFieldState', calculateDependantFieldState)
 
 function submitForm(dataType: string) {
   const hasErrors = Object.keys(errorFields.value).length > 0
@@ -199,6 +196,15 @@ function calculateDependantFieldState(field: Fieldconfig, fieldValue: any) {
     }
   })
 }
+
+provide('fieldValues', readonly(fieldValues))
+provide('fields', readonly(fields))
+provide('errorFields', errorFields)
+provide('errorFieldsInfo', errorFieldsInfo)
+provide('updateFieldValue', updateFieldValue)
+provide('updateFieldErrors', updateFieldErrors)
+provide('addField', addField)
+provide('calculateDependantFieldState', calculateDependantFieldState)
 </script>
 
 <style lang="scss">
