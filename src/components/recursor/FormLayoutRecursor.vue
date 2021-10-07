@@ -86,6 +86,9 @@ const updateFormFieldValue: any = inject('updateFieldValue')
 const errorFields: any = inject('errorFields')
 const errorFieldsInfo: any = inject('errorFieldsInfo')
 const updateFieldErrors: any = inject('updateFieldErrors')
+const calculateDependantFieldState: any = inject('calculateDependantFieldState')
+
+// Not needed naymore ?!!! Clean it up !!
 // Register field on form for reuse somewhere ....
 const addField: any = inject('addField')
 
@@ -106,7 +109,7 @@ function updateFieldValue(field: any, value: any) {
     updateFormFieldValue(field.id, value)
     // validate UI field
     validateField(field, value)
-    // calculateDependantFieldState(field, value)
+    calculateDependantFieldState(field, value)
 }
 
 function validateField(field: Fieldconfig, value: any) {

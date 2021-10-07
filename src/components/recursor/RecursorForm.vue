@@ -111,6 +111,7 @@ provide('errorFieldsInfo', errorFieldsInfo)
 provide('updateFieldValue', updateFieldValue)
 provide('updateFieldErrors', updateFieldErrors)
 provide('addField', addField)
+provide('calculateDependantFieldState', calculateDependantFieldState)
 
 function submitForm(dataType: string) {
   const hasErrors = Object.keys(errorFields.value).length > 0
@@ -126,9 +127,8 @@ function submitForm(dataType: string) {
   if (id) {
     EventService.putForm(dataType, id, submitValue)
       .then((response) => {
-        // const convertedResponseData = convertResponseData(props, response.data)
-        // fieldValues.value = convertedResponseData
-        fieldValues.value = response.data
+        const convertedResponseData = convertResponseData(response.data)
+        fieldValues.value = convertedResponseData
         addSubmitMessage()
       })
       .catch((error) => {
@@ -140,9 +140,8 @@ function submitForm(dataType: string) {
   } else {
     EventService.postForm(dataType, submitValue)
       .then((response) => {
-        // const convertedResponseData = convertResponseData(props, response.data)
-        // fieldValues.value = convertedResponseData
-        fieldValues.value = response.data
+        const convertedResponseData = convertResponseData(response.data)
+        fieldValues.value = convertedResponseData
         addSubmitMessage()
       })
       .catch((error) => {
@@ -183,6 +182,22 @@ function getFieldsFromConfig(arr: Fieldconfig[], key: string, value: string | bo
     }
   })
   return matches;
+}
+
+function calculateDependantFieldState(field: Fieldconfig, fieldValue: any) {
+  field.dependantFields?.forEach(function (fieldId: string) {
+    const myField = fields.value[fieldId]
+    if (myField) {
+      myField.hidden = fieldValue ? false : true
+
+      if (!fieldValue) {
+        fieldValues.value[fieldId] = null
+
+        // current field could have dependantFields which have to be hidden now, so call recursively ...
+        calculateDependantFieldState(myField, null)
+      }
+    }
+  })
 }
 </script>
 
