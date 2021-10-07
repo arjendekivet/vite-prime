@@ -61,7 +61,7 @@ fields.value =
       label: 'Title',
       type: 'P_InputText',
       placeholder: 'Title',
-      validators: ['required'],
+      validators: ['required', { type: 'minLength', params: [{ min: 5 }] }, { type: 'maxLength', params: [{ max: 100 }] } ],
       icon: { type: 'right', name: 'pi-bookmark' }
     },
     {
