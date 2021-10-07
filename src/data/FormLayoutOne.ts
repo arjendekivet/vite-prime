@@ -114,7 +114,6 @@ formConfig.value = [
                     {
                         id: 'cat_2',
                         isField: true,
-                        hidden: true,
                         label: 'Category 2',
                         type: 'P_Dropdown',
                         options: catTwo,
@@ -126,7 +125,6 @@ formConfig.value = [
                     {
                         id: 'cat_3',
                         isField: true,
-                        hidden: true,
                         label: 'Category 3',
                         type: 'P_Dropdown',
                         options: catThree,

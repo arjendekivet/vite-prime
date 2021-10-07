@@ -87,8 +87,8 @@ if (props.id) {
   _.forIn(fields.value, function (field, fieldId) {
     if (field && field.defaultValue) {
       fieldValues.value[field.id] = field.defaultValue
-      calculateDependantFieldState(field, fieldValues.value[field.id])
     }
+    calculateDependantFieldState(field, fieldValues.value[field.id])
   })
 }
 
