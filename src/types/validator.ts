@@ -1,3 +1,3 @@
-type Validator = 'required' | 'email' | 'isNumber' | 'isDate'
+type Validator = String | Object
 
 export default Validator

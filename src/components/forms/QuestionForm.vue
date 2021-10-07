@@ -116,7 +116,8 @@ fields.value =
       label: 'Description',
       type: 'P_Textarea',
       placeholder: 'Description',
-      maxColumns: 1
+      maxColumns: 1,
+      validators: ['required'],
     },
     {
       id: 'answer',

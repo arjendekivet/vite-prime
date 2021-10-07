@@ -6,6 +6,9 @@ const utils = {
         if (found) {
             messages.value = _.without(messages.value, found)
         }
+    },
+    setDate(value: number){
+        return Date.parse(value) !== NaN ? new Date(value) : value
     }
 }
 
