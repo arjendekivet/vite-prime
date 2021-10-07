@@ -22,12 +22,7 @@
           <Button type="button" label="Edit" @click="readOnly = false" icon="pi pi-pencil" />
         </template>
         <template v-else>
-          <Button
-            type="button"
-            label="Submit"
-            @click="formactions.submitForm(props.dataType)"
-            icon="pi pi-check"
-          />
+          <Button type="button" label="Submit" @click="submitForm(dataType)" icon="pi pi-check" />
         </template>
         <Button
           type="button"
@@ -48,13 +43,12 @@ import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
 import router from '@/router/routes';
 import Utils from '@/modules/utils'
-
-import { formactions, messages, count, errorFields, errorFieldsInfo } from '@/modules/formactionsrecursor'
+import EventService from '@/services/EventService'
+import { messages, addSubmitMessage, addErrorMessage } from '@/modules/UseFormMessages'
 
 type FormProp = {
   config: Fieldconfig[],
-  fields?: Fieldconfig[],
-  dataType?: string,
+  dataType: string,
   id?: string,
   columns?: number,
   title?: string,
@@ -62,21 +56,134 @@ type FormProp = {
 }
 
 const props = withDefaults(defineProps<FormProp>(), {
-  columns: 2,
+  columns: 1,
+  id: undefined,
+  config: undefined,
 })
 const emit = defineEmits(['updateFieldValue'])
 
 const fieldValues: any = ref<object>({})
+const fields: any = ref<object>({})
+const errorFields: any = ref<object>({})
+const errorFieldsInfo: any = ref<object>({})
+
+fields.value = getFieldsFromConfig(props.config, 'isField', true)
+
+if (props.id) {
+  const record = EventService.getQuestionById(props.id)
+    .then((response) => {
+      const convertedResponseData = convertResponseData(response.data)
+      fieldValues.value = convertedResponseData
+    })
+    .catch((error) => {
+      console.error('There was an error!', error);
+    })
+} else {
+  _.forIn(fields, function (field, fieldId) {
+    if (field && field.defaultValue) {
+      fieldValues.value[field.id] = field.defaultValue
+    }
+  })
+}
 
 const updateFieldValue = (fieldId: string, value: any) => {
   fieldValues.value[fieldId] = value
 }
 
-provide('fieldValues', readonly(fieldValues))
-// provide('errorFields', errorFields)
-// provide('errorFieldsInfo', errorFieldsInfo)
-provide('updateFieldValue', updateFieldValue)
+const addField = (fieldId: string, field: any) => {
+  fields.value[fieldId] = field
+}
 
+const updateFieldErrors = (fieldId: string, valid: boolean, info: string) => {
+  if (!valid) {
+    errorFieldsInfo.value[fieldId] = info
+    errorFields.value[fieldId] = !valid
+  } else {
+    delete errorFieldsInfo.value[fieldId]
+    delete errorFields.value[fieldId]
+  }
+}
+
+provide('fieldValues', readonly(fieldValues))
+provide('fields', readonly(fields))
+provide('errorFields', errorFields)
+provide('errorFieldsInfo', errorFieldsInfo)
+provide('updateFieldValue', updateFieldValue)
+provide('updateFieldErrors', updateFieldErrors)
+provide('addField', addField)
+
+function submitForm(dataType: string) {
+  const hasErrors = Object.keys(errorFields.value).length > 0
+  if (hasErrors) {
+    addErrorMessage(`The following fields have issues: ${Object.keys(errorFields.value).join(', ')}`)
+    return
+  }
+
+  // const submitValue: any = getSubmitValue(fieldValues._rawValue)
+  const submitValue: any = fieldValues._rawValue
+  const id: string = submitValue._id
+
+  if (id) {
+    EventService.putForm(dataType, id, submitValue)
+      .then((response) => {
+        // const convertedResponseData = convertResponseData(props, response.data)
+        // fieldValues.value = convertedResponseData
+        fieldValues.value = response.data
+        addSubmitMessage()
+      })
+      .catch((error) => {
+        addErrorMessage(
+          error.response && error.response.data && error.response.data.error
+            ? error + " ==> " + error.response.data.error
+            : error)
+      })
+  } else {
+    EventService.postForm(dataType, submitValue)
+      .then((response) => {
+        // const convertedResponseData = convertResponseData(props, response.data)
+        // fieldValues.value = convertedResponseData
+        fieldValues.value = response.data
+        addSubmitMessage()
+      })
+      .catch((error) => {
+        addErrorMessage(
+          error.response && error.response.data && error.response.data.error
+            ? error + " ==> " + error.response.data.error
+            : error)
+      })
+  }
+}
+
+function convertResponseData(responseData: object): object {
+  const converted: any = {}
+  _.each(responseData, function (fieldValue: any, key: string) {
+    const field = fields.value[key]
+    const fieldType: string | undefined = field && field.type
+    if (fieldType === 'Calendar') {
+      converted[key] = Date.parse(fieldValue) !== NaN ? new Date(fieldValue) : fieldValue
+    } else {
+      converted[key] = fieldValue
+    }
+  });
+  return converted
+}
+
+function getFieldsFromConfig(arr: Fieldconfig[], key: string, value: string | boolean) {
+  let matches: object = {};
+  if (!Array.isArray(arr)) return matches;
+
+  arr.forEach(function (fieldConfig: Fieldconfig) {
+    if (fieldConfig[key] === value) {
+      matches[fieldConfig.id] = fieldConfig
+    } else {
+      if (fieldConfig.items) {
+        let childResults = getFieldsFromConfig(fieldConfig.items, key, value)
+        matches = { ...matches, ...childResults }
+      }
+    }
+  })
+  return matches;
+}
 </script>
 
 <style lang="scss">
@@ -103,6 +210,10 @@ provide('updateFieldValue', updateFieldValue)
     .p-button {
       margin-left: 0.5rem;
     }
+  }
+
+  .p-fieldset {
+    margin-bottom: 2em;
   }
 }
 </style>

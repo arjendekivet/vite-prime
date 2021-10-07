@@ -1,6 +1,27 @@
 import Fieldconfig from '@/types/fieldconfig'
 import { ref } from 'vue';
 
+import OptionType from '@/types/Option'
+const catOne: OptionType[] = [
+    { label: 'Duits', value: 'DE' },
+    { label: 'Engels', value: 'EN' },
+    { label: 'Frans', value: 'FR' },
+];
+
+const catTwo: OptionType[] = [
+    { label: 'Chapter one', value: 'Ch-1' },
+    { label: 'Chapter two', value: 'Ch-2' },
+    { label: 'Chapter five', value: 'Ch-5' },
+];
+
+const catThree: OptionType[] = [
+    { label: 'A', value: 'A' },
+    { label: 'B', value: 'B' },
+    { label: 'D', value: 'D' },
+    { label: 'F', value: 'F' },
+    { label: 'G', value: 'G' },
+];
+
 const formConfig = ref<Fieldconfig[]>()
 formConfig.value = [
     {
@@ -23,6 +44,7 @@ formConfig.value = [
                         items: [
                             {
                                 id: 'title',
+                                isField: true,
                                 label: 'Title',
                                 type: 'P_InputText',
                                 placeholder: 'Title',
@@ -38,24 +60,27 @@ formConfig.value = [
                         isContainer: true,
                         items: [
                             {
-                                id: 'firstname',
-                                label: 'Firstname',
-                                type: 'P_InputText',
-                                placeholder: 'Firstname',
-                                validators: ['required'],
-                                icon: { type: 'right', name: 'pi-bookmark' }
+                                id: 'due',
+                                isField: true,
+                                label: 'Due on',
+                                type: 'Calendar',
+                                showIcon: true,
                             },
                             {
-                                id: "lastname",
-                                label: "Last Name",
-                                type: "P_InputText",
-                                placeholder: "Last name",
+                                id: 'description',
+                                isField: true,
+                                label: 'Description',
+                                type: 'P_Textarea',
+                                placeholder: 'Description',
+                                maxColumns: 1
                             },
                             {
-                                id: "fullname",
-                                label: "Full Name",
-                                type: "P_InputText",
-                                placeholder: "Full name",
+                                id: 'answer',
+                                isField: true,
+                                label: 'Answer',
+                                type: 'P_Textarea',
+                                placeholder: 'Answer',
+                                maxColumns: 1
                             },
                         ]
                     },
@@ -69,9 +94,43 @@ formConfig.value = [
                 items: [
                     {
                         id: "firstname2",
+                        isField: true,
                         label: "Firstname2",
                         type: "P_InputText",
                         placeholder: "Firstname2",
+                    },
+                    {
+                        id: 'cat_1',
+                        isField: true,
+                        label: 'Category 1',
+                        type: 'P_Dropdown',
+                        options: catOne,
+                        optionLabel: "label",
+                        optionValue: "value",
+                        editable: true,
+                        validators: ['required'],
+                        dependantFields: ['cat_2'],
+                    },
+                    {
+                        id: 'cat_2',
+                        isField: true,
+                        label: 'Category 2',
+                        type: 'P_Dropdown',
+                        options: catTwo,
+                        optionLabel: "label",
+                        optionValue: "value",
+                        editable: true,
+                        dependantFields: ['cat_3'],
+                    },
+                    {
+                        id: 'cat_3',
+                        isField: true,
+                        label: 'Category 3',
+                        type: 'P_Dropdown',
+                        options: catThree,
+                        optionLabel: "label",
+                        optionValue: "value",
+                        editable: true,
                     },
                 ],
             },
@@ -95,6 +154,7 @@ formConfig.value = [
                                 items: [
                                     {
                                         id: "firstnamertx",
+                                        isField: true,
                                         label: "Firstnamertx",
                                         type: "P_InputText",
                                         placeholder: "Firstnamertx",
@@ -103,6 +163,7 @@ formConfig.value = [
                                     },
                                     {
                                         id: "firstnamex",
+                                        isField: true,
                                         label: "Firstnamex",
                                         type: "P_InputText",
                                         placeholder: "Firstnamex",
@@ -123,6 +184,7 @@ formConfig.value = [
                 items: [
                     {
                         id: "firstname6",
+                        isField: true,
                         label: "Firstname666",
                         type: "P_InputText",
                         placeholder: "Firstname6",
