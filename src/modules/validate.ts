@@ -41,14 +41,8 @@ export function setValidators(formDefinition: Fieldconfig[], pValidatorRules: Ob
                 if (isString) {
                     objValidator[tag] = mappedValidator //unparameterized mapped validator
                 }
-                else if (isParam) {
-                    // parameterized mapped validator.
-                    debugger
-                    //if it is a built in vuelidate validator, it already knows how to take params, but if there are multiple params, how do we know how to pass them ... e.g. which param in which order?
-                    // should we only allow for an array of param values to be configured ? like, for 'between', two values, [min , max] ?
+                else if (isParam) { // parameterized mapped validator
                     let paramValues = []
-                    //let params = Object.keys(cfgValidator.params)
-                    
                     let normalize = !cfgValidator?.normalizeParams || cfgValidator?.normalizeParams !== false 
 
                     cfgValidator.params.forEach(function (paramEntry) {
@@ -58,24 +52,12 @@ export function setValidators(formDefinition: Fieldconfig[], pValidatorRules: Ob
                                 debugger
                                 paramValues.push(paramValue)        
                             })
-                            // if(Array.isArray(paramEntry)){
-                            //     paramEntry.forEach(function(paramValue){
-                            //         paramValues.push(paramValue)        
-                            //     })
-                            // }
-                            // else if (typeof paramEntry === 'object'){
-                            //     Object.values(paramEntry).forEach(function(paramValue){
-                            //         paramValues.push(paramValue)        
-                            //     })
-                            // }
                         }
                         else { //push as is
                             paramValues.push(paramEntry)
                         }
                     })
-                    debugger
                     // set the validator the parameterized invocation of it, since apparently we have params ...
-                    // or ... should we use a function that returns a function with invocationobjValidator[tag]= () => mapValidators[tag](...paramValues) ???
                     objValidator[tag] = mappedValidator(...paramValues)
                 }
             }
