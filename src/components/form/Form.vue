@@ -136,10 +136,10 @@ const updateFieldErrors = (fieldId: string, valid: boolean, info: string) => {
   }
 }
 
-function submitForm(dataType: string) {
-  const hasErrors = Object.keys(errorFields.value).length > 0
+async function submitForm(dataType: string) {
+  
+  const hasErrors = await v$.value.$validate()
   if (hasErrors) {
-    addErrorMessage(`The following fields have issues: ${Object.keys(errorFields.value).join(', ')}`)
     return
   }
 

@@ -48,7 +48,26 @@ formConfig.value = [
                                 label: 'Title',
                                 type: 'P_InputText',
                                 placeholder: 'Title',
-                                validators: [ 'required', { type: 'minLength', params: [{ min: 2 }] }, { type: 'maxLength', params: [{ max: 10 }] } ],
+                                validators: [ 
+                                    'required', 
+                                    { type: 'minLength', params: [{ min: 2 }] }, 
+                                    { type: 'maxLength', params: [{ max: 10 }] }, 
+                                    { type: 'display', // or: 'visibility' ??
+                                        isCustom: true, //indicates this 'validator' or rules-engine rule should be treated as an entirely autonomous rule (as opposed to not injecting some $validator function in an existing validator)
+                                        params: [{ lazy: false }],  // if lazy false it is calculated immediately, to determine if the field should be displayed
+                                        /**
+                                         * 
+                                         * @param field: the invocing field
+                                         * @param formData: the formData in scope 
+                                         * @param formDefinition: the form Definition, this is the container of the field definitions, which should indicate if this field depends on or manages other fields 
+                                         */
+                                        fn: function(field, formData, formDefinition){
+                                            // field is the current field component to which the rule is associated, context is the form-data context (like ref or reactive fieldValues)
+                                            debugger
+                                            console.log('running fn in custom "validator/executor" for "display"')
+                                        }
+                                    }, 
+                                ],
                                 icon: { type: 'right', name: 'pi-bookmark' }
                             },
                         ]
@@ -72,6 +91,7 @@ formConfig.value = [
                                 label: 'Description',
                                 type: 'P_Textarea',
                                 placeholder: 'Description',
+                                validators: [ 'required', { type: 'minLength', params: [{ min: 10 }] }, { type: 'maxLength', params: [{ max: 1000 }] } ],
                                 maxColumns: 1
                             },
                             {
