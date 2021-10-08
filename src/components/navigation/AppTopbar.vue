@@ -15,7 +15,6 @@
 </template>
 
 <script setup lang="ts">
-import { defineEmits } from 'vue'
 import router from '@/router/routes';
 
 const emit = defineEmits<{

@@ -14,8 +14,8 @@
     <transition-group name="p-message" tag="div">
       <Message
         v-for="msg of messages"
-        v-bind=msg 
-        :key="msg.id" 
+        v-bind="msg"
+        :key="msg.id"
         @close="Utils.removeMessage(messages, msg.id)"
       >{{ msg.content }}</Message>
     </transition-group>
@@ -35,10 +35,9 @@
           <!-- v-model="fieldValues[field.id]" :v-model="v$[field.id]?.$model || fieldValues[field.id]" -->
           <template v-else>
             <i v-if="getIconName(field)" :class="`pi ${getIconName(field)}`" />
-            <component 
-              v-bind=field
+            <component
+              v-bind="field"
               :is="field.type"
-              :vmodelbak="v$[field.id]?.$model"
               v-model="fieldValues[field.id]"
               @update:modelValue="fieldUpdateHandler($event, field)"
               :class="errorFields[field.id] || v$[field.id]?.$error ? 'p-invalid' : ''"
