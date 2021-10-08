@@ -1,17 +1,15 @@
 <template>
-  <div class="dynamicformlayout">
-    <RecursorForm
-      :config="formConfig"
-      data-type="questions"
-      title="Question"
-      :id="id"
-      :readOnly="readOnly"
-    ></RecursorForm>
-  </div>
+  <DynamicForm
+    :config="formConfig"
+    data-type="questions"
+    title="Question"
+    :id="id"
+    :readOnly="readOnly"
+  ></DynamicForm>
 </template>
 
 <script setup lang="ts">
-import RecursorForm from '@/components/dynamic-form/RecursorForm.vue'
+import DynamicForm from '@/components/dynamic-form/DynamicForm.vue'
 import formConfig from '@/data/FormLayoutOne'
 
 type formPropTypes = {
@@ -24,19 +22,3 @@ const props = withDefaults(defineProps<formPropTypes>(), {
 })
 
 </script>
-
-<style lang="scss">
-.dynamicformlayout {
-  textarea {
-    resize: none;
-  }
-
-  .pi {
-    z-index: 1;
-  }
-
-  .p-field > label {
-    margin-left: 0.25rem;
-  }
-}
-</style>

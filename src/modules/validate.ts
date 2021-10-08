@@ -2,16 +2,16 @@ import _ from 'lodash'
 import Validator from '@/types/validator'
 import Fieldconfig from '@/types/fieldconfig'
 import { useVuelidate, ValidationRule, ValidationRuleWithParams, ValidatorFn } from '@vuelidate/core'
-import { helpers, required, email , minLength, maxLength, between , maxValue } from '@vuelidate/validators'
+import { helpers, required, email, minLength, maxLength, between, maxValue } from '@vuelidate/validators'
 
 // create a map to be able to dynamically refer to the vuelidate validators
 export const mapValidators = {
-  required,
-  email,
-  minLength,
-  maxLength,
-  between,
-  maxValue
+    required,
+    email,
+    minLength,
+    maxLength,
+    between,
+    maxValue
 }
 
 /**
@@ -22,8 +22,8 @@ export const useValidation = useVuelidate
 /**
  * HOC which adds extra params to the passed validator.
  */
-function addParamsTovalidator(addedParams = {}, validator: ValidationRuleWithParams|ValidationRuleWithParams|ValidatorFn): ValidationRule {
-   return helpers.withParams( addedParams, validator )
+function addParamsTovalidator(addedParams = {}, validator: ValidationRuleWithParams | ValidationRuleWithParams | ValidatorFn): ValidationRule {
+    return helpers.withParams(addedParams, validator)
 };
 /**
  * Sets the validators for useVuelidate
@@ -31,12 +31,13 @@ function addParamsTovalidator(addedParams = {}, validator: ValidationRuleWithPar
  * TODO: must validatorRules become a reactive objective itself first?
  * TODO: pass formContext, this could refer to any other data point in scope in the form... for interdependent field validations and form state dependent rule morphing etc
  */
-export function setValidators(formDefinition: Fieldconfig[]|Object, pValidatorRules: Object = {}, pFormContext: Object = {}) {
+interface formDefinition {
+    [key: string]: Fieldconfig
+}
+export function setValidators(formDefinition: formDefinition, pValidatorRules: Object = {}, pFormContext: Object = {}) {
     const validatorRules = Object.assign({}, pValidatorRules)
-    let iteratorValidators = Array.isArray(formDefinition) ? formDefinition : Object.values(formDefinition)
-    iteratorValidators.forEach(function (field) {
-        debugger
-        let mappedValidator  
+    _.forEach(formDefinition, function (field) {
+        let mappedValidator
         let fieldName = field.id
         let fieldLabel = field.label
         let objValidator = validatorRules?.[fieldName] || {} // Get previous to augment/overwrite or start freshly.
@@ -45,23 +46,21 @@ export function setValidators(formDefinition: Fieldconfig[]|Object, pValidatorRu
         field.validators?.forEach(function (cfgValidator) {
             let isString = typeof cfgValidator === 'string'
             let tag = isString ? cfgValidator : typeof cfgValidator === 'object' && typeof cfgValidator?.type === 'string' ? cfgValidator?.type : ""
-            let isParam = !isString && tag && Object.keys(cfgValidator.params).length > 0 
+            let isParam = !isString && tag && Object.keys(cfgValidator.params).length > 0
             mappedValidator = mapValidators[tag] // only relevant if we did map it in the first place -for now: the config COULD carry it's own complete implementation???-
-            if (mappedValidator){
-                debugger
+            if (mappedValidator) {
                 if (isString) { // unparameterized validator
-                    augmentedValidator = addParamsTovalidator({fieldLabel}, mappedValidator)
+                    augmentedValidator = addParamsTovalidator({ fieldLabel }, mappedValidator)
                 }
                 else if (isParam) { // parameterized validator
                     let paramValues = []
-                    let normalize = !cfgValidator?.normalizeParams || cfgValidator?.normalizeParams !== false 
+                    let normalize = !cfgValidator?.normalizeParams || cfgValidator?.normalizeParams !== false
 
                     cfgValidator.params.forEach(function (paramEntry) {
-                        if(normalize){
+                        if (normalize) {
                             let iterator = Array.isArray(paramEntry) ? paramEntry : Object.values(paramEntry)
-                            iterator.forEach(function(paramValue){
-                                debugger
-                                paramValues.push(paramValue)        
+                            iterator.forEach(function (paramValue) {
+                                paramValues.push(paramValue)
                             })
                         }
                         else { //push as is
@@ -69,7 +68,7 @@ export function setValidators(formDefinition: Fieldconfig[]|Object, pValidatorRu
                         }
                     })
                     // set the validator to the parameterized invocation of it, since apparently we have params ...
-                    augmentedValidator = addParamsTovalidator({fieldLabel}, mappedValidator(...paramValues))
+                    augmentedValidator = addParamsTovalidator({ fieldLabel }, mappedValidator(...paramValues))
                 }
                 objValidator[tag] = augmentedValidator
             }
@@ -98,11 +97,11 @@ const validate = function (value: unknown, validators: Validator[]): returnValue
     validators.forEach(function (validator) {
         if (validator === 'required') {
             // when a string, trim, since/if/because a value consisting only out of spaces does not count as a valid value.
-            if (typeof lvalue === 'string'){
-                lvalue = lvalue.trim() 
+            if (typeof lvalue === 'string') {
+                lvalue = lvalue.trim()
             }
 
-            if ( _.isEmpty(lvalue) ){
+            if (_.isEmpty(lvalue)) {
                 returnValue.valid = false
                 returnValue.info = validator
                 // break out of the loop at the first invalidati... for now ...

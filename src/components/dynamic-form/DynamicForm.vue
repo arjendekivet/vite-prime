@@ -1,16 +1,6 @@
 <template>
   <div class="dynamicform">
     <h3 v-if="title">{{ title }}</h3>
-      <transition-group name="p-message-x" tag="div">
-      <Message
-        v-for="(msg, idx) in v$.$errors"
-        :key="msg.$uid"
-        :id="msg.$uid"
-        :sticky="true"
-        :severity="'error'"
-        :content="msg.$message"
-      >{{`${getFromCfg(msg.$property,"label")} (${msg.$property}): ${msg.$message}` }}</Message>
-      </transition-group>
     <transition-group name="p-message" tag="div">
       <Message
         v-for="msg of messages"
@@ -18,35 +8,19 @@
         :key="msg.id"
         @close="Utils.removeMessage(messages, msg.id)"
       >{{ msg.content }}</Message>
+      <Message
+        v-if="v$.$errors.length > 0"
+        key="invalid-fields"
+        :sticky="true"
+        :severity="'error'"
+      >There are fields that do not pass the validation rules. See marked fields.</Message>
     </transition-group>
     <div class="p-fluid p-formgrid p-grid">
-      <template v-for="field in fields">
-        <div
-          v-if="!field.hidden"
-          :class="`p-field p-text-left ${getIconType(field)} p-col-12 p-md-${12 / getColumns(columns, field.maxColumns)}`"
-        >
-          <label :for="field.id">{{ field.label }}{{ getRequired(field) }}</label>
-          <template v-if="readOnly">
-            <div>{{ fieldValues[field.id] }}</div>
-          </template>
-          <!-- 1. v-model is using dynamic specification of which property to bind to v-model="fieldValues[field.id]"-->
-          <!-- 2. since v-model will trigger an emit('update:modelValue', event, DynamicForm instance listens to that event from that field component !!! -->
-          <!-- in order to be able for example to do some validation and/or calculate dependendencies and/or emit another custom event on form level: emit('updateFieldValue' -->
-          <!-- v-model="fieldValues[field.id]" :v-model="v$[field.id]?.$model || fieldValues[field.id]" -->
-          <template v-else>
-            <i v-if="getIconName(field)" :class="`pi ${getIconName(field)}`" />
-            <component
-              v-bind="field"
-              :is="field.type"
-              v-model="fieldValues[field.id]"
-              @update:modelValue="fieldUpdateHandler($event, field)"
-              :class="errorFields[field.id] || v$[field.id]?.$error ? 'p-invalid' : ''"
-              :aria-describedby="`${field.id}-help`"
-            ></component>
-            <small :id="`${field.id}-help`" class="p-error">{{ errorFieldsInfo[field.id] || v$[field.id]?.$errors[0]?.$message }}</small>
-          </template>
-        </div>
-      </template>
+      <FormLayoutRecursor
+        v-for="configObject in config"
+        :config="configObject"
+        :readOnly="readOnly"
+      ></FormLayoutRecursor>
     </div>
     <Toolbar>
       <template #left>
@@ -54,7 +28,13 @@
           <Button type="button" label="Edit" @click="readOnly = false" icon="pi pi-pencil" />
         </template>
         <template v-else>
-          <Button type="button" label="Submit" :disabled="v$.$invalid" @click="submitForm" icon="pi pi-check" />
+          <Button
+            type="button"
+            label="Submit"
+            :disabled="v$.$invalid"
+            @click="submitForm(dataType)"
+            icon="pi pi-check"
+          />
         </template>
         <Button
           type="button"
@@ -69,27 +49,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref , reactive , computed } from 'vue'
+import { ref, provide, readonly, reactive, computed } from 'vue'
+import FormLayoutRecursor from '@/components/dynamic-form/FormLayoutRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
-import MessageType from '@/types/message'
-import { validate , mapValidators , setValidators, useValidation } from '@/modules/validate'
-import EventService from '@/services/EventService'
 import _ from 'lodash'
-import questionTypes from '@/enums/questionTypes'
 import router from '@/router/routes';
 import Utils from '@/modules/utils'
-
-const messages = ref<MessageType[]>([]);
-const count = ref(0);
-const isSubmitting = ref(false)
-
-// should we use reactive?? if we use ref, we need to unwrap it where we use it
-const fieldValues: any = ref<object>({})
-const errorFields: any = ref<object>({})
-const errorFieldsInfo: any = ref<object>({})
+import EventService from '@/services/EventService'
+import { messages, addSubmitMessage, addErrorMessage } from '@/modules/UseFormMessages'
+import { validate, mapValidators, setValidators, useValidation } from '@/modules/validate'
 
 type FormProp = {
-  fields: Fieldconfig[],
+  config: Fieldconfig[],
   dataType: string,
   id?: string,
   columns?: number,
@@ -98,161 +69,77 @@ type FormProp = {
 }
 
 const props = withDefaults(defineProps<FormProp>(), {
-  columns: 2,
-  readOnly: true
+  columns: 1,
+  id: undefined,
+  config: undefined,
 })
-
 const emit = defineEmits(['updateFieldValue'])
+
+const fieldValues: any = ref<object>({})
+const fields: any = ref<object>({})
+const errorFields: any = ref<object>({})
+const errorFieldsInfo: any = ref<object>({})
+
+fields.value = getFieldsFromConfig(props.config, 'isField', true)
 
 if (props.id) {
   const record = EventService.getQuestionById(props.id)
     .then((response) => {
       const convertedResponseData = convertResponseData(response.data)
       fieldValues.value = convertedResponseData
-      // TODO: we could have fully dynamical rules in the sense of: depending on form definition and form state, the validation rulesset could morph
+
+      _.forIn(fields.value, function (field, fieldId) {
+        const fieldValue = fieldValues.value[fieldId]
+        calculateDependantFieldState(field, fieldValue)
+      })
     })
     .catch((error) => {
       console.error('There was an error!', error);
     })
 } else {
-  props.fields.forEach(function (field) {
-    if (field.defaultValue) {
+  _.forIn(fields.value, function (field, fieldId) {
+    if (field && field.defaultValue) {
       fieldValues.value[field.id] = field.defaultValue
     }
-    else { 
-      fieldValues.value[field.id] = '' 
-    }
+    calculateDependantFieldState(field, fieldValues.value[field.id])
   })
 }
 
-const validatorRules = setValidators(props.fields, undefined ,fieldValues)
+const validatorRules = setValidators(fields.value, undefined, fieldValues)
 
 // TODO: we could have fully dynamical rules in the sense of: depending on form definition and form state, the rulesset could morph
 const rules = computed(() => {
   return validatorRules
 })
 
-//const v$ = useVuelidate(rules, fieldValues)
 const v$ = useValidation(rules, fieldValues,)
 
-function getRequired(field: Fieldconfig) {
-  return _.isArray(field.validators) && _.indexOf(field.validators, 'required') > -1 ? ' *' : null
-}
+const updateFieldValue = (fieldId: string, value: any) => {
+  fieldValues.value[fieldId] = value
 
-function getColumns(columns: number, maxColumns: number | undefined) {
-  return maxColumns && maxColumns < columns ? maxColumns : columns
-}
-
-function getIconType(field: Fieldconfig) {
-  return field.icon && field.icon.type ? 'aki-input-icon-' + field.icon.type : null
-}
-
-function getIconName(field: Fieldconfig) {
-  return field.icon && field.icon.name
-}
-
-function getFromCfg<any>(entryId: String, entryProperty: String){
-  const entry: Fieldconfig = _.find(props.fields, { id: entryId })
-  let result
-  if (entry){
-    result = entry?.[entryProperty]
+  if (v$.value[fieldId]) {
+    v$.value[fieldId].$validate()
   }
-  return result
 }
 
-function calculateDependantFieldState(field: Fieldconfig, fieldValue: any) {
-  field.dependantFields?.forEach(function (fieldId: string) {
-    const myField = _.find(props.fields, { id: fieldId })
-    if (myField) {
-      // ohe: moet dit zijn fieldValue ?? true
-      // als fieldValue nu undefined is of null of boolean false of 0 dan geldt die nu as hidden?
-      myField.hidden = fieldValue ? false : true
-
-      // empty field that is being hidden
-      if (!fieldValue) {
-        fieldValues.value[fieldId] = null
-
-        // current field could have dependantFields which have to be hidden now, so call recursively ...
-        calculateDependantFieldState(myField, null)
-      }
-    }
-  })
+const addField = (fieldId: string, field: any) => {
+  fields.value[fieldId] = field
 }
 
-/**
- * TODO: do we want to call this update always, id est also when the field does not qualify?
- */
-function fieldUpdateHandler(payload: any, field: Fieldconfig) {
-  debugger
-  validateField(field)
-  // Is this necessary and or is it used at this moment? Yes, listened to eg by Question form.
-  // Should we only emit when stuff is valid?
-  // If we always emit, while also the regular v-model update:<propName>has been triggered 
-  // should it be before calling calculateDependantFieldState?
-  emit('updateFieldValue', field, payload);
-
-  calculateDependantFieldState(field, payload)
-}
-
-function validateField(field: Fieldconfig) {
-  debugger
-  if (v$.value[field.id]) {
-    v$.value[field.id].$validate()
+const updateFieldErrors = (fieldId: string, valid: boolean, info: string) => {
+  if (!valid) {
+    errorFieldsInfo.value[fieldId] = info
+    errorFields.value[fieldId] = !valid
+  } else {
+    delete errorFieldsInfo.value[fieldId]
+    delete errorFields.value[fieldId]
   }
-    //temporarily disable the regular validation
-    // const returnValue = validate(value, field.validators)
-    // // errorFields.value[field.id] = !returnValue.valid
-    // if (!returnValue.valid) {
-    //   errorFieldsInfo.value[field.id] = returnValue.info
-    //   errorFields.value[field.id] = !returnValue.valid
-    // } else {
-    //   // errorFieldsInfo.value[field.id] = null
-    //   delete errorFieldsInfo.value[field.id]
-    //   delete errorFields.value[field.id]
-    // }
 }
 
-function convertResponseData(responseData: object): object {
-  const converted: any = {}
-  _.each(responseData, function (fieldValue: any, key: string) {
-    const field = _.find(props.fields, { 'id': key })
-    const fieldType: string | undefined = field && field.type
-
-    if (fieldType === 'Calendar') {
-      converted[key] = Date.parse(fieldValue) !== NaN ? new Date(fieldValue) : fieldValue
-    } else {
-      converted[key] = fieldValue
-    }
-  });
-  return converted
-}
-
-// Not really used at this point
-// function getSubmitValue(myFieldValues: object): object {
-//   const submitValue: any = {}
-//   _.each(myFieldValues, function (fieldValue: any, key: string) {
-//     if (myFieldValues.hasOwnProperty(key)) {
-//       submitValue[key] = fieldValue && fieldValue.value ? fieldValue.value : fieldValue
-//     }
-//   });
-//   return submitValue
-// }
-
-function addSubmitMessage() {
-  messages.value.push(
-    { severity: 'success', sticky: false, content: 'Form succesfully saved', id: count.value++ },
-  )
-}
-
-function addErrorMessage(error: any) {
-  messages.value.push(
-    { severity: 'error', sticky: true, content: error, id: count.value++ },
-  )
-}
-
-async function submitForm() {
-  const hasErrors = await v$.value.$validate()
+function submitForm(dataType: string) {
+  const hasErrors = Object.keys(errorFields.value).length > 0
   if (hasErrors) {
+    addErrorMessage(`The following fields have issues: ${Object.keys(errorFields.value).join(', ')}`)
     return
   }
 
@@ -261,7 +148,7 @@ async function submitForm() {
   const id: string = submitValue._id
 
   if (id) {
-    EventService.putForm(props.dataType, id, submitValue)
+    EventService.putForm(dataType, id, submitValue)
       .then((response) => {
         const convertedResponseData = convertResponseData(response.data)
         fieldValues.value = convertedResponseData
@@ -274,7 +161,7 @@ async function submitForm() {
             : error)
       })
   } else {
-    EventService.postForm(props.dataType, submitValue)
+    EventService.postForm(dataType, submitValue)
       .then((response) => {
         const convertedResponseData = convertResponseData(response.data)
         fieldValues.value = convertedResponseData
@@ -289,10 +176,66 @@ async function submitForm() {
   }
 }
 
+function convertResponseData(responseData: object): object {
+  const converted: any = {}
+  _.each(responseData, function (fieldValue: any, key: string) {
+    const field = fields.value[key]
+    const fieldType: string | undefined = field && field.type
+    if (fieldType === 'Calendar') {
+      converted[key] = Date.parse(fieldValue) !== NaN ? new Date(fieldValue) : fieldValue
+    } else {
+      converted[key] = fieldValue
+    }
+  });
+  return converted
+}
+
+function getFieldsFromConfig(arr: Fieldconfig[], key: string, value: string | boolean) {
+  let matches: object = {};
+  if (!Array.isArray(arr)) return matches;
+
+  arr.forEach(function (fieldConfig: Fieldconfig) {
+    if (fieldConfig[key] === value) {
+      matches[fieldConfig.id] = fieldConfig
+    } else {
+      if (fieldConfig.items) {
+        let childResults = getFieldsFromConfig(fieldConfig.items, key, value)
+        matches = { ...matches, ...childResults }
+      }
+    }
+  })
+  return matches;
+}
+
+function calculateDependantFieldState(field: Fieldconfig, fieldValue: any) {
+  field.dependantFields?.forEach(function (fieldId: string) {
+    const myField = fields.value[fieldId]
+    if (myField) {
+      myField.hidden = fieldValue ? false : true
+
+      if (!fieldValue) {
+        fieldValues.value[fieldId] = null
+
+        // current field could have dependantFields which have to be hidden now, so call recursively ...
+        calculateDependantFieldState(myField, null)
+      }
+    }
+  })
+}
+
+provide('fieldValues', readonly(fieldValues))
+provide('fields', readonly(fields))
+provide('errorFields', errorFields)
+provide('errorFieldsInfo', errorFieldsInfo)
+provide('updateFieldValue', updateFieldValue)
+provide('updateFieldErrors', updateFieldErrors)
+provide('addField', addField)
+provide('calculateDependantFieldState', calculateDependantFieldState)
+provide('v$', v$)
 </script>
 
 <style lang="scss">
-@import "./fieldicons.scss";
+@import "@/components/dynamic-form/fieldicons.scss";
 
 .dynamicform {
   textarea {
@@ -317,6 +260,10 @@ async function submitForm() {
     .p-button {
       margin-left: 0.5rem;
     }
+  }
+
+  .p-fieldset {
+    margin-bottom: 2em;
   }
 }
 </style>
