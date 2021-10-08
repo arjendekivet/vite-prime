@@ -28,13 +28,7 @@
           <Button type="button" label="Edit" @click="readOnly = false" icon="pi pi-pencil" />
         </template>
         <template v-else>
-          <Button
-            type="button"
-            label="Submit"
-            :disabled="v$.$invalid"
-            @click="submitForm(dataType)"
-            icon="pi pi-check"
-          />
+          <Button type="button" label="Submit" :disabled="v$.$invalid" @click="submitForm(dataType)" icon="pi pi-check" />
         </template>
         <Button
           type="button"
@@ -77,13 +71,11 @@ const emit = defineEmits(['updateFieldValue'])
 
 const fieldValues: any = ref<object>({})
 const fields: any = ref<object>({})
-const errorFields: any = ref<object>({})
-const errorFieldsInfo: any = ref<object>({})
 
 fields.value = getFieldsFromConfig(props.config, 'isField', true)
 
 if (props.id) {
-  const record = EventService.getQuestionById(props.id)
+  const record = EventService.getById(props.dataType, props.id)
     .then((response) => {
       const convertedResponseData = convertResponseData(response.data)
       fieldValues.value = convertedResponseData
@@ -140,6 +132,8 @@ async function submitForm(dataType: string) {
   
   const hasErrors = await v$.value.$validate()
   if (hasErrors) {
+    const errors = _.map(v$.value.$errors, '$params.fieldLabel')
+    addErrorMessage(`The following fields have issues: ${errors.join(', ')}`)
     return
   }
 
@@ -225,11 +219,7 @@ function calculateDependantFieldState(field: Fieldconfig, fieldValue: any) {
 
 provide('fieldValues', readonly(fieldValues))
 provide('fields', readonly(fields))
-provide('errorFields', errorFields)
-provide('errorFieldsInfo', errorFieldsInfo)
 provide('updateFieldValue', updateFieldValue)
-provide('updateFieldErrors', updateFieldErrors)
-provide('addField', addField)
 provide('calculateDependantFieldState', calculateDependantFieldState)
 provide('v$', v$)
 </script>
@@ -238,6 +228,9 @@ provide('v$', v$)
 @import "@/components/form/fieldicons.scss";
 
 .dynamicform {
+  .p-formgrid {
+    flex-direction: column;
+  }
   textarea {
     resize: none;
   }
