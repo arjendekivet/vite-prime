@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { ref, provide, readonly } from 'vue'
-import FormLayoutRecursor from '@/components/recursor/FormLayoutRecursor.vue'
+import FormLayoutRecursor from '@/components/dynamic-form/FormLayoutRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
 import router from '@/router/routes';

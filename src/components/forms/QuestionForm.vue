@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import RecursorForm from '@/components/recursor/RecursorForm.vue'
+import RecursorForm from '@/components/dynamic-form/RecursorForm.vue'
 import formConfig from '@/data/FormLayoutOne'
 
 type formPropTypes = {
