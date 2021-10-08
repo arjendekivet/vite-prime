@@ -69,7 +69,7 @@ import _ from 'lodash'
 import router from '@/router/routes';
 import Utils from '@/modules/utils'
 
-import { formactions, messages, count, fieldValues, errorFields, errorFieldsInfo } from '@/modules/formactions'
+import { formactions, messages, fieldValues, errorFields, errorFieldsInfo } from '@/modules/formactions'
 
 type FormProp = {
   fields: Fieldconfig[],
@@ -107,7 +107,7 @@ if (props.id) {
 </script>
 
 <style lang="scss">
-@import "./fieldicons.scss";
+@import "@/components/dynamic-form/fieldicons.scss";
 
 .dynamicform {
   textarea {

@@ -208,6 +208,8 @@ provide('calculateDependantFieldState', calculateDependantFieldState)
 </script>
 
 <style lang="scss">
+@import "@/components/dynamic-form/fieldicons.scss";
+
 .dynamicform {
   textarea {
     resize: none;
