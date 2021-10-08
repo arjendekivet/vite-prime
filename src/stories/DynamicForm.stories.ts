@@ -18,7 +18,7 @@ const Template: any = (args: any) => ({
     return { args };
   },
   // And then the `args` are bound to your component with `v-bind="args"`
-  template: '<DynamicForm v-bind="args" />',
+  template: '<div><DynamicForm v-bind="args" /></div>',
 });
 
 const catOne: OptionType[] = [
@@ -45,6 +45,7 @@ const fields =
   [
     {
       id: '_id',
+      isField: true,
       label: 'Id',
       type: 'P_InputText',
       disabled: true,
@@ -52,6 +53,7 @@ const fields =
     },
     {
       id: 'title',
+      isField: true,
       label: 'Title',
       type: 'P_InputText',
       placeholder: 'Title',
@@ -60,6 +62,7 @@ const fields =
     },
     {
       id: 'type',
+      isField: true,
       label: 'Question type',
       type: 'P_Dropdown',
       options: QuestionType,
@@ -71,6 +74,7 @@ const fields =
     },
     {
       id: 'cat_1',
+      isField: true,
       label: 'Category 1',
       type: 'P_Dropdown',
       options: catOne,
@@ -82,6 +86,7 @@ const fields =
     },
     {
       id: 'cat_2',
+      isField: true,
       label: 'Category 2',
       type: 'P_Dropdown',
       options: catTwo,
@@ -92,6 +97,7 @@ const fields =
     },
     {
       id: 'cat_3',
+      isField: true,
       label: 'Category 3',
       type: 'P_Dropdown',
       options: catThree,
@@ -101,12 +107,14 @@ const fields =
     },
     {
       id: 'due',
+      isField: true,
       label: 'Due on',
       type: 'Calendar',
       showIcon: true,
     },
     {
       id: 'description',
+      isField: true,
       label: 'Description',
       type: 'P_Textarea',
       placeholder: 'Description',
@@ -114,6 +122,7 @@ const fields =
     },
     {
       id: 'answer',
+      isField: true,
       label: 'Answer',
       type: 'P_Textarea',
       placeholder: 'Answer',
@@ -123,7 +132,7 @@ const fields =
 
 export const Primary = Template.bind({});
 Primary.args = {
-  fields: fields,
+  config: fields,
   dataType: "questions",
   columns: 2,
   title: "Question",

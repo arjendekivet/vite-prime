@@ -238,6 +238,9 @@ provide('v$', v$)
 @import "@/components/form/fieldicons.scss";
 
 .dynamicform {
+  .p-formgrid {
+    flex-direction: column;
+  }
   textarea {
     resize: none;
   }
