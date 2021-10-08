@@ -133,7 +133,7 @@ const rules = computed(() => {
 })
 
 //const v$ = useVuelidate(rules, fieldValues)
-const v$ = useValidation(rules, fieldValues, )
+const v$ = useValidation(rules, fieldValues,)
 
 function getRequired(field: Fieldconfig) {
   return _.isArray(field.validators) && _.indexOf(field.validators, 'required') > -1 ? ' *' : null
@@ -196,10 +196,8 @@ function fieldUpdateHandler(payload: any, field: Fieldconfig) {
 
 function validateField(field: Fieldconfig) {
   debugger
-  const value = fieldValues.value[field.id]
-
   if (v$.value[field.id]) {
-    v$.value[field.id].$validate(value)
+    v$.value[field.id].$validate()
   }
     //temporarily disable the regular validation
     // const returnValue = validate(value, field.validators)

@@ -8,6 +8,14 @@
         :key="msg.id"
         @close="Utils.removeMessage(messages, msg.id)"
       >{{ msg.content }}</Message>
+      <Message
+        v-for="(msg) in v$.$errors"
+        :key="msg.$uid"
+        :id="msg.$uid"
+        :sticky="true"
+        :severity="'error'"
+        :content="msg.$message"
+      >{{`${msg.$params.fieldLabel} (${msg.$property}): ${msg.$message}` }}</Message>
     </transition-group>
     <div class="p-fluid p-formgrid p-grid">
       <FormLayoutRecursor
@@ -22,7 +30,7 @@
           <Button type="button" label="Edit" @click="readOnly = false" icon="pi pi-pencil" />
         </template>
         <template v-else>
-          <Button type="button" label="Submit" @click="submitForm(dataType)" icon="pi pi-check" />
+          <Button type="button" label="Submit" :disabled="v$.$invalid" @click="submitForm(dataType)" icon="pi pi-check" />
         </template>
         <Button
           type="button"
@@ -37,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, readonly } from 'vue'
+import { ref, provide, readonly , reactive, computed } from 'vue'
 import FormLayoutRecursor from '@/components/dynamic-form/FormLayoutRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
@@ -45,6 +53,7 @@ import router from '@/router/routes';
 import Utils from '@/modules/utils'
 import EventService from '@/services/EventService'
 import { messages, addSubmitMessage, addErrorMessage } from '@/modules/UseFormMessages'
+import { validate , mapValidators , setValidators, useValidation } from '@/modules/validate'
 
 type FormProp = {
   config: Fieldconfig[],
@@ -92,8 +101,21 @@ if (props.id) {
   })
 }
 
+const validatorRules = setValidators(fields.value, undefined ,fieldValues)
+
+// TODO: we could have fully dynamical rules in the sense of: depending on form definition and form state, the rulesset could morph
+const rules = computed(() => {
+  return validatorRules
+})
+
+const v$ = useValidation(rules, fieldValues,)
+
 const updateFieldValue = (fieldId: string, value: any) => {
   fieldValues.value[fieldId] = value
+
+  if (v$.value[fieldId]) {
+    v$.value[fieldId].$validate()
+  }
 }
 
 const addField = (fieldId: string, field: any) => {
@@ -205,6 +227,7 @@ provide('updateFieldValue', updateFieldValue)
 provide('updateFieldErrors', updateFieldErrors)
 provide('addField', addField)
 provide('calculateDependantFieldState', calculateDependantFieldState)
+provide('v$',v$)
 </script>
 
 <style lang="scss">

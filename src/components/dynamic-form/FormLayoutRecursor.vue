@@ -38,6 +38,7 @@
                 <template v-if="readOnly">
                     <div>{{ fieldValues[config.id] }}</div>
                 </template>
+                <!-- @blur="validateField(config, fieldValues[config.id])" -->
                 <template v-else>
                     <i v-if="getIconName(config)" :class="`pi ${getIconName(config)}`" />
                     <component
@@ -45,14 +46,10 @@
                         :is="config.type"
                         :modelValue="fieldValues[config.id]"
                         @update:modelValue="updateFieldValue(config, $event)"
-                        @blur="validateField(config, fieldValues[config.id])"
-                        :class="errorFields[config.id] ? 'p-invalid' : ''"
+                        :class="errorFields[config.id] || v$[config.id]?.$error ? 'p-invalid' : ''"
                         :aria-describedby="`${config.id}-help`"
                     ></component>
-                    <small
-                        :id="`${config.id}-help`"
-                        class="p-error"
-                    >{{ errorFieldsInfo[config.id] }}</small>
+                    <small :id="`${config.id}-help`" class="p-error">{{ v$[config.id]?.$errors[0]?.$message }}</small>
                 </template>
             </div>
         </template>
@@ -80,6 +77,7 @@ const props = withDefaults(defineProps<FormProp>(), {})
 const emit = defineEmits(['updateFieldValue'])
 
 // inject from Form (provided)
+const v$: any = inject('v$')
 const fieldValues: any = inject('fieldValues')
 const fields: any = inject('fields')
 const updateFormFieldValue: any = inject('updateFieldValue')

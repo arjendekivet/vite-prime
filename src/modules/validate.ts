@@ -31,9 +31,11 @@ function addParamsTovalidator(addedParams = {}, validator: ValidationRuleWithPar
  * TODO: must validatorRules become a reactive objective itself first?
  * TODO: pass formContext, this could refer to any other data point in scope in the form... for interdependent field validations and form state dependent rule morphing etc
  */
-export function setValidators(formDefinition: Fieldconfig[], pValidatorRules: Object = {}, pFormContext: Object = {}) {
+export function setValidators(formDefinition: Fieldconfig[]|Object, pValidatorRules: Object = {}, pFormContext: Object = {}) {
     const validatorRules = Object.assign({}, pValidatorRules)
-    formDefinition.forEach(function (field) {
+    let iteratorValidators = Array.isArray(formDefinition) ? formDefinition : Object.values(formDefinition)
+    iteratorValidators.forEach(function (field) {
+        debugger
         let mappedValidator  
         let fieldName = field.id
         let fieldLabel = field.label

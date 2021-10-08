@@ -48,7 +48,7 @@ formConfig.value = [
                                 label: 'Title',
                                 type: 'P_InputText',
                                 placeholder: 'Title',
-                                validators: ['required'],
+                                validators: [ 'required', { type: 'minLength', params: [{ min: 2 }] }, { type: 'maxLength', params: [{ max: 10 }] } ],
                                 icon: { type: 'right', name: 'pi-bookmark' }
                             },
                         ]
