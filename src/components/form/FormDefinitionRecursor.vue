@@ -38,7 +38,6 @@
                 <template v-if="readOnly">
                     <div>{{ fieldValues[config.id] }}</div>
                 </template>
-                <!-- @blur="validateField(config, fieldValues[config.id])" -->
                 <template v-else>
                     <i v-if="getIconName(config)" :class="`pi ${getIconName(config)}`" />
                     <component
@@ -46,7 +45,7 @@
                         :is="config.type"
                         :modelValue="fieldValues[config.id]"
                         @update:modelValue="updateFieldValue(config, $event)"
-                        :class="errorFields[config.id] || v$[config.id]?.$error ? 'p-invalid' : ''"
+                        :class="v$[config.id]?.$error ? 'p-invalid' : ''"
                         :aria-describedby="`${config.id}-help`"
                     ></component>
                     <small
@@ -82,16 +81,8 @@ const emit = defineEmits(['updateFieldValue'])
 // inject from Form (provided)
 const v$: any = inject('v$')
 const fieldValues: any = inject('fieldValues')
-const fields: any = inject('fields')
 const updateFormFieldValue: any = inject('updateFieldValue')
-const errorFields: any = inject('errorFields')
-const errorFieldsInfo: any = inject('errorFieldsInfo')
-const updateFieldErrors: any = inject('updateFieldErrors')
 const calculateDependantFieldState: any = inject('calculateDependantFieldState')
-
-// Not needed naymore ?!!! Clean it up !!
-// Register field on form for reuse somewhere ....
-const addField: any = inject('addField')
 
 function getRequired(field: Fieldconfig) {
     return _.isArray(field.validators) && _.indexOf(field.validators, 'required') > -1 ? ' *' : null
@@ -108,16 +99,7 @@ function getIconName(field: Fieldconfig) {
 function updateFieldValue(field: any, value: any) {
     // injected method on parent
     updateFormFieldValue(field.id, value)
-    // validate UI field
-    validateField(field, value)
     calculateDependantFieldState(field, value)
-}
-
-function validateField(field: Fieldconfig, value: any) {
-    if (field.validators) {
-        const returnValue = validate(value, field.validators)
-        updateFieldErrors(field.id, returnValue.valid, returnValue.info)
-    }
 }
 </script>
 
