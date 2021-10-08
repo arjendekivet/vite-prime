@@ -1,8 +1,8 @@
 import _ from 'lodash'
 import Validator from '@/types/validator'
 import Fieldconfig from '@/types/fieldconfig'
-import { useVuelidate } from '@vuelidate/core'
-import { required, email , minLength, maxLength, between , maxValue } from '@vuelidate/validators'
+import { useVuelidate, ValidationRule, ValidationRuleWithParams, ValidatorFn } from '@vuelidate/core'
+import { helpers, required, email , minLength, maxLength, between , maxValue } from '@vuelidate/validators'
 
 // create a map to be able to dynamically refer to the vuelidate validators
 export const mapValidators = {
@@ -20,6 +20,12 @@ export const mapValidators = {
 export const useValidation = useVuelidate
 
 /**
+ * HOC which adds extra params to the passed validator.
+ */
+function addParamsTovalidator(addedParams = {}, validator: ValidationRuleWithParams|ValidationRuleWithParams|ValidatorFn): ValidationRule {
+   return helpers.withParams( addedParams, validator )
+};
+/**
  * Sets the validators for useVuelidate
  * Iterates the field validators config and populates validatorRules with the mapped -vuelidate/custom- validators.
  * TODO: must validatorRules become a reactive objective itself first?
@@ -30,7 +36,9 @@ export function setValidators(formDefinition: Fieldconfig[], pValidatorRules: Ob
     formDefinition.forEach(function (field) {
         let mappedValidator  
         let fieldName = field.id
+        let fieldLabel = field.label
         let objValidator = validatorRules?.[fieldName] || {} // Get previous to augment/overwrite or start freshly.
+        let augmentedValidator // to hold the fieldLabel as an extra param, imerged into the original validator
 
         field.validators?.forEach(function (cfgValidator) {
             let isString = typeof cfgValidator === 'string'
@@ -38,10 +46,11 @@ export function setValidators(formDefinition: Fieldconfig[], pValidatorRules: Ob
             let isParam = !isString && tag && Object.keys(cfgValidator.params).length > 0 
             mappedValidator = mapValidators[tag] // only relevant if we did map it in the first place -for now: the config COULD carry it's own complete implementation???-
             if (mappedValidator){
-                if (isString) {
-                    objValidator[tag] = mappedValidator //unparameterized mapped validator
+                debugger
+                if (isString) { // unparameterized validator
+                    augmentedValidator = addParamsTovalidator({fieldLabel}, mappedValidator)
                 }
-                else if (isParam) { // parameterized mapped validator
+                else if (isParam) { // parameterized validator
                     let paramValues = []
                     let normalize = !cfgValidator?.normalizeParams || cfgValidator?.normalizeParams !== false 
 
@@ -57,9 +66,10 @@ export function setValidators(formDefinition: Fieldconfig[], pValidatorRules: Ob
                             paramValues.push(paramEntry)
                         }
                     })
-                    // set the validator the parameterized invocation of it, since apparently we have params ...
-                    objValidator[tag] = mappedValidator(...paramValues)
+                    // set the validator to the parameterized invocation of it, since apparently we have params ...
+                    augmentedValidator = addParamsTovalidator({fieldLabel}, mappedValidator(...paramValues))
                 }
+                objValidator[tag] = augmentedValidator
             }
         })
         validatorRules[fieldName] = objValidator

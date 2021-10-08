@@ -3,13 +3,13 @@
     <h3 v-if="title">{{ title }}</h3>
       <transition-group name="p-message-x" tag="div">
       <Message
-        v-for="msg of v$.$errors"
+        v-for="(msg, idx) in v$.$errors"
         :key="msg.$uid"
         :id="msg.$uid"
         :sticky="true"
         :severity="'error'"
         :content="msg.$message"
-      >{{ msg.$message }}</Message>
+      >{{`${getFromCfg(msg.$property,"label")} (${msg.$property}): ${msg.$message}` }}</Message>
       </transition-group>
     <transition-group name="p-message" tag="div">
       <Message
@@ -82,8 +82,9 @@ import Utils from '@/modules/utils'
 
 const messages = ref<MessageType[]>([]);
 const count = ref(0);
+const isSubmitting = ref(false)
 
-// should we use reactive?? if we use ref, we need to unwrap it where we use it etc
+// should we use reactive?? if we use ref, we need to unwrap it where we use it
 const fieldValues: any = ref<object>({})
 const errorFields: any = ref<object>({})
 const errorFieldsInfo: any = ref<object>({})
@@ -125,7 +126,6 @@ if (props.id) {
   })
 }
 
-// iterate all fields for field validators config and map these to -vuelidate- validators implementations.
 const validatorRules = setValidators(props.fields, undefined ,fieldValues)
 
 // TODO: we could have fully dynamical rules in the sense of: depending on form definition and form state, the rulesset could morph
@@ -150,6 +150,15 @@ function getIconType(field: Fieldconfig) {
 
 function getIconName(field: Fieldconfig) {
   return field.icon && field.icon.name
+}
+
+function getFromCfg<any>(entryId: String, entryProperty: String){
+  const entry: Fieldconfig = _.find(props.fields, { id: entryId })
+  let result
+  if (entry){
+    result = entry?.[entryProperty]
+  }
+  return result
 }
 
 function calculateDependantFieldState(field: Fieldconfig, fieldValue: any) {
@@ -245,17 +254,8 @@ function addErrorMessage(error: any) {
 }
 
 async function submitForm() {
-  debugger;
-  // use vuelidate to validate the form v$.validate()
-  // 1. Call $touch() to indicate it should mark all monitored fields as dirty/touched
-  //v$.$touch()
-  // 2. Then it should call the validation
   const hasErrors = await v$.value.$validate()
-  //const hasErrors = Object.keys(errorFields.value).length > 0
   if (hasErrors) {
-    //   //TODO: walk v$.value.$errors and compose an Object for addErrorMessage?
-    //   //addErrorMessage(`The following fields have issues: ${Object.keys(errorFields.value).join(', ')}`)
-    //   addErrorMessage(`The following fields have issues: ${Object.keys(v$.value.$errors).join(', ')}`)
     return
   }
 
