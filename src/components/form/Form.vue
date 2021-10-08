@@ -16,11 +16,11 @@
       >There are fields that do not pass the validation rules. See marked fields.</Message>
     </transition-group>
     <div class="p-fluid p-formgrid p-grid">
-      <FormLayoutRecursor
+      <FormDefinitionRecursor
         v-for="configObject in config"
         :config="configObject"
         :readOnly="readOnly"
-      ></FormLayoutRecursor>
+      ></FormDefinitionRecursor>
     </div>
     <Toolbar>
       <template #left>
@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
 import { ref, provide, readonly, reactive, computed } from 'vue'
-import FormLayoutRecursor from '@/components/dynamic-form/FormLayoutRecursor.vue'
+import FormDefinitionRecursor from '@/components/form/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
 import router from '@/router/routes';
@@ -235,7 +235,7 @@ provide('v$', v$)
 </script>
 
 <style lang="scss">
-@import "@/components/dynamic-form/fieldicons.scss";
+@import "@/components/form/fieldicons.scss";
 
 .dynamicform {
   textarea {

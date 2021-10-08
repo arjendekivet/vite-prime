@@ -1,5 +1,5 @@
 <template>
-    <div class="FormLayoutRecursor card">
+    <div class="FormDefinitionRecursor card">
         <template v-if="config.type === 'TabView' || config.type === 'Accordion'">
             <component :is="config.type">
                 <component
@@ -8,25 +8,25 @@
                     :key="tab.id"
                     :header="tab.label"
                 >
-                    <FormLayoutRecursor
+                    <FormDefinitionRecursor
                         v-for="item in tab.items"
                         :key="item.id"
                         :config="item"
                         :label="item.label"
                         :readOnly="readOnly"
-                    ></FormLayoutRecursor>
+                    ></FormDefinitionRecursor>
                 </component>
             </component>
         </template>
         <template v-else-if="config.isContainer">
             <component :is="config.type" :key="config.id" :legend="config.label">
-                <FormLayoutRecursor
+                <FormDefinitionRecursor
                     v-for="item in config.items"
                     :key="item.id"
                     :config="item"
                     :label="item.label"
                     :readOnly="readOnly"
-                ></FormLayoutRecursor>
+                ></FormDefinitionRecursor>
             </component>
         </template>
         <template v-else-if="config.isField">
@@ -49,7 +49,10 @@
                         :class="errorFields[config.id] || v$[config.id]?.$error ? 'p-invalid' : ''"
                         :aria-describedby="`${config.id}-help`"
                     ></component>
-                    <small :id="`${config.id}-help`" class="p-error">{{ v$[config.id]?.$errors[0]?.$message }}</small>
+                    <small
+                        :id="`${config.id}-help`"
+                        class="p-error"
+                    >{{ v$[config.id]?.$errors[0]?.$message }}</small>
                 </template>
             </div>
         </template>
@@ -119,7 +122,7 @@ function validateField(field: Fieldconfig, value: any) {
 </script>
 
 <style lang="scss">
-.FormLayoutRecursor {
+.FormDefinitionRecursor {
     flex: 1;
     text-align: left;
 }

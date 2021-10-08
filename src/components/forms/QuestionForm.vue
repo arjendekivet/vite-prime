@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import DynamicForm from '@/components/dynamic-form/DynamicForm.vue'
+import DynamicForm from '@/components/form/Form.vue'
 import formConfig from '@/data/FormLayoutOne'
 
 type formPropTypes = {
