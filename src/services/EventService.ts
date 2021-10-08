@@ -40,4 +40,7 @@ export default {
     putForm(type: string, id: string, submitValues: object) {
         return apiClient.put('/' + type + '/' + id, submitValues)
     },
+    getById(type: string, id: string) {
+        return apiClient.get('/' + type + '/' + id)
+    },
 }
