@@ -182,7 +182,7 @@ function convertResponseData(responseData: object): object {
     const field = fields.value[key]
     const fieldType: string | undefined = field && field.type
     if (fieldType === 'Calendar') {
-      converted[key] = Date.parse(fieldValue) !== NaN ? new Date(fieldValue) : fieldValue
+      converted[key] = Utils.convertToDate(fieldValue)
     } else {
       converted[key] = fieldValue
     }

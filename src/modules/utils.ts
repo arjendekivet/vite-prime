@@ -7,8 +7,8 @@ const utils = {
             messages.value = _.without(messages.value, found)
         }
     },
-    setDate(value: number){
-        return Date.parse(value) !== NaN ? new Date(value) : value
+    convertToDate(value: string) {
+        return !value ? value : new Date(value)
     }
 }
 
