@@ -114,8 +114,9 @@ const updateFieldValue = (fieldId: string, value: any) => {
   }
 }
 
-function submitForm(dataType: string) {
-  if (v$.value.$errors.length > 0) {
+async function submitForm(dataType: string) {
+  await v$.value.$validate()
+  if (v$.value.$invalid) {
     const errors = _.map(v$.value.$errors, '$params.fieldLabel')
     addErrorMessage(`The following fields have issues: ${errors.join(', ')}`)
     return
