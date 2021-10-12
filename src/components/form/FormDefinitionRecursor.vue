@@ -48,6 +48,7 @@
                         @blur="v$[config.id].$validate()"
                         :class="v$[config.id]?.$error ? 'p-invalid' : ''"
                         :aria-describedby="`${config.id}-help`"
+                        :rows="config.type === 'P_Textarea' ? 5 : undefined"
                     ></component>
                     <small
                         :id="`${config.id}-help`"
