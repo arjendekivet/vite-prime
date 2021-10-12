@@ -43,4 +43,13 @@ export default {
     getById(type: string, id: string) {
         return apiClient.get('/' + type + '/' + id)
     },
+    deleteByIds(type: string, ids: string[]) {
+        return apiClient.delete('/' + type + '/' + ids)
+    },
+    getData(type: string, perPage: boolean, page: number): Promise<QuestionResponse> {
+        return apiClient.get('/' + type + '?_limit=' + perPage + '&_page=' + page)
+    },
+    getDataByFilter(type: string, filter: string | string[], perPage: boolean, page: number) {
+        return apiClient.get('/' + type + '/filter/' + filter + '?_limit=' + perPage + '&_page=' + page)
+    },
 }

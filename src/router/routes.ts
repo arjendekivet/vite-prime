@@ -5,6 +5,8 @@ import Admin from "@/pages/Admin.vue";
 import Events from "@/components/tables/EventsTable.vue";
 import Questions from "@/components/tables/QuestionsTable.vue";
 import QuestionForm from "@/components/forms/QuestionForm.vue";
+import FormDefinition from '@/components/tables/FormDefinitionTable.vue';
+import FormDefinitionForm from "@/components/forms/FormDefinitionForm.vue";
 import ExampleForm from "@/components/forms/ExampleForm.vue";
 import ExampleFormTwo from "@/components/forms/ExampleFormTwo.vue";
 import AnswerForm from "@/components/forms/AnswerForm.vue";
@@ -57,6 +59,22 @@ const router = createRouter({
           path: "questionform/:id",
           name: "questionformbyid",
           component: QuestionForm,
+          props: route => ({ id: route.params.id, readOnly: route.query.readOnly === 'false' ? false : true })
+        },
+        {
+          path: "formdefinition",
+          name: "formdefinition",
+          component: FormDefinition,
+        },
+        {
+          path: "formdefinitionform",
+          name: "formdefinitionform",
+          component: FormDefinitionForm,
+        },
+        {
+          path: "formdefinitionform/:id",
+          name: "formdefinitionformbyid",
+          component: FormDefinitionForm,
           props: route => ({ id: route.params.id, readOnly: route.query.readOnly === 'false' ? false : true })
         },
         {

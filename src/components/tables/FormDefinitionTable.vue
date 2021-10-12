@@ -29,19 +29,12 @@ const columns = [
         header: 'Title'
     },
     {
-        field: 'type',
-        header: 'Type'
-    },
-    {
-        field: 'answer',
-        header: 'answer'
-    },
-    {
-        field: 'cat_1',
-        header: 'Category 1'
+        field: 'formdefinition',
+        header: 'Form Definition'
     },
 ]
 
+const dataType = 'formdefinition'
 const questions = ref<Question[]>()
 const selected = ref<Question[]>()
 const messages = ref<MessageType[]>([])
@@ -52,10 +45,10 @@ watch(searchValue, (value, prevValue) => {
     searchUpdate(value)
 })
 
-getQuestions()
+getData()
 
-function getQuestions() {
-    EventService.getQuestions(false, 0)
+function getData() {
+    EventService.getData(dataType, false, 0)
         .then((response) => {
             questions.value = response.data
         })
@@ -66,9 +59,9 @@ function getQuestions() {
 
 function searchUpdate(searchValue: string) {
     if (searchValue === '') {
-        getQuestions()
+        getData()
     } else {
-        EventService.getQuestionByFilter(searchValue, false, 0)
+        EventService.getDataByFilter(dataType, searchValue, false, 0)
             .then((response) => {
                 questions.value = response.data
             })
@@ -79,21 +72,21 @@ function searchUpdate(searchValue: string) {
 }
 
 function openDocument(id: string, readOnly: boolean) {
-    router.push({ name: 'questionformbyid', params: { id: id }, query: { readOnly: readOnly.toString() } })
+    router.push({ name: 'formdefinitionformbyid', params: { id: id }, query: { readOnly: readOnly.toString() } })
 }
 
 function newDoc() {
-    router.push({ name: 'questionform' })
+    router.push({ name: 'formdefinitionform' })
 }
 
 function deleteSelection(selectedIds: string[]) {
-    EventService.deleteByIds('questions', selectedIds)
+    EventService.deleteByIds(dataType, selectedIds)
         .then((response) => {
             messages.value.push(
                 { severity: 'success', sticky: false, content: `${response.data && response.data.deletedCount | 0} document(s) were deleted.`, id: count.value++ },
             )
             // but what if search filter is active ?! Keep track of filter value
-            getQuestions()
+            getData()
         })
         .catch((error) => {
             console.error(error);

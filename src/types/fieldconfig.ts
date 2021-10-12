@@ -13,7 +13,7 @@ type FieldIcon = {
 // add index signature to id. Seperate it using a union, 
 // otherwise all explicit members must also conform to that index signature
 type Fieldconfig = {
-    [id: string]: string
+    id: string
 } & {
     label: string
     type: 'P_InputText' | 'P_Dropdown' | 'P_Textarea' | 'Calendar' | 'FieldSet' | 'Accordion' | 'AccordionTab' | 'TabView' | 'TabPanel' | 'InputText'
