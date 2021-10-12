@@ -21,6 +21,12 @@ menuItems.value = [{
         },
         {
             key: '1_2',
+            label: 'Form Definition',
+            icon: 'pi pi-fw pi-list',
+            to: { name: 'formdefinition' }
+        },
+        {
+            key: '1_3',
             label: 'Events',
             icon: 'pi pi-fw pi-list',
             to: { name: 'events' }
