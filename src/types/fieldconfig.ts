@@ -9,8 +9,12 @@ type FieldIcon = {
  * Note: if type is 'FieldSet' or another container, it is meant to hold other "items" ....
  * This may be nested... etc.
  */
+
+// add index signature to id. Seperate it using a union, 
+// otherwise all explicit members must also conform to that index signature
 type Fieldconfig = {
-    id: string
+    [id: string]: string
+} & {
     label: string
     type: 'P_InputText' | 'P_Dropdown' | 'P_Textarea' | 'Calendar' | 'FieldSet' | 'Accordion' | 'AccordionTab' | 'TabView' | 'TabPanel' | 'InputText'
     items?: Fieldconfig[]

@@ -97,12 +97,15 @@ if (props.id) {
   })
 }
 
-const validatorRules = setValidators(fields.value, undefined, fieldValues)
+// Use a simple ref for now as there is no combined logic for rules that need it to be computed
+// This way type casting stays in place
+const rules = ref()
+rules.value = setValidators(fields.value, undefined, fieldValues)
 
 // TODO: we could have fully dynamical rules in the sense of: depending on form definition and form state, the rulesset could morph
-const rules = computed(() => {
-  return validatorRules
-})
+// const rules = computed(() => {
+//   return validatorRules
+// })
 
 const v$ = useValidation(rules, fieldValues,)
 
@@ -170,10 +173,10 @@ function convertResponseData(responseData: object): object {
 }
 
 function getFieldsFromConfig(arr: Fieldconfig[], key: string, value: string | boolean) {
-  let matches: object = {};
+  let matches: any = {};
   if (!Array.isArray(arr)) return matches;
 
-  arr.forEach(function (fieldConfig: Fieldconfig) {
+  arr.forEach(function (fieldConfig) {
     if (fieldConfig[key] === value) {
       matches[fieldConfig.id] = fieldConfig
     } else {
