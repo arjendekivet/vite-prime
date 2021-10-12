@@ -28,7 +28,13 @@
           <Button type="button" label="Edit" @click="readOnly = false" icon="pi pi-pencil" />
         </template>
         <template v-else>
-          <Button type="button" label="Submit" @click="submitForm(dataType)" icon="pi pi-check" />
+          <Button
+            :disabled="v$.$invalid"
+            type="button"
+            label="Submit"
+            @click="submitForm(dataType)"
+            icon="pi pi-check"
+          />
         </template>
         <Button
           type="button"

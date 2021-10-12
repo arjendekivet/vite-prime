@@ -45,6 +45,7 @@
                         :is="config.type"
                         :modelValue="fieldValues[config.id]"
                         @update:modelValue="updateFieldValue(config, $event)"
+                        @blur="v$[config.id].$validate()"
                         :class="v$[config.id]?.$error ? 'p-invalid' : ''"
                         :aria-describedby="`${config.id}-help`"
                     ></component>
