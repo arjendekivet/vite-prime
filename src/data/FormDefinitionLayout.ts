@@ -16,7 +16,7 @@ formConfig.value = [
         id: 'formDefinition',
         isField: true,
         label: 'Form Definition',
-        type: 'P_Textarea',
+        type: 'JsonEditor',
         placeholder: 'Form Definition',
     },
 ];

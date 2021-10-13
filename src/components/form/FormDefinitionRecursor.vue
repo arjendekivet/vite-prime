@@ -35,7 +35,7 @@
                 :class="`p-field p-text-left ${getIconType(config)} p-col-12 p-md-12`"
             >
                 <label :for="config.id">{{ config.label }}{{ getRequired(config) }}</label>
-                <template v-if="readOnly">
+                <template v-if="readOnly && config.type !== 'JsonEditor'">
                     <div>{{ fieldValues[config.id] }}</div>
                 </template>
                 <template v-else>
@@ -49,6 +49,7 @@
                         :class="v$[config.id]?.$error ? 'p-invalid' : ''"
                         :aria-describedby="`${config.id}-help`"
                         :rows="config.type === 'P_Textarea' ? 5 : undefined"
+                        :readOnly="readOnly"
                     ></component>
                     <small
                         :id="`${config.id}-help`"

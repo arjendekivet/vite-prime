@@ -29,7 +29,7 @@ const columns = [
         header: 'Title'
     },
     {
-        field: 'formdefinition',
+        field: 'formDefinition',
         header: 'Form Definition'
     },
 ]
