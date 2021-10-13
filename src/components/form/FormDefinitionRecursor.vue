@@ -31,7 +31,7 @@
         </template>
         <template v-else-if="config.isField">
             <div
-                v-if="!config.hidden"
+                v-if="doShow(config, v$)"
                 :class="`p-field p-text-left ${getIconType(config)} p-col-12 p-md-12`"
             >
                 <label :for="config.id">{{ config.label }}{{ getRequired(config) }}</label>
@@ -47,6 +47,7 @@
                         @update:modelValue="updateFieldValue(config, $event)"
                         :class="v$[config.id]?.$error ? 'p-invalid' : ''"
                         :aria-describedby="`${config.id}-help`"
+                        :disabled="doDisable(config, v$)"
                     ></component>
                     <small
                         :id="`${config.id}-help`"
@@ -83,6 +84,65 @@ const v$: any = inject('v$')
 const fieldValues: any = inject('fieldValues')
 const updateFormFieldValue: any = inject('updateFieldValue')
 const calculateDependantFieldState: any = inject('calculateDependantFieldState')
+
+/**
+ * If any of the criteria is false, we should hide the calling element.
+ */
+function doShow(config, pv$){
+    
+    if (config.id === 'answer')
+    {
+        debugger
+    }
+    //await $nextTick ??????
+    // unwrap the passed v$ ?? 
+    let v$2 = pv$
+
+    let crit_1 = true
+    let crit_2 = true
+    let endResult
+    try{
+        crit_1 = !!!config?.hidden 
+        crit_2 = (v$2[config.id] && v$2[config.id]['displayIf'] && v$2[config.id]['displayIf'].$response?.extraParams?.rule_result)
+    }
+    catch(e)
+    {
+        crit_2 = true
+    }
+    
+    // if any one is false, we should return false
+    // endResult = ( _.some([crit_1,crit_2], false)) ? false : true
+    // endResult = ( crit_1===false || crit_2===false) ? false : true
+    endResult = !( crit_1===false || crit_2===false )
+    
+    console.log('called doShow for ' + config.id + ": " + endResult)
+    return endResult
+}
+
+function doDisable(config, pv$){
+    
+    if (config.id === 'cat_5')
+    {
+        debugger
+    }
+    //await $nextTick ??????
+    // unwrap the passed v$ ?? 
+    //let v$2 = pv$
+
+    let result
+    try{
+        result = !!(pv$ && pv$[config.id] && pv$[config.id]['disableIf'] && pv$[config.id]['disableIf'].$response?.extraParams?.rule_result)
+        //debugger
+    }
+    catch(e)
+    {
+        debugger;
+        result = false;
+    }
+    //debugger
+    console.log(`called doEnable for '${config.id}' resulted in: ${result}`)
+    return result
+}
 
 function getRequired(field: Fieldconfig) {
     return _.isArray(field.validators) && _.indexOf(field.validators, 'required') > -1 ? ' *' : null
