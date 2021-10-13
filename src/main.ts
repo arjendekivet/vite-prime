@@ -14,6 +14,7 @@ import Column from 'primevue/column';
 import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
 import Textarea from 'primevue/textarea';
+import JsonEditor from '@/components/JsonEditor.vue'
 import PanelMenu from 'primevue/panelmenu';
 import Menubar from 'primevue/menubar';
 import Calendar from 'primevue/calendar';
@@ -40,6 +41,7 @@ app.component('Column', Column);
 app.component('P_InputText', InputText);
 app.component('P_Dropdown', Dropdown);
 app.component('P_Textarea', Textarea);
+app.component('JsonEditor', JsonEditor);
 app.component('PanelMenu', PanelMenu);
 app.component('Menubar', Menubar);
 app.component('Calendar', Calendar);

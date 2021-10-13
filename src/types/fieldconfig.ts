@@ -16,7 +16,7 @@ type Fieldconfig = {
     id: string
 } & {
     label: string
-    type: 'P_InputText' | 'P_Dropdown' | 'P_Textarea' | 'Calendar' | 'FieldSet' | 'Accordion' | 'AccordionTab' | 'TabView' | 'TabPanel' | 'InputText'
+    type: 'P_InputText' | 'P_Dropdown' | 'P_Textarea' | 'JsonEditor' | 'Calendar' | 'FieldSet' | 'Accordion' | 'AccordionTab' | 'TabView' | 'TabPanel' | 'InputText'
     items?: Fieldconfig[]
     isContainer?: boolean // true when type is a form field "container" like FieldSet or Tab or Accordion etc AND fieldConfig has 'items' as array of FieldConfigs
     isField?: boolean

@@ -49,7 +49,7 @@ export default {
     getData(type: string, perPage: boolean, page: number): Promise<QuestionResponse> {
         return apiClient.get('/' + type + '?_limit=' + perPage + '&_page=' + page)
     },
-    getDataByFilter(type: string, filter: string | string[], perPage: boolean, page: number) {
+    getDataByFilter(type: string, filter: string | string[], perPage: boolean = false, page: number = 0) {
         return apiClient.get('/' + type + '/filter/' + filter + '?_limit=' + perPage + '&_page=' + page)
     },
 }

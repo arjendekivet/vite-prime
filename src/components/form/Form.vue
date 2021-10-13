@@ -81,7 +81,7 @@ const fields: any = ref<object>({})
 fields.value = getFieldsFromConfig(props.config, 'isField', true)
 
 if (props.id) {
-  const record = EventService.getById(props.dataType, props.id)
+  EventService.getById(props.dataType, props.id)
     .then((response) => {
       const convertedResponseData = convertResponseData(response.data)
       fieldValues.value = convertedResponseData
