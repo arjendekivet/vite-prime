@@ -17,7 +17,7 @@
     </transition-group>
     <div class="p-fluid p-formgrid p-grid">
       <FormDefinitionRecursor
-        v-for="configObject in config"
+        v-for="configObject in compConfig"
         :config="configObject"
         :readOnly="readOnly"
       ></FormDefinitionRecursor>
@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, readonly, reactive, computed } from 'vue'
+import { ref, provide, readonly, computed } from 'vue'
 import FormDefinitionRecursor from '@/components/form/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
@@ -57,15 +57,16 @@ import router from '@/router/routes';
 import Utils from '@/modules/utils'
 import EventService from '@/services/EventService'
 import { messages, addSubmitMessage, addErrorMessage } from '@/modules/UseFormMessages'
-import { validate, mapValidators, setValidators, useValidation } from '@/modules/validate'
+import { setValidators, useValidation } from '@/modules/validate'
 
 type FormProp = {
-  config: Fieldconfig[],
+  config?: Fieldconfig[],
   dataType: string,
   id?: string,
   columns?: number,
   title?: string,
   readOnly?: boolean,
+  formLayoutKey?: string,
 }
 
 const props = withDefaults(defineProps<FormProp>(), {
@@ -74,33 +75,61 @@ const props = withDefaults(defineProps<FormProp>(), {
   config: undefined,
 })
 const emit = defineEmits(['updateFieldValue'])
+const compConfig = computed(
+  () => {
+    return props.config ? props.config : myConfig.value
+  }
+)
 
 const fieldValues: any = ref<object>({})
 const fields: any = ref<object>({})
+const myConfig: any = ref<object>({})
 
-fields.value = getFieldsFromConfig(props.config, 'isField', true)
-
-if (props.id) {
-  EventService.getById(props.dataType, props.id)
-    .then((response) => {
-      const convertedResponseData = convertResponseData(response.data)
-      fieldValues.value = convertedResponseData
-
-      _.forIn(fields.value, function (field, fieldId) {
-        const fieldValue = fieldValues.value[fieldId]
-        calculateDependantFieldState(field, fieldValue)
-      })
+if (props.formLayoutKey) {
+  EventService.getDataByFilter('formDefinition', props.formLayoutKey)
+    .then((response: any) => {
+      // find will return array, get the first in this case
+      // isLoading.value = false
+      if (response.data.length > 0) {
+        myConfig.value = response.data[0].formDefinition
+      } else {
+        // myConfig.value = formConfigHardcoded.value
+      }
+      getFormData()
     })
     .catch((error) => {
-      console.error('There was an error!', error);
+      // isLoading.value = false
+      console.error('Could not fetch formDefinition! Going to hardcoded backup option.', error)
+      // myConfig.value = formConfigHardcoded
     })
 } else {
-  _.forIn(fields.value, function (field, fieldId) {
-    if (field && field.defaultValue) {
-      fieldValues.value[field.id] = field.defaultValue
-    }
-    calculateDependantFieldState(field, fieldValues.value[field.id])
-  })
+  getFormData()
+}
+
+function getFormData() {
+  fields.value = getFieldsFromConfig(compConfig.value, 'isField', true)
+  if (props.id) {
+    EventService.getById(props.dataType, props.id)
+      .then((response) => {
+        const convertedResponseData = convertResponseData(response.data)
+        fieldValues.value = convertedResponseData
+
+        _.forIn(fields.value, function (field, fieldId) {
+          const fieldValue = fieldValues.value[fieldId]
+          calculateDependantFieldState(field, fieldValue)
+        })
+      })
+      .catch((error) => {
+        console.error('There was an error!', error);
+      })
+  } else {
+    _.forIn(fields.value, function (field, fieldId) {
+      if (field && field.defaultValue) {
+        fieldValues.value[field.id] = field.defaultValue
+      }
+      calculateDependantFieldState(field, fieldValues.value[field.id])
+    })
+  }
 }
 
 // Use a simple ref for now as there is no combined logic for rules that need it to be computed

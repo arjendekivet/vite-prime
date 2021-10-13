@@ -13,6 +13,7 @@
     title="Question"
     :id="id"
     :readOnly="readOnly"
+    :formLayoutKey="formLayoutKey"
   ></DynamicForm>
 </template>
 
@@ -51,7 +52,4 @@ EventService.getDataByFilter('formDefinition', props.formLayoutKey)
     console.error('Could not fetch formDefinition! Going to hardcoded backup option.', error)
     formConfig.value = formConfigHardcoded
   })
-
-
-
 </script>
