@@ -63,6 +63,7 @@ function menuToggle() {
     .content {
       overflow: auto;
       padding: 20px;
+      height: 100%;
     }
   }
 }

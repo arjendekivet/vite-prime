@@ -30,6 +30,8 @@ import AccordionTab from 'primevue/accordiontab';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 
+import ProgressSpinner from 'primevue/progressspinner';
+
 const app = createApp(App);
 
 app.use(router)
@@ -56,5 +58,7 @@ app.component('Accordion', Accordion);
 app.component('AccordionTab', AccordionTab);
 app.component('TabView', TabView);
 app.component('TabPanel', TabPanel);
+
+app.component('ProgressSpinner', ProgressSpinner);
 
 app.mount('#app')
