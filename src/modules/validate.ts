@@ -98,38 +98,52 @@ const visibility = (params: object, validatorFn: any, fieldCfg, formDefinition, 
         )
     }
 
+
     const VISIBILITY = 'displayIf';
     const SILENTVALIDITY = '$silentErrors'
+    const V_SILENTERRORS = '$silentErrors'
+    const V_VALID = '$invalid' // or $error NB: test for invalidity in vuelidate so we should invert it ...
+    const V_DISPLAYIF = 'displayIf';
+    const ALL_VISIBLE = "allVisible"
+    const ALL_VALID = "allValid"
+    const ALL_INVALID = "allInvalid"
 
-    // example of config for field cat_5 to calculate if it should be "enabled or disabled". all conjunctive criteria should be grouped into the same array's and the disjunctive criteria should be in som other array etc etc
-    //// The logic OR means either disjunctive or conjunctive, when there are more criteria.
-    const ruleCfg = { 
-        dependsOn: [ 
-            // rule result depends on cat_5 (which in this case refers to the field cat-5 itself, and it must be visible if it is to be enabled.  the logicOperator states the next critrium must be tru as well.
-            // rule result depends on field cat_4 OR cat_3, regarding that ONE OF their's visibility is OK silent validity is OK.
-            [
+// example of config for field cat_5 to calculate if it should be "enabled or disabled". all conjunctive criteria should be grouped into the same array's and the disjunctive criteria should be in som other array etc etc
+//// The logic OR means either disjunctive or conjunctive, when there are more criteria.
+const ruleCfg = { 
+    dependsOn: [ 
+        // rule result depends on cat_5 (which in this case refers to the field cat-5 itself, and it must be visible if it is to be enabled.  the logicOperator states the next critrium must be tru as well.
+        // rule result depends on field cat_4 OR cat_3, regarding that ONE OF their's visibility is OK silent validity is OK.
+        [
+            { 
+                field: 'cat_5' , should: [ { have: VISIBILITY, be: true } ], logically: 'AND' ,
+            },
+            [ 
                 { 
-                    field: 'cat_5' , should: [ { have: VISIBILITY, be: true } ], logically: 'AND' ,
-                },
-                [ 
-                    { 
-                        field: 'cat_4', should: [ { have: VISIBILITY, be: true, logically: 'AND'} , { have: SILENTVALIDITY, be: true } ], 
-                        logically: 'OR' ,
-                    } ,
-                    { 
-                        field: 'cat_3' ,   
-                        should: [ 
-                            { have: VISIBILITY, be: true, logically: 'AND' } , 
-                            { have: SILENTVALIDITY, be: true}
-                        ] 
-                    }
-                ]
-            ],
+                    field: 'cat_4', should: [ { have: VISIBILITY, be: true, logically: 'AND'} , { have: SILENTVALIDITY, be: true } ], 
+                    logically: 'OR' ,
+                } ,
+                { 
+                    field: 'cat_3' ,   
+                    should: [ 
+                        { have: VISIBILITY, be: true, logically: 'AND' } , 
+                        { have: SILENTVALIDITY, be: true}
+                    ] 
+                }
+            ]
         ],
-        // formData: FormData,
-        // formDef: formDef,
-        // fieldCfg: fieldCfg
+    ],
+    // Deze boomstructuur van and / or geeft aan hoe de groepen van instructies logisch gegroepeerd moeten worden
+    alternativeFormulation: {
+        and: {
+            and: { ALL_VISIBLE: ['field_1', 'field_2'] , ALL_INVALID: ['field_1'] },
+            or: { isPersistent: 'field_4', someEnabled: ['field_5'] } 
+        }
     }
+    // formData: FormData,
+    // formDef: formDef,
+    // fieldCfg: fieldCfg
+}
 
     /**
      * For now only support 
@@ -141,43 +155,563 @@ const visibility = (params: object, validatorFn: any, fieldCfg, formDefinition, 
      * 
      * @returns 
      */
-    const disablerIf = ( ruleCfg ) =>
-        helpers.withParams(
-            // params for the vuelidate return object
-            { type: "disableIf", cfg: ruleCfg },
-            // validatorFn to be invoked. Note: only here can we hardcoded refer to stuff inside ruleCfg
-         function(
-            value,
-            parentVm
-        ) {
+const disablerIfBakkerrrrr = ( ruleCfg ) =>
+    helpers.withParams(
+        // params for the vuelidate return object
+        { type: "disableIf", cfg: ruleCfg },
+        // validatorFn to be invoked. Note: only here can we hardcoded refer to stuff inside ruleCfg
+        function(
+        value,
+        parentVm
+    ) {
+        debugger;
+        //TODO create reducers !!!!!!!
+        // that calculate the contidition code dynamically? COULD we use a tagged template literal to calculate the outcome?
+        // `${}` if we can open up a tagged template literal and populate it with incremental stuff like 
+        // `S{ (vm?.v$?.cat_4?.$silentErrors?.length > 0) && ruleCfg[0].criteria[0].criterium && (vm?.v$?.cat_7?.$silentErrors?.length > 0)}`
+        // or should we use a new Function() expression ????
+
+        // let target1 = ruleCfg.dependsOn[0][0].field;
+        // let criterium1_1 = ruleCfg.dependsOn[0][0].should[0].have
+        // let condition1_1 = ruleCfg.dependsOn[0][0].should[0].be
+        // let part1_1 = vm?.v$?[target1][criterium1_1].$response.extraParams.rule_result === condition1_1
+
+        // let target2 = ruleCfg.dependsOn[1][0].field; //array in an array ...
+        // let criterium2_1 = ruleCfg.dependsOn[1][0].should[0].have
+        // let condition2_1 = ruleCfg.dependsOn[1][0].should[0].be
+        // let part2_1 = vm?.v$?[target1][criterium2_1].$response.extraParams.rule_result === condition2_1
+        
+        // // "v$.cat_5.displayIf.$response.extraParams.rule_result"
+
+        // let rule_result = false; // by default we should NOT disable stuff
+        // let tmp: Boolean = !!(vm?.v$?[target1][criterium1_1].$response.extraParams.rule_result === condition1_1)
+        // debugger;
+        // rule_result = tmp;
+        
+        // if ( <all kind og business logic>) { display_result = true/false }
+        return { $valid: true, extraParams: { rule_result: rule_result, vm: vm }, message: "test disabling rule on cat_5, depending on cat_4" }
+        return value === helpers.ref(equalTo, this, parentVm);
+    });
+
+// define helper functions like isValid, isVisible, isDisabled, that take a fieldname and return a boolean if the retrieved info qualifies.
+const v_h_Bak = {
+    isValidSilent: (vm, v$, fieldName) => {
+        debugger;
+        let result = true;
+        let ns = vm?.v$ ?? v$ //ns staat voor namespace. Verify of we vm?.v$ moeten prefereren boven v$ !!!
+        debugger;
+        try {
+            // inverts: (if lenght > 0) then there are errors. primary result = true. (!result => false) !!result=true !!!result=false 
+            result = !!!(ns?.[fieldName]?.[V_SILENTERRORS]?.length > 0)
+        }
+        catch(e)
+        {
+            console.log(e);
             debugger;
-            //TODO create reducers !!!!!!!
-            // that calculate the contidition code dynamically? COULD we use a tagged template literal to calculate the outcome?
-            // `${}` if we can open up a tagged template literal and populate it with incremental stuff like 
-            // `S{ (vm?.v$?.cat_4?.$silentErrors?.length > 0) && ruleCfg[0].criteria[0].criterium && (vm?.v$?.cat_7?.$silentErrors?.length > 0)}`
-            // or should we use a new Function() expression ????
+        }
+        return result
 
-            // let target1 = ruleCfg.dependsOn[0][0].field;
-            // let criterium1_1 = ruleCfg.dependsOn[0][0].should[0].have
-            // let condition1_1 = ruleCfg.dependsOn[0][0].should[0].be
-            // let part1_1 = vm?.v$?[target1][criterium1_1].$response.extraParams.rule_result === condition1_1
+    },
+    someValidSilent:  (vm, v$, arrFieldNames) => {
+        debugger;
+        let result = false;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                // re-use isValid
+                result = v_h_.isValidSilent(vm,v$,fieldName)
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+    },
+    allValidSilent:  (vm, v$, arrFieldNames) => {
+        debugger;
+        let result = false;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                // re-use isValid
+                result = v_h_.isValidSilent(vm,v$,fieldName)
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+    },
+    allInvalidSilent:  (vm, v$, arrFieldNames) => {
+        debugger;
+        let result = false;
+        let arrResults = [];
+        try {
+            // re-use allValidSilent and negate it
+            result = !(v_h_.allValidSilent(vm, v$, arrFieldNames))
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+    },
+    isValid: (vm, v$, fieldName) => {
+        debugger;
+        let result = true;
+        let ns = vm?.v$ ?? v$ //ns staat voor namespace. Verify of we vm?.v$ moeten prefereren boven v$ !!!
+        debugger;
+        try {
+            // invert the result becuase vuelidate flags $error or $invalid
+            result = !!!(ns?.[fieldName]?.[V_VALID])
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
 
-            // let target2 = ruleCfg.dependsOn[1][0].field; //array in an array ...
-            // let criterium2_1 = ruleCfg.dependsOn[1][0].should[0].have
-            // let condition2_1 = ruleCfg.dependsOn[1][0].should[0].be
-            // let part2_1 = vm?.v$?[target1][criterium2_1].$response.extraParams.rule_result === condition2_1
+    },
+    someValid:  (vm, v$, arrFieldNames) => {
+        debugger;
+        let result = false;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                // re-use isValid
+                result = v_h_.isValid(vm, v$,fieldName)
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+    },
+    allValid:  (vm, v$,arrFieldNames) => {
+        debugger;
+        let result = false;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                // re-use isValid
+                result = v_h_.isValid(vm, v$,fieldName)
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+    },
+    isVisible: (vm, v$,fieldName) => {
+        debugger;
+        let result = true;
+        let ns = vm?.v$ ?? v$ //ns staat voor namespace. Verify of we vm?.v$ moeten prefereren boven v$ !!!
+        //let v$_toPass = vm?.v$ ?? v$;
+        debugger;
+        try {
+            result = !!(ns?.[fieldName]?.[V_DISPLAYIF]?.$response?.extraParams?.rule_result)
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+    },
+    someVisible:  (vm, v$, arrFieldNames) => {
+        debugger;
+        let result = false;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                // re-use isVisible
+                result = v_h_.isVisible(vm, v$,fieldName)
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+    }, 
+    allVisible:  (vm, v$,arrFieldNames) => {
+        debugger;
+        let result = true;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                result =  v_h_.isVisible(vm, v$,fieldName)
+                debugger;
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        debugger;
+        return result
+    }, 
+}
+
+const v_h_ = {
+    isValidSilent: (vm, fieldName) => {
+        debugger;
+        let result = true;
+        let ns = vm?.v$ ?? v$ //ns staat voor namespace. Verify of we vm?.v$ moeten prefereren boven v$ !!!
+        debugger;
+        try {
+            // inverts: (if lenght > 0) then there are errors. primary result = true. (!result => false) !!result=true !!!result=false 
+            result = !!!(ns?.[fieldName]?.[V_SILENTERRORS]?.length > 0)
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+
+    },
+    someValidSilent:  (vm, arrFieldNames) => {
+        debugger;
+        let result = false;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                // re-use isValid
+                result = v_h_.isValidSilent(vm,v$,fieldName)
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+    },
+    allValidSilent:  (vm, arrFieldNames) => {
+        debugger;
+        let result = false;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                // re-use isValid
+                result = v_h_.isValidSilent(vm,fieldName)
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+    },
+    allInvalidSilent:  (vm, arrFieldNames) => {
+        debugger;
+        let result = false;
+        let arrResults = [];
+        try {
+            // re-use allValidSilent and negate it
+            result = !(v_h_.allValidSilent(vm, arrFieldNames))
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+    },
+    isValid: (vm,fieldName) => {
+        debugger;
+        let result = true;
+        let ns = vm?.v$ ?? v$ //ns staat voor namespace. Verify of we vm?.v$ moeten prefereren boven v$ !!!
+        debugger;
+        try {
+            // invert the result becuase vuelidate flags $error or $invalid
+            result = !!!(ns?.[fieldName]?.[V_VALID])
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+
+    },
+    someValid:  (vm, arrFieldNames) => {
+        debugger;
+        let result = false;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                // re-use isValid
+                result = v_h_.isValid(vm, fieldName)
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+    },
+    allValid:  (vm, arrFieldNames) => {
+        debugger;
+        let result = false;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                // re-use isValid
+                result = v_h_.isValid(vm,fieldName)
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+    },
+    isVisible: (vm, fieldName) => {
+        debugger;
+        let result = true;
+        let ns = vm?.v$ ?? v$ //ns staat voor namespace. Verify of we vm?.v$ moeten prefereren boven v$ !!!
+        //let v$_toPass = vm?.v$ ?? v$;
+        debugger;
+        try {
+            result = !!(ns?.[fieldName]?.[V_DISPLAYIF]?.$response?.extraParams?.rule_result)
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+    },
+    someVisible:  (vm, arrFieldNames) => {
+        debugger;
+        let result = false;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                // re-use isVisible
+                result = v_h_.isVisible(vm, fieldName)
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        return result
+    }, 
+    allVisible:  (vm, arrFieldNames) => {
+        debugger;
+        let result = true;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                result =  v_h_.isVisible(vm, fieldName)
+                debugger;
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e)
+        {
+            console.log(e);
+            debugger;
+        }
+        debugger;
+        return result
+    }, 
+}
+/**
+ * OHE Test if we can create HOF wich returns the parameterized versions of the proper validator fn vuelidates expects...
+ * Test if we MUST pass in a ref to v$? Rather not, since v$ in runtime will always pass in vm as second argument and vm holds v$????
+ * @param args. We expect to pass in one object containing all the necessary parametrizations. 
+ * @returns 
+ */
+const disablerIfBak = ( ...args ) => {
+    debugger;
+    const { dependsOn, fieldCfg, formData, formDefinition, v$ , ...params } = args[0]
+
+    if (dependsOn.ALL_VISIBLE && dependsOn.ALL_INVALID){
+        debugger
+        return function validatorFn(value, vm){
+            debugger;
             
-            // // "v$.cat_5.displayIf.$response.extraParams.rule_result"
+            let rule_result = false; // by default we should NOT disable stuff
+            let arrPartials = [];
+            let v$_toPass = vm?.v$ ?? v$;
+            debugger
+            //TODO: write a parse which can walk the dependsOn object and map it to function invocations ...
 
-            // let rule_result = false; // by default we should NOT disable stuff
-            // let tmp: Boolean = !!(vm?.v$?[target1][criterium1_1].$response.extraParams.rule_result === condition1_1)
-            // debugger;
-            // rule_result = tmp;
+            // 1. If the dependsOn object contains an "and" property ...ALL_VISIBLE
+            if (dependsOn.and){}
+            else if(dependsOn.or){}
+            else if (dependsOn.not){}
+            else {
+                // for now: assume straight "and"-conjunctive instructions
+                if (dependsOn.ALL_VISIBLE){
+                    arrPartials.push(v_h_.allVisible(vm, v$_toPass , dependsOn.ALL_VISIBLE))
+                }
+                //Note: we could already bail out if this one is false?
+                if (dependsOn.ALL_INVALID){
+                    arrPartials.push(v_h_.allInvalidSilent(vm, v$_toPass, dependsOn.ALL_INVALID))
+                }
+                rule_result = _.every(arrPartials, Boolean)
+            }
+            debugger;
             
             // if ( <all kind og business logic>) { display_result = true/false }
-            return { $valid: true, extraParams: { rule_result: rule_result, vm: vm }, message: "test disabling rule on cat_5, depending on cat_4" }
-            return value === helpers.ref(equalTo, this, parentVm);
-        });
+            // todo: message kan ook een function zijn ... dus daar kunnen we alles in passen?
+            return { $valid: true, extraParams: { rule_result }, message: `test disabling rule on .... cat_5, depending on cat_4`}
+        }
+    }
+    else{
+        /**
+         * Test rule which states that if 'cat_4' is silently invalid, we will return true. This indirectly will lead to DISABLE this field, cat_5.
+         */
+        debugger
+        return function validatorFn(value, vm){
+            debugger;
+            let rule_result = false; // by default we should NOT disable stuff
+            let arrPartials = [];
+            
+            //TODO: write a parse which can walk the dependsOn object and map it to function invocations ...
+
+            // 1. If the dependsOn object contains an "and" property ...ALL_VISIBLE
+            if (dependsOn.and){
+
+            }
+            else if(dependsOn.or){}
+            else if (dependsOn.not){}
+            else {
+                // assume straight "and"-conjunctive instructions
+                if (dependsOn.ALL_VISIBLE){
+                    arrPartials.push(v_h_.allVisible(vm, dependsOn.ALL_VISIBLE))
+                }
+                if (dependsOn.ALL_INVALID){
+                    arrPartials.push(v_h_.allInvalidSilent(vm, dependsOn.ALL_INVALID))
+                }
+                rule_result = _.every(arrPartials, Boolean)
+            }
+            debugger;
+            
+            // if ( <all kind og business logic>) { display_result = true/false }
+            // todo: message kan ook een function zijn ... dus daar kunnen we alles in passen?
+            return { $valid: true, extraParams: { rule_result }, message: "test disabling rule on cat_5, depending on cat_4" }
+        }
+    }
+}
+
+const disablerIf = ( ...args ) => {
+    debugger;
+    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = args[0]
+
+    if (dependsOn.ALL_VISIBLE && dependsOn.ALL_INVALID){
+        debugger
+        return function validatorFn(value, vm){
+            debugger;
+            
+            let rule_result = false; // by default we should NOT disable stuff
+            let arrPartials = [];
+            
+            debugger
+            //TODO: write a parse which can walk the dependsOn object and map it to function invocations ...
+
+            // 1. If the dependsOn object contains an "and" property ...ALL_VISIBLE
+            if (dependsOn.and){}
+            else if(dependsOn.or){}
+            else if (dependsOn.not){}
+            else {
+                // for now: assume straight "and"-conjunctive instructions
+                if (dependsOn.ALL_VISIBLE){
+                    arrPartials.push(v_h_.allVisible(vm, dependsOn.ALL_VISIBLE))
+                }
+                //Note: we could already bail out if this one is false?
+                if (dependsOn.ALL_INVALID){
+                    arrPartials.push(v_h_.allInvalidSilent(vm, dependsOn.ALL_INVALID))
+                }
+                rule_result = _.every(arrPartials, Boolean)
+            }
+            debugger;
+            
+            // if ( <all kind og business logic>) { display_result = true/false }
+            // todo: message kan ook een function zijn ... dus daar kunnen we alles in passen?
+            return { $valid: true, extraParams: { rule_result }, message: `test disabling rule on .... cat_5, depending on cat_4`}
+        }
+    }
+    else{
+        /**
+         * Test rule which states that if 'cat_4' is silently invalid, we will return true. This indirectly will lead to DISABLE this field, cat_5.
+         */
+        debugger
+        return function validatorFn(value, vm){
+            debugger;
+            let rule_result = false; // by default we should NOT disable stuff
+            let arrPartials = [];
+            
+            //TODO: write a parse which can walk the dependsOn object and map it to function invocations ...
+
+            // 1. If the dependsOn object contains an "and" property ...ALL_VISIBLE
+            if (dependsOn.and){
+
+            }
+            else if(dependsOn.or){}
+            else if (dependsOn.not){}
+            else {
+                // assume straight "and"-conjunctive instructions
+                if (dependsOn.ALL_VISIBLE){
+                    arrPartials.push(v_h_.allVisible(vm, dependsOn.ALL_VISIBLE))
+                }
+                if (dependsOn.ALL_INVALID){
+                    arrPartials.push(v_h_.allInvalidSilent(vm, dependsOn.ALL_INVALID))
+                }
+                rule_result = _.every(arrPartials, Boolean)
+            }
+            debugger;
+            
+            // if ( <all kind og business logic>) { display_result = true/false }
+            // todo: message kan ook een function zijn ... dus daar kunnen we alles in passen?
+            return { $valid: true, extraParams: { rule_result }, message: "test disabling rule on cat_5, depending on cat_4" }
+        }
+    }
+}
 
     /**
      * TODO: How should this be configured for the end user
@@ -212,32 +746,48 @@ const disabler = (params: object, validatorFn: any, fieldCfg, formDefinition, fo
      * @param formData 
      * @returns 
      */
-const ruleGenerator = function(type: string, params: object = {} , validatorFn: any, message: message = "", fieldCfg, formDefinition, formData) {
+const ruleGenerator = function(type: string, params: object = {} , validatorFn: any, message: string = "dummy message string ohe",  fieldCfg, formDefinition, formData, v$) {
     let validator;
     let preliminaryValidator
     if (fieldCfg.id==='cat_5' && type==='disableIf'){
-    debugger;
-    try{
         debugger;
-        let objParams = Object.assign({}, params, { type: type }, { fieldCfg: fieldCfg}, { formDefinition: formDefinition} , {formData: formData} )
-        preliminaryValidator = validatorFn(objParams)
-        validator = helpers.withParams(
-            objParams,
-            // validatorFn(objParams, 'pipo???', fieldCfg, formData, formDefinition )
-            preliminaryValidator //this should be the proper validator funciton...
-            )
-        // new Function etc werkt niet
-        // let functionBody = validatorFn.toString();
-        // fBody = 'debugger; try { let dependsOn = objParams.dependsOn; } catch (e) {debugger;}let rule_result = false; let tmp = !!(vm?.v$?.cat_4?.$silentErrors?.length > 0); debugger; rule_result = tmp; return { $valid: true, extraParams: { rule_result, vm }, message: "test disabling rule on cat_5, depending on cat_4" };'
-        
-        // // TODO: can we use a new Function expresssion and call it, to populate all passed down parameters inside the function body ?
-        // test2 = Function(objParams, "let dependsOn;try{dependsOn = objParams.dependsOn;}catch (ex){console.log(e);}");
-        // debugger;
-        // result2 = test2()
-            //new Function(...args, 'funcBody')
-    } catch(e){
-        debugger
-    }
+        try{
+            debugger;
+            let lParams = { 
+                dependsOn: {
+                    // and indicates all cfgs instructions within this object should give TRUE, no matter how these are composed 9id est: they could hold nested conditions that result false etc
+                    ALL_VISIBLE: ['cat_4', 'cat_5'], 
+                    ALL_INVALID: ['cat_4']
+                }, 
+                // TODO: we can strip these since we will standardly pass these in
+                fieldCfg: undefined, 
+                formData: undefined , 
+                formDefinition: undefined 
+            }
+            // let objParams = Object.assign({}, params, { type: type }, { fieldCfg: fieldCfg}, { formDefinition: formDefinition} , {formData: formData} )
+            let objParams = Object.assign({}, lParams, { type: type }, { fieldCfg: fieldCfg}, { formDefinition: formDefinition} , {formData: formData} , { v$: v$ })
+            
+            // we cannot assume the JSON config will contains functions, so we have to retrieve these functions from elsewhere ...
+            // preliminaryValidator = validatorFn(objParams)
+            preliminaryValidator = disablerIf(objParams)
+            
+            validator = helpers.withParams(
+                objParams,
+                // validatorFn(objParams, 'pipo???', fieldCfg, formData, formDefinition )
+                preliminaryValidator //this should be the proper validator funciton...
+                )
+            // new Function etc werkt niet
+            // let functionBody = validatorFn.toString();
+            // fBody = 'debugger; try { let dependsOn = objParams.dependsOn; } catch (e) {debugger;}let rule_result = false; let tmp = !!(vm?.v$?.cat_4?.$silentErrors?.length > 0); debugger; rule_result = tmp; return { $valid: true, extraParams: { rule_result, vm }, message: "test disabling rule on cat_5, depending on cat_4" };'
+            
+            // // TODO: can we use a new Function expresssion and call it, to populate all passed down parameters inside the function body ?
+            // test2 = Function(objParams, "let dependsOn;try{dependsOn = objParams.dependsOn;}catch (ex){console.log(e);}");
+            // debugger;
+            // result2 = test2()
+                //new Function(...args, 'funcBody')
+        } catch(e){
+            debugger
+        }
     }
     // first create the basic validator ???????????????
     // let basic_validator = addParamsTovalidator({ type: type }, { $validator: validatorFn, $message: message } )
@@ -304,7 +854,7 @@ export function validName(name) {
 interface formDefinition {
     [key: string]: Fieldconfig
 }
-export function setValidators(formDefinition: formDefinition, pValidatorRules: Object = {}, pFormContext: Object = {}) {
+export function setValidators(v$, formDefinition: formDefinition, pValidatorRules: Object = {}, pFormContext: Object = {}) {
     const validatorRules = Object.assign({}, pValidatorRules)
     _.forEach(formDefinition, function (field) {
         let mappedValidator
@@ -328,7 +878,7 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
             if ( cfgValidator.isCustom ){
                 // we must create the validator dynamically via the rule_generator...
                 // must we use a HOC to get the additional parametrization implemented?
-                mappedValidator = mapValidators[RULE_GENERATOR](tag, _.clone(cfgValidator.params), cfgValidator.fn, cfgValidator.message || "no message yet", field, formDefinition, pFormContext )
+                mappedValidator = mapValidators[RULE_GENERATOR](tag, _.clone(cfgValidator.params), cfgValidator.fn, cfgValidator.message || "no message yet", field, formDefinition, pFormContext, v$ )
             }
             else {
                 mappedValidator = mapValidators[tag] // only relevant if we did map it in the first place -for now: the config COULD carry it's own complete implementation???-

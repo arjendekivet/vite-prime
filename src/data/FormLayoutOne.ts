@@ -280,7 +280,17 @@ formConfig.value = [
                                 dependsOn: ['cat_4'], 
                                 //isLazy: true, //not used yet
                                 isCustom: true, //indicates this 'validator' or rules-engine rule should be treated as an entirely autonomous rule (as opposed to not injecting some $validator function in an existing validator)
-                                params: { dependsOn: 'cat_4', fieldCfg: undefined, formData: undefined , formDefinition: undefined },  // TODO special object format instead of array??? also ??? if lazy false it is calculated immediately, to determine if the field should be displayed
+                                params: { 
+                                    dependsOn: {
+                                        // and indicates all cfgs instructions within this object should give TRUE, no matter how these are composed 9id est: they could hold nested conditions that result false etc
+                                        ALL_VISIBLE: ['cat_4', 'cat_5'], 
+                                        ALL_INVALID: ['cat_4']
+                                    }, 
+                                    // TODO: we can strip these since we will standardly pass these in
+                                    fieldCfg: undefined, 
+                                    formData: undefined , 
+                                    formDefinition: undefined 
+                                },  // TODO special object format instead of array??? also ??? if lazy false it is calculated immediately, to determine if the field should be displayed
                                 /**
                                  * try out how a functionBody would work????? Nope. 
                                  * try out a HOF which returns the validator but with an object populated ... yep, that works
@@ -307,6 +317,17 @@ formConfig.value = [
                                         // todo: message kan ook een function zijn ... dus daar kunnen we alles in passen?
                                         return { $valid: true, extraParams: { rule_result }, message: "test disabling rule on cat_5, depending on cat_4" }
                                     }
+                                },
+                                // experimental notation to indicate which validators should be implemented ... 
+                                cfgBak: {
+                                    // and indicates all cfgs instructions within this object should give TRUE, no matter how these are composed 9id est: they could hold nested conditions that result false etc
+                                    and: { ALL_VISIBLE: ['cat_4', 'cat_5'] , ALL_INVALID: ['cat_4'] }
+                                },
+                                // convention: without any and / or / not property, we assume and
+                                cfg: {
+                                    // and indicates all cfgs instructions within this object should give TRUE, no matter how these are composed 9id est: they could hold nested conditions that result false etc
+                                    ALL_VISIBLE: ['cat_4', 'cat_5'], 
+                                    ALL_INVALID: ['cat_4']
                                 }
                             },
                         ],

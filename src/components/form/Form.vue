@@ -97,14 +97,43 @@ if (props.id) {
   })
 }
 
-const validatorRules = setValidators(fields.value, undefined, fieldValues)
+// TODO: if we need to pass in v$ into setValidators, we need a valid reference to v$ ???
+// but 
+let abortSetValidators = ref(true) // initially do not set up rules, until v$ is properly populated
+let v$ = ref({})
+let validatorRules = {}
+
+// should validatorRules become a reactive object?
+validatorRules = setValidators(v$.value, fields.value, undefined, fieldValues)
+
+debugger;
 
 // TODO: we could have fully dynamical rules in the sense of: depending on form definition and form state, the rulesset could morph
 const rules = computed(() => {
+  // if not rendered or if v$ is not instantiated properly yet, bail out?
+  // debugger;
+  let abort = true
+  try {
+    abort = Object.keys(v$.value).length === 0 
+  }
+  catch(e){
+    debugger
+    abort = true
+    }
+  if (abort) {
+    debugger;
+    return validatorRules
+  }
+
+  debugger;
+
+  // // should validatorRules be a reactive object?
+  //validatorRules = setValidators(v$.value, fields.value, undefined, fieldValues)
+
   return validatorRules
 })
 
-const v$ = useValidation(rules, fieldValues,)
+v$ = useValidation(rules, fieldValues,)
 
 const updateFieldValue = (fieldId: string, value: any) => {
   fieldValues.value[fieldId] = value
