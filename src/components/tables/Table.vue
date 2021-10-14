@@ -1,4 +1,5 @@
 <template>
+    <h3 v-if="title">{{ title }}</h3>
     <transition-group name="p-message" tag="div">
         <Message
             v-for="msg of messages"
@@ -67,12 +68,11 @@ const props = withDefaults(defineProps<FormProps>(), {
     openDocumentRow: true,
 })
 
-const emit = defineEmits(['openDoc', 'newDoc', 'deleteSelection', 'update:searchValue'])
-
 const columns = ref<ColumnConfig[]>()
 const tableData = ref()
 const searchValue = ref<string[]>()
-
+const title = ref<string[]>()
+const formLayoutKey = ref<string>('dummy')
 const selected = ref<Object[]>()
 const messages = ref<MessageType[]>([])
 const count = ref(0);
@@ -81,7 +81,10 @@ if (props.layoutKey) {
     EventService.getDataByFilter('formDefinition', props.layoutKey)
         .then((response: any) => {
             if (response.data.length > 0) {
-                columns.value = response.data[0].formDefinition
+                const config = response.data[0]
+                columns.value = config.formDefinition
+                formLayoutKey.value = config.layoutKey
+                title.value = config.label
             } else {
                 messages.value.push(
                     { severity: 'warn', sticky: false, content: 'No layout config was found. Loading default columns', id: count.value++ },
@@ -126,7 +129,7 @@ function deleteSelection() {
         )
         return
     }
-    emit('deleteSelection', selectedIds)
+
     EventService.deleteByIds(props.dataType, selectedIds)
         .then((response) => {
             messages.value.push(
@@ -143,7 +146,7 @@ function deleteSelection() {
 function openDocument(dataType: string, rowData: any, readOnly: boolean) {
     const id = rowData._id
     if (id) {
-        router.push({ name: 'formbyid', params: { type: dataType, id: id, layout: 'getFromMap' }, query: { readOnly: readOnly.toString() } })
+        router.push({ name: 'formbyid', params: { type: dataType, id: id, layout: formLayoutKey.value }, query: { readOnly: readOnly.toString() } })
     }
 }
 

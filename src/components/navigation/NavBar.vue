@@ -48,6 +48,7 @@ function getComponent(direction: string) {
 
 .layout-sidebar {
   overflow: auto;
+  height: calc(100vh - 68px);
 
   &.p-panelmenu .p-panelmenu-header > a:focus {
     box-shadow: 0 0 0 0.2rem rgb(0, 0, 22);

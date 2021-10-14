@@ -17,20 +17,55 @@ const formConfig: FormConfig = {
             icon: { type: 'right', name: 'pi-bookmark' }
         },
         {
+            id: 'label',
+            isField: true,
+            label: 'Label',
+            type: 'P_InputText',
+            placeholder: 'Label',
+            validators: ['required']
+        },
+        {
+            "id": "type",
+            "isField": true,
+            "label": "Type",
+            "type": "P_Dropdown",
+            "options": [
+                {
+                    "label": "Form",
+                    "value": "FORM"
+                },
+                {
+                    "label": "Table",
+                    "value": "TABLE"
+                }
+            ],
+            "optionLabel": "label",
+            "optionValue": "value",
+            "editable": true,
+            validators: ['required']
+        },
+        {
+            id: 'layoutKey',
+            isField: true,
+            label: 'Layout key',
+            type: 'P_InputText',
+            placeholder: 'Form Layout key',
+        },
+        {
             id: 'formDefinition',
             isField: true,
             label: 'Form Definition',
             type: 'JsonEditor',
             placeholder: 'Form Definition',
-        },
+        }
     ],
     questions: [
         {
             "id": "title",
             "isField": true,
-            "label": "Title",
+            "label": "Key",
             "type": "P_InputText",
-            "placeholder": "Title",
+            "placeholder": "Key",
             "validators": [
                 "required",
                 { "type": "minLength", "params": [{ "min": 2 }] },

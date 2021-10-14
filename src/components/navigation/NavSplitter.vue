@@ -1,16 +1,16 @@
 <template>
-  <div class="router-frame">
-    <Splitter style="height: 100%;">
-      <SplitterPanel class="p-d-flex navigation" :size="20" :class="navVisible ? '' : 'navHide'">
-        <NavBar :direction="direction === 'row' ? 'row' : 'column'" />
-      </SplitterPanel>
-      <SplitterPanel class="p-d-flex body-panel" :size="80">
+  <div class="router-frame p-grid">
+    <div v-if="navBar" class="p-col-2 navigation" :class="navVisible ? '' : 'navHide'">
+      <NavBar :direction="direction === 'row' ? 'row' : 'column'" />
+    </div>
+    <div class="body-panel" :class="navBar && navVisible ? 'p-col-10' : 'p-col-12'">
+      <div>
         <AppTopbar @menu-toggle="menuToggle"></AppTopbar>
         <div class="content">
           <router-view :key="$route.fullPath" />
         </div>
-      </SplitterPanel>
-    </Splitter>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -23,9 +23,11 @@ let navVisible = ref(true)
 
 type propTypes = {
   direction?: 'row' | 'column'
+  navBar?: boolean
 }
 const props = withDefaults(defineProps<propTypes>(), {
-  direction: 'row'
+  direction: 'row',
+  navBar: true
 })
 
 function menuToggle() {
@@ -35,8 +37,9 @@ function menuToggle() {
 
 <style lang="scss">
 .router-frame {
-  height: 100%;
+  height: 100vh;
   overflow: hidden;
+  margin: 0px !important;
 
   .navHide {
     display: none !important;
@@ -44,6 +47,7 @@ function menuToggle() {
 
   .body-panel,
   .navigation {
+    height: 100vh;
     overflow: hidden;
     padding: 0px;
   }
@@ -67,7 +71,7 @@ function menuToggle() {
     .content {
       overflow: auto;
       padding: 20px;
-      height: 100%;
+      height: calc(100vh - 68px);
     }
   }
 }
