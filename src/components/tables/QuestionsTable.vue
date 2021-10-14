@@ -16,12 +16,12 @@ import { ref, watch } from 'vue'
 import EventService from '@/services/EventService'
 import Question from '@/types/question'
 import router from '@/router/routes';
-import { useRoute } from 'vue-router'
 import BaseTable from '@/components/tables/BaseTable.vue'
 import _ from 'lodash';
 import MessageType from '@/types/message';
 
-const route = useRoute()
+// import { useRoute } from 'vue-router'
+// const route = useRoute()
 
 const columns = [
     {

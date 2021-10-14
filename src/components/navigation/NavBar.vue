@@ -22,7 +22,7 @@ const props = defineProps({
   }
 })
 
-const expandedKeys = ref({});
+const expandedKeys = ref({ 1: true });
 
 function getComponent(direction: string) {
   return direction === 'row' ? 'PanelMenu' : 'Menubar'

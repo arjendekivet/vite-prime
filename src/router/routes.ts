@@ -4,6 +4,7 @@ import Start from "@/pages/Start.vue";
 import Admin from "@/pages/Admin.vue";
 import Events from "@/components/tables/EventsTable.vue";
 import Questions from "@/components/tables/QuestionsTable.vue";
+import Table from "@/components/tables/Table.vue";
 import Form from "@/components/form/Form.vue";
 import QuestionForm from "@/components/forms/QuestionForm.vue";
 import FormDefinition from '@/components/tables/FormDefinitionTable.vue';
@@ -67,6 +68,15 @@ const router = createRouter({
           })
         },
         {
+          path: "table/:type/:layout",
+          name: "table",
+          component: Table,
+          props: route => ({
+            dataType: route.params.type,
+            layoutKey: route.params.layout,
+          })
+        },
+        {
           path: "form/:type/:id/:layout?",
           name: "formbyid",
           component: Form,
@@ -75,6 +85,16 @@ const router = createRouter({
             id: route.params.id,
             formLayoutKey: route.params.layout,
             readOnly: route.query.readOnly === 'false' ? false : true
+          })
+        },
+        {
+          path: "form/:type",
+          name: "newform",
+          component: Form,
+          props: route => ({
+            dataType: route.params.type,
+            formLayoutKey: route.params.type === 'questions' ? 'question02' : 'formDefinition',
+            readOnly: false
           })
         },
         {
