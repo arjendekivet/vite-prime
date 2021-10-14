@@ -5,6 +5,7 @@
             <Button type="button" icon="pi pi-directions-alt" @click="router.back()" />
             <Button type="button" icon="pi pi-directions" @click="router.forward()" />
         </div>
+        <div class="navbar--title">Cynapps</div>
         <div class="right">
             <Button type="button" icon="pi pi-sliders-h" @click="router.push({ name: 'admin' })" />
             <Button type="button" icon="pi pi-home" @click="router.push({ name: 'home' })" />
@@ -25,6 +26,7 @@ const emit = defineEmits<{
 <style lang="scss">
 .layout-topbar {
     // position: fixed;
+    height: 4.5em;
     padding: 1em;
     z-index: 999;
     background: #0388e5;
@@ -44,5 +46,13 @@ const emit = defineEmits<{
     .right .p-button {
         margin-left: 0.5em;
     }
+}
+
+.navbar--title {
+    font-family: fantasy;
+    font-size: 1.5rem;
+    letter-spacing: 0.5em;
+    font-weight: 900;
+    color: #ffffff;
 }
 </style>

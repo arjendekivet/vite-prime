@@ -1,6 +1,5 @@
 <template>
   <div class="navbar">
-    <div class="navbar--title">Cynapps</div>
     <component
       :is="getComponent(direction)"
       :model="menuitems"
@@ -37,18 +36,8 @@ function getComponent(direction: string) {
   overflow: hidden;
 }
 
-.navbar--title {
-  font-family: fantasy;
-  font-size: 1.5rem;
-  letter-spacing: 0.5em;
-  font-weight: 900;
-  height: 68px;
-  line-height: 68px;
-}
-
 .layout-sidebar {
   overflow: auto;
-  height: calc(100vh - 68px);
 
   &.p-panelmenu .p-panelmenu-header > a:focus {
     box-shadow: 0 0 0 0.2rem rgb(0, 0, 22);

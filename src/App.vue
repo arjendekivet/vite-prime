@@ -7,6 +7,7 @@ html,
 body {
   margin: 0;
   height: 100%;
+  overflow: hidden;
 }
 
 #app {
@@ -16,6 +17,5 @@ body {
   text-align: center;
   color: #2c3e50;
   margin: 0;
-  height: 100%;
 }
 </style>
