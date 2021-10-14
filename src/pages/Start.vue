@@ -1,7 +1,7 @@
 <template>
-  <NavSplitter :navBar="false" />
+  <AppLayout :navBar="false" />
 </template>
 
 <script setup lang="ts">
-import NavSplitter from '@/components/navigation/NavSplitter.vue'
+import AppLayout from '@/components/navigation/AppLayout.vue'
 </script>
