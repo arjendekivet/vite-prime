@@ -58,7 +58,6 @@ import Utils from '@/modules/utils'
 import EventService from '@/services/ApiService'
 import { messages, addSubmitMessage, addErrorMessage } from '@/modules/UseFormMessages'
 import { setValidators, useValidation } from '@/modules/validate'
-
 import formConfigDefaults from '@/data/FormLayoutDefaults'
 
 type FormProp = {
