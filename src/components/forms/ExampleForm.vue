@@ -1,9 +1,9 @@
 <template>
-  <DynamicForm :fields="fields" data-type="examples" :columns="2" />
+  <Form :config="fields" data-type="questions" :columns="2" />
 </template>
 
 <script setup lang="ts">
-import DynamicForm from '@/components/form/Form.vue'
+import Form from '@/components/form/Form.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import Option from '@/types/Option'
 
@@ -19,12 +19,14 @@ const fields: Fieldconfig[] =
   [
     {
       id: 'testdummy',
+      isField: true,
       label: 'Test Dummy',
       type: 'P_InputText',
       placeholder: 'Test Dummy',
     },
     {
       id: 'firstname',
+      isField: true,
       label: 'Firstname',
       type: 'P_InputText',
       placeholder: 'Firstname',
@@ -32,6 +34,7 @@ const fields: Fieldconfig[] =
     },
     {
       id: 'lastname',
+      isField: true,
       label: 'Lastname',
       type: 'P_InputText',
       placeholder: 'Lastname',
@@ -39,6 +42,7 @@ const fields: Fieldconfig[] =
     },
     {
       id: 'email',
+      isField: true,
       label: 'Email',
       type: 'P_InputText',
       placeholder: 'Email address',
@@ -46,6 +50,7 @@ const fields: Fieldconfig[] =
     },
     {
       id: 'age',
+      isField: true,
       label: 'Age',
       type: 'P_InputText',
       placeholder: 'Age',
@@ -53,6 +58,7 @@ const fields: Fieldconfig[] =
     },
     {
       id: 'dateofbirth',
+      isField: true,
       label: 'Date of Birth',
       type: 'Calendar',
       placeholder: 'Date of birth',
@@ -60,6 +66,7 @@ const fields: Fieldconfig[] =
     },
     {
       id: 'expirydate',
+      isField: true,
       label: 'Date of expiration',
       type: 'Calendar',
       placeholder: 'Date of expiration',
@@ -67,6 +74,7 @@ const fields: Fieldconfig[] =
     },
     {
       id: 'countrystate',
+      isField: true,
       label: 'Country State',
       type: 'P_Dropdown',
       options: states,
