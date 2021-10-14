@@ -59,6 +59,8 @@ import EventService from '@/services/EventService'
 import { messages, addSubmitMessage, addErrorMessage } from '@/modules/UseFormMessages'
 import { setValidators, useValidation } from '@/modules/validate'
 
+import formConfigDefaults from '@/data/FormLayoutDefaults'
+
 type FormProp = {
   config?: Fieldconfig[],
   dataType: string,
@@ -93,7 +95,10 @@ if (props.formLayoutKey) {
       if (response.data.length > 0) {
         myConfig.value = response.data[0].formDefinition
       } else {
-        // myConfig.value = formConfigHardcoded.value
+        const defaultConfig = formConfigDefaults[props.dataType]
+        if (defaultConfig) {
+          myConfig.value = defaultConfig
+        }
       }
       getFormData()
     })

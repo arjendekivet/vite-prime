@@ -79,7 +79,6 @@ function searchUpdate(searchValue: string) {
 }
 
 function openDocument(id: string, readOnly: boolean) {
-    // router.push({ name: 'questionformbyid', params: { id: id }, query: { readOnly: readOnly.toString() } })
     router.push({ name: 'formbyid', params: { type: 'questions', id: id, layout: 'question02' }, query: { readOnly: readOnly.toString() } })
 }
 

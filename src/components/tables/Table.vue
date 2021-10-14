@@ -30,11 +30,15 @@
         <Column v-for="col of columns" :field="col.field" :header="col.header" :key="col.field"></Column>
         <Column v-if="openDocumentRow" headerStyle="width: 8em;" bodyStyle="text-align: right">
             <template #body="slotProps">
-                <Button type="button" icon="pi pi-eye" @click="openDocument(slotProps.data, true)"></Button>
+                <Button
+                    type="button"
+                    icon="pi pi-eye"
+                    @click="openDocument(props.dataType, slotProps.data, true)"
+                ></Button>
                 <Button
                     type="button"
                     icon="pi pi-pencil"
-                    @click="openDocument(slotProps.data, false)"
+                    @click="openDocument(props.dataType, slotProps.data, false)"
                 ></Button>
             </template>
         </Column>
@@ -46,13 +50,10 @@ import { ref, watch } from 'vue'
 import TableToolbar from '@/components/tables/TableToolbar.vue'
 import _ from 'lodash';
 import Utils from '@/modules/utils'
-import MessageType from '@/types/message';
+import MessageType from '@/types/message'
 import ColumnConfig from "@/types/columnconfig"
-import EventService from '@/services/EventService';
-import router from '@/router/routes';
-
-// import { useRoute } from 'vue-router'
-// const route = useRoute()
+import EventService from '@/services/EventService'
+import router from '@/router/routes'
 
 type FormProps = {
     dataType: string,
@@ -81,16 +82,22 @@ if (props.layoutKey) {
         .then((response: any) => {
             if (response.data.length > 0) {
                 columns.value = response.data[0].formDefinition
-                getData()
             } else {
                 messages.value.push(
-                    { severity: 'warn', sticky: false, content: 'No layout config was found.', id: count.value++ },
+                    { severity: 'warn', sticky: false, content: 'No layout config was found. Loading default columns', id: count.value++ },
                 )
+                columns.value = [
+                    {
+                        field: 'title',
+                        header: 'Title'
+                    }
+                ]
             }
+            getData()
         })
         .catch((error) => {
             // isLoading.value = false
-            console.error('Could not fetch formDefinition! Going to hardcoded backup option.', error)
+            // console.error('Could not fetch formDefinition! Going to hardcoded backup option.', error)
             messages.value.push(
                 { severity: 'warn', sticky: false, content: error, id: count.value++ },
             )
@@ -133,10 +140,10 @@ function deleteSelection() {
         })
 }
 
-function openDocument(rowData: any, readOnly: boolean) {
+function openDocument(dataType: string, rowData: any, readOnly: boolean) {
     const id = rowData._id
     if (id) {
-        router.push({ name: 'formbyid', params: { type: 'questions', id: id, layout: 'question02' }, query: { readOnly: readOnly.toString() } })
+        router.push({ name: 'formbyid', params: { type: dataType, id: id, layout: 'getFromMap' }, query: { readOnly: readOnly.toString() } })
     }
 }
 

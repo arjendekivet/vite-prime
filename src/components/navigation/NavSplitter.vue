@@ -7,7 +7,7 @@
       <SplitterPanel class="p-d-flex body-panel" :size="80">
         <AppTopbar @menu-toggle="menuToggle"></AppTopbar>
         <div class="content">
-          <router-view />
+          <router-view :key="$route.fullPath" />
         </div>
       </SplitterPanel>
     </Splitter>
@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import NavBar from '@/components/navigation/NavBar.vue'
 import AppTopbar from '@/components/navigation/AppTopbar.vue'
-import { PropType, ref } from 'vue';
+import { ref } from 'vue';
 
 let navVisible = ref(true)
 
