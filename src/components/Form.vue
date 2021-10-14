@@ -50,14 +50,15 @@
 
 <script setup lang="ts">
 import { ref, provide, readonly, computed } from 'vue'
-import FormDefinitionRecursor from '@/components/form/FormDefinitionRecursor.vue'
+import FormDefinitionRecursor from '@/components/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
 import router from '@/router/routes';
 import Utils from '@/modules/utils'
-import EventService from '@/services/EventService'
+import EventService from '@/services/ApiService'
 import { messages, addSubmitMessage, addErrorMessage } from '@/modules/UseFormMessages'
 import { setValidators, useValidation } from '@/modules/validate'
+import formConfigDefaults from '@/data/FormLayoutDefaults'
 
 type FormProp = {
   config?: Fieldconfig[],
@@ -93,7 +94,10 @@ if (props.formLayoutKey) {
       if (response.data.length > 0) {
         myConfig.value = response.data[0].formDefinition
       } else {
-        // myConfig.value = formConfigHardcoded.value
+        const defaultConfig = formConfigDefaults[props.dataType]
+        if (defaultConfig) {
+          myConfig.value = defaultConfig
+        }
       }
       getFormData()
     })
@@ -248,7 +252,7 @@ provide('v$', v$)
 </script>
 
 <style lang="scss">
-@import "@/components/form/fieldicons.scss";
+@import "@/css/fieldicons.scss";
 
 .dynamicform {
   .p-formgrid {

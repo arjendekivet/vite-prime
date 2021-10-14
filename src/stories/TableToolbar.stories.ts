@@ -1,4 +1,4 @@
-import TableToolbar from '@/components/tables/TableToolbar.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 
 export default {
   title: 'Cynapps/TableToolbar',
