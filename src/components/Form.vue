@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
 import { ref, provide, readonly, computed } from 'vue'
-import FormDefinitionRecursor from '@/components/form/FormDefinitionRecursor.vue'
+import FormDefinitionRecursor from '@/components/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
 import router from '@/router/routes';

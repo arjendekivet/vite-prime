@@ -1,4 +1,4 @@
-import DynamicForm from '@/components/form/Form.vue';
+import DynamicForm from '@/components/Form.vue';
 import OptionType from '@/types/Option'
 import QuestionType from '@/enums/questionTypes'
 

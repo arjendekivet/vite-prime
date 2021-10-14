@@ -2,8 +2,8 @@ import { createRouter, createWebHistory } from "vue-router";
 import Welcome from "@/pages/Welcome.vue";
 import Start from "@/pages/Start.vue";
 import Admin from "@/pages/Admin.vue";
-import Table from "@/components/tables/Table.vue";
-import Form from "@/components/form/Form.vue";
+import Table from "@/components/Table.vue";
+import Form from "@/components/Form.vue";
 
 import ExampleForm from "@/components/forms/ExampleForm.vue";
 import ExampleFormTwo from "@/components/forms/ExampleFormTwo.vue";

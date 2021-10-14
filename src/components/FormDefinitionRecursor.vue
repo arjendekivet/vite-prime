@@ -64,7 +64,6 @@
 <script setup lang="ts">
 import { inject } from 'vue'
 import Fieldconfig from '@/types/fieldconfig'
-import { validate } from '@/modules/validate'
 import _ from 'lodash'
 
 type FormProp = {

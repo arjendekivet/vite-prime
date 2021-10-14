@@ -48,7 +48,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import TableToolbar from '@/components/tables/TableToolbar.vue'
+import TableToolbar from '@/components/TableToolbar.vue'
 import _ from 'lodash';
 import Utils from '@/modules/utils'
 import MessageType from '@/types/message'

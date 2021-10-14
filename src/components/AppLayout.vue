@@ -19,8 +19,8 @@
 </template>
 
 <script setup lang="ts">
-import AppNavBar from '@/components/navigation/AppNavBar.vue'
-import AppTopbar from '@/components/navigation/AppTopbar.vue'
+import AppNavBar from '@/components/AppNavBar.vue'
+import AppTopbar from '@/components/AppTopbar.vue'
 import { ref } from 'vue';
 
 let navVisible = ref(true)
