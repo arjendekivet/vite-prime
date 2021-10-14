@@ -53,7 +53,7 @@ import _ from 'lodash';
 import Utils from '@/modules/utils'
 import MessageType from '@/types/message'
 import ColumnConfig from "@/types/columnconfig"
-import EventService from '@/services/EventService'
+import EventService from '@/services/ApiService'
 import router from '@/router/routes'
 
 type FormProps = {

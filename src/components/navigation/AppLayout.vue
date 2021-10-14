@@ -4,7 +4,7 @@
   </div>
   <div class="body">
     <div v-if="navBar" class="sidebar" :class="navVisible ? '' : 'navHide'">
-      <NavBar :direction="direction === 'row' ? 'row' : 'column'" />
+      <AppNavBar :direction="direction === 'row' ? 'row' : 'column'" />
     </div>
     <div class="main">
       <!-- <div class="page-header">page-header</div> -->
@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import NavBar from '@/components/navigation/NavBar.vue'
+import AppNavBar from '@/components/navigation/AppNavBar.vue'
 import AppTopbar from '@/components/navigation/AppTopbar.vue'
 import { ref } from 'vue';
 
@@ -77,6 +77,7 @@ function menuToggle() {
 .column {
   padding: 20px;
   flex: 1;
-  overflow: auto;
+  overflow-y: scroll;
+  overflow-x: auto;
 }
 </style>

@@ -1,9 +1,9 @@
 <template>
-  <DynamicForm :config="fields" data-type="answers" title="Answers" :id="id" :readOnly="readOnly"></DynamicForm>
+  <Form :config="fields" data-type="answers" title="Answers" :id="id" :readOnly="readOnly"></Form>
 </template>
 
 <script setup lang="ts">
-import DynamicForm from '@/components/form/Form.vue'
+import Form from '@/components/form/Form.vue'
 import Fieldconfig from '@/types/fieldconfig'
 
 type formPropTypes = {

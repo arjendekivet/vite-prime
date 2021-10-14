@@ -55,7 +55,7 @@ import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
 import router from '@/router/routes';
 import Utils from '@/modules/utils'
-import EventService from '@/services/EventService'
+import EventService from '@/services/ApiService'
 import { messages, addSubmitMessage, addErrorMessage } from '@/modules/UseFormMessages'
 import { setValidators, useValidation } from '@/modules/validate'
 
@@ -253,7 +253,7 @@ provide('v$', v$)
 </script>
 
 <style lang="scss">
-@import "@/components/form/fieldicons.scss";
+@import "@/css/fieldicons.scss";
 
 .dynamicform {
   .p-formgrid {
