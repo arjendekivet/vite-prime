@@ -60,7 +60,6 @@ function menuToggle() {
 .sidebar {
   width: 225px;
   overflow: auto;
-  //min-height: min-content; /* needs vendor prefixes */
 }
 
 .main {
