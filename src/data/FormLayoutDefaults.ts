@@ -1,12 +1,12 @@
 import Fieldconfig from '@/types/fieldconfig'
 
 type FormConfig = {
-    [formdefinition: string]: Fieldconfig[]
+    [layoutdefinition: string]: Fieldconfig[]
     questions: Fieldconfig[]
 }
 
 const formConfig: FormConfig = {
-    formdefinition: [
+    layoutdefinition: [
         {
             id: 'title',
             isField: true,
@@ -54,9 +54,9 @@ const formConfig: FormConfig = {
         {
             id: 'formDefinition',
             isField: true,
-            label: 'Form Definition',
+            label: 'Layout Definition',
             type: 'JsonEditor',
-            placeholder: 'Form Definition',
+            placeholder: 'Layout Definition',
         }
     ],
     questions: [

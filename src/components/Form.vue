@@ -87,7 +87,7 @@ const fields: any = ref<object>({})
 const myConfig: any = ref<object>({})
 
 if (props.formLayoutKey) {
-  EventService.getDataByFilter('formDefinition', props.formLayoutKey)
+  EventService.getDataByFilter('layoutdefinition', props.formLayoutKey)
     .then((response: any) => {
       // find will return array, get the first in this case
       // isLoading.value = false
@@ -103,7 +103,7 @@ if (props.formLayoutKey) {
     })
     .catch((error) => {
       // isLoading.value = false
-      console.error('Could not fetch formDefinition! Going to hardcoded backup option.', error)
+      console.error('Could not fetch layoutdefinition! Going to hardcoded backup option.', error)
       // myConfig.value = formConfigHardcoded
     })
 } else {

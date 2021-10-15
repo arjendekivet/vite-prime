@@ -59,7 +59,7 @@ const router = createRouter({
           component: Form,
           props: route => ({
             dataType: route.params.type,
-            formLayoutKey: route.params.type === 'questions' ? 'question02' : 'formDefinition',
+            formLayoutKey: route.params.type === 'questions' ? 'question02' : 'layoutdefinition',
             readOnly: false
           })
         },

@@ -20,10 +20,10 @@ menuItems.value = [{
             to: { name: 'table', params: { type: 'questions', layout: 'question-table' } }
         },
         {
-            key: '1_2',
-            label: 'formdefinition',
+            key: '1_3',
+            label: 'Layout Definition',
             icon: 'pi pi-fw pi-list',
-            to: { name: 'table', params: { type: 'formdefinition', layout: 'formdefinition-table' } }
+            to: { name: 'table', params: { type: 'layoutdefinition', layout: 'layoutdefinition-table' } }
         }
     ]
 },

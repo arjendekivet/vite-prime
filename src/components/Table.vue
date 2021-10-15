@@ -78,7 +78,7 @@ const messages = ref<MessageType[]>([])
 const count = ref(0);
 
 if (props.layoutKey) {
-    EventService.getDataByFilter('formDefinition', props.layoutKey)
+    EventService.getDataByFilter('layoutdefinition', props.layoutKey)
         .then((response: any) => {
             if (response.data.length > 0) {
                 const config = response.data[0]
@@ -100,7 +100,7 @@ if (props.layoutKey) {
         })
         .catch((error) => {
             // isLoading.value = false
-            // console.error('Could not fetch formDefinition! Going to hardcoded backup option.', error)
+            // console.error('Could not fetch layoutdefinition! Going to hardcoded backup option.', error)
             messages.value.push(
                 { severity: 'warn', sticky: false, content: error, id: count.value++ },
             )
