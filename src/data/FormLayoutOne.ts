@@ -1,5 +1,6 @@
 import Fieldconfig from '@/types/fieldconfig'
 import { ref } from 'vue';
+import { CV_TYPE_DISABLE_IF , CV_TYPE_DISPLAY_IF, IS_VISIBLE } from '@/modules/validateHelpers' //custom vuelidate helpers...
 
 import OptionType from '@/types/Option'
 const catOne: OptionType[] = [
@@ -162,7 +163,7 @@ formConfig.value = [
                         optionValue: "value",
                         editable: true,
                         validators: ['required'],
-                        dependantFields: ['cat_2'],
+                        // dependantFields: ['cat_2'],
                     },
                     {
                         id: 'cat_2',
@@ -173,7 +174,13 @@ formConfig.value = [
                         optionLabel: "label",
                         optionValue: "value",
                         editable: true,
-                        dependantFields: ['cat_3'],
+                        // dependantFields: ['cat_3'],
+                        validators: [
+                            { 
+                                type: CV_TYPE_DISPLAY_IF,
+                                params: { dependsOn: { IS_VISIBLE: ['cat_1'] } }, // equivalent would be SOME_VISIBLE: ['cat_4'] or IS_VISIBLE: 'cat_4' when we are having just one dependency
+                            },
+                        ],
                     },
                     {
                         id: 'cat_3',
@@ -184,7 +191,12 @@ formConfig.value = [
                         optionLabel: "label",
                         optionValue: "value",
                         editable: true,
-                        validators: ['required'],
+                        validators: [
+                            { 
+                                type: CV_TYPE_DISPLAY_IF,
+                                params: { dependsOn: { IS_VISIBLE: ['cat_2'] } }, // equivalent would be SOME_VISIBLE: ['cat_4'] or IS_VISIBLE: 'cat_4' when we are having just one dependency
+                            },
+                        ],
                     },
                     {
                         id: 'cat_4',
@@ -195,41 +207,12 @@ formConfig.value = [
                         optionLabel: "label",
                         optionValue: "value",
                         editable: true,
-                        
                         // TODO with vuelidate validator rule: showIf/hideIf - enableIf/disableIf including specific dependencies via dependsOn ???
                         validators: [ 
                             { 
-                                type: 'displayIf', // or: displayIf or 'visibility' or showIf ?? or hideIf 
-                                // property: dependsOn ?????????????????????????????????? 
-                                // binnen deze validator is duidelijker in de zin van dependentFields op field config nivo. Nu geeft het aan dat mbt display het ding afhangt van bepaalde velden
-                                // maar bijvoorbeeld tnb disabling zou het van (nog weer) andere veld(en) kunnen afhangen en tbv value calculation/computation van (nog weer andere) velden etc etc
-                                dependsOn: ['cat_3'], 
-                                //isLazy: true, //not used yet
-                                isCustom: true, //indicates this 'validator' or rules-engine rule should be treated as an entirely autonomous rule (as opposed to not injecting some $validator function in an existing validator)
-                                params: { fieldCfg: undefined, formData: undefined , formDefinition: undefined },  // TODO special object format instead of array??? also ??? if lazy false it is calculated immediately, to determine if the field should be displayed
-                                // /**
-                                //  * TODO: figure out how extra paras will be passed to the fn after value and vm. If we have vm and say fieldValues / formdata object, we would be rather independent of v$
-                                //  * and would not need v$ to model EACH field separately? Altough we might need that for display / enabling / multiPurpose rules!!!
-                                //  function(value, vm, fieldCfg, formdata, formDefinition , field_vm){ 
-                                // */
-                                fn: (value, vm) => {
-                                    debugger
-                                    // In order for this to work, we must FIRST associate a dummy validator with EACH field, so that it will be monitored by v$!!!!! Else we can not use v$ for interdependcies as is 
-                                    // fake some rule which states that if 'cat_3' is empty ... we should HIDE cat_4
-                                    // or ... can we get to fieldCfg to check which dependesOn there are and then compose a dynamical rule like
-                                    // forall dependsOn that thing must be visible?
-                                    let rule_result = true;
-                                    
-                                    let tmp: String = vm?.v$?.cat_3?.$model
-                                    debugger;
-                                    if (tmp && tmp.toString().length < 1){
-                                          rule_result = false  
-                                    }
-                                    
-                                    // if ( <all kind og business logic>) { display_result = true/false }
-                                    return { $valid: true, extraParams: { rule_result: rule_result, vm: vm }, message: "test visibility rule on cat_4" }
-                                }
-                            }, 
+                                type: CV_TYPE_DISPLAY_IF,
+                                params: { dependsOn: { IS_VISIBLE: ['cat_3'] } }, // equivalent would be SOME_VISIBLE: ['cat_4'] or IS_VISIBLE: 'cat_4' when we are having just one dependency
+                            },
                             'required'
                         ],
                     },
@@ -244,92 +227,66 @@ formConfig.value = [
                         editable: true,
                         // TODO with vuelidate validator rule: showIf/hideIf - enableIf/disableIf including specific dependencies via dependsOn ???
                         validators: [ 
-                            { 
-                                type: 'displayIf', // or: hideIf 
+                            // { 
+                            //     type: 'displayIf', // or: hideIf 
 
-                                // property: dependsOn ?????????????????????????????????? 
-                                // binnen deze validator is duidelijker in de zin van dependentFields op field config nivo. Nu geeft het aan dat mbt display het ding afhangt van bepaalde velden
-                                // maar bijvoorbeeld tnb disabling zou het van (nog weer) andere veld(en) kunnen afhangen en tbv value calculation/computation van (nog weer andere) velden etc etc
-                                // dependsOn: ['cat_4'],
-                                //isLazy: true, //not used yet
-                                dependsOn: ['cat_4'], 
-                                isCustom: true, //indicates this 'validator' or rules-engine rule should be treated as an entirely autonomous rule (as opposed to not injecting some $validator function in an existing validator)
-                                params: { fieldCfg: undefined, formData: undefined , formDefinition: undefined },  // TODO special object format instead of array??? also ??? if lazy false it is calculated immediately, to determine if the field should be displayed
-                                /**
-                                 * 
-                                 */
-                                fn: function(value, vm){
-                                    debugger
-                                    // fake some rule which states that if 'cat_3' is NOT CALCULATED as visible based on a vuelidate rule ... we will HIDE cat_4
-                                    let rule_result = true;
-                                    let tmp: Boolean = vm?.v$ && vm.v$ && vm.v$['cat_4'] && vm.v$['cat_4'].displayIf?.$response?.extraParams?.rule_result
-                                    debugger;
-                                    if (tmp !== true){
-                                          rule_result = false  
-                                    }
+                            //     // property: dependsOn ?????????????????????????????????? 
+                            //     // binnen deze validator is duidelijker in de zin van dependentFields op field config nivo. Nu geeft het aan dat mbt display het ding afhangt van bepaalde velden
+                            //     // maar bijvoorbeeld tnb disabling zou het van (nog weer) andere veld(en) kunnen afhangen en tbv value calculation/computation van (nog weer andere) velden etc etc
+                            //     // dependsOn: ['cat_4'],
+                            //     //isLazy: true, //not used yet
+                            //     dependsOn: ['cat_4'], 
+                            //     isCustom: true, //indicates this 'validator' or rules-engine rule should be treated as an entirely autonomous rule (as opposed to not injecting some $validator function in an existing validator)
+                            //     params: { fieldCfg: undefined, formData: undefined , formDefinition: undefined },  // TODO special object format instead of array??? also ??? if lazy false it is calculated immediately, to determine if the field should be displayed
+                            //     /**
+                            //      * 
+                            //      */
+                            //     fn: function(value, vm){
+                            //         debugger
+                            //         // fake some rule which states that if 'cat_3' is NOT CALCULATED as visible based on a vuelidate rule ... we will HIDE cat_4
+                            //         let rule_result = true;
+                            //         let tmp: Boolean = vm?.v$ && vm.v$ && vm.v$['cat_4'] && vm.v$['cat_4'].displayIf?.$response?.extraParams?.rule_result
+                            //         debugger;
+                            //         if (tmp !== true){
+                            //               rule_result = false  
+                            //         }
                                     
-                                    // if ( <all kind og business logic>) { display_result = true/false }
-                                    return { $valid: true, extraParams: { rule_result: rule_result, vm: vm }, message: "test displayIf rule on cat_5, depending on cat_4" }
-                                }
-                            }, 
+                            //         // if ( <all kind og business logic>) { display_result = true/false }
+                            //         return { $valid: true, extraParams: { rule_result: rule_result, vm: vm }, message: "test displayIf rule on cat_5, depending on cat_4" }
+                            //     }
+                            // },
                             { 
-                                type: 'disableIf',
-                                // property: dependsOn ?????????????????????????????????? 
-                                // binnen deze validator is duidelijker in de zin van dependentFields op field config nivo. Nu geeft het aan dat mbt display het ding afhangt van bepaalde velden
-                                // maar bijvoorbeeld tnb disabling zou het van (nog weer) andere veld(en) kunnen afhangen en tbv value calculation/computation van (nog weer andere) velden etc etc
-                                dependsOn: ['cat_4'], 
-                                //isLazy: true, //not used yet
-                                isCustom: true, //indicates this 'validator' or rules-engine rule should be treated as an entirely autonomous rule (as opposed to not injecting some $validator function in an existing validator)
+                                type: CV_TYPE_DISPLAY_IF,
+                                params: { dependsOn: { IS_VISIBLE: ['cat_4'] } }, // equivalent would be SOME_VISIBLE: ['cat_4'] or IS_VISIBLE: 'cat_4' when we are having just one dependency
+                            },  
+                            //TODO: type should be used to unambiguously map to either a builtin validator or a custom validator we need a HOF for this one
+                            // V_CUSTOM_PREFIX is used ... 'cv__' means 'custom validator_'
+                            //in order NOT to clash with built in validators, we use a prefix V_CUSTOM_PREFIX
+                            //or should we use a global symbol for that     ??????                       
+                            { 
+                                type: CV_TYPE_DISABLE_IF, // ' should resolve to something like ... __cv__DisableIf',
+                                //isCustom: true, //indicates this 'validator' or rules-engine rule should be treated as an entirely autonomous rule (as opposed to not injecting some $validator function in an existing validator)
                                 params: { 
                                     dependsOn: {
                                         // and indicates all cfgs instructions within this object should give TRUE, no matter how these are composed 9id est: they could hold nested conditions that result false etc
-                                        ALL_VISIBLE: ['cat_4', 'cat_5'], 
+                                        ALL_VISIBLE: ['cat_5'], 
                                         ALL_INVALID: ['cat_4']
-                                    }, 
-                                    // TODO: we can strip these since we will standardly pass these in
-                                    fieldCfg: undefined, 
-                                    formData: undefined , 
-                                    formDefinition: undefined 
-                                },  // TODO special object format instead of array??? also ??? if lazy false it is calculated immediately, to determine if the field should be displayed
-                                /**
-                                 * try out how a functionBody would work????? Nope. 
-                                 * try out a HOF which returns the validator but with an object populated ... yep, that works
-                                 * Now figure out what is the best way of passing in and destructuring!!!
-                                 */
-                                fn: ( ...args ) => {
-                                    debugger;
-                                    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = args[0]
-                                    console.log(args[0])
-
-
-                                    /**
-                                     * Test rule which states that if 'cat_4' is silently invalid, we will return true. This indirectly will lead to DISABLE this field, cat_5.
-                                     */
-                                    return function validatorFn(value, vm){
-                                        debugger;
-                                        let rule_result = false; // by default we should NOT disable stuff
-                                        // let tmp: Boolean = !!(vm?.v$?.cat_4?.$silentErrors?.length > 0);
-                                        let tmp2: Boolean = !! vm?.v$[dependsOn]?.$silentErrors.length > 0
-                                        debugger;
-                                        rule_result = tmp2;
-                                        
-                                        // if ( <all kind og business logic>) { display_result = true/false }
-                                        // todo: message kan ook een function zijn ... dus daar kunnen we alles in passen?
-                                        return { $valid: true, extraParams: { rule_result }, message: "test disabling rule on cat_5, depending on cat_4" }
                                     }
-                                },
+                                },  // TODO special object format instead of array??? also ??? if lazy false it is calculated immediately, to determine if the field should be displayed
+                                
                                 // experimental notation to indicate which validators should be implemented ... 
                                 cfgBak: {
                                     // and indicates all cfgs instructions within this object should give TRUE, no matter how these are composed 9id est: they could hold nested conditions that result false etc
                                     and: { ALL_VISIBLE: ['cat_4', 'cat_5'] , ALL_INVALID: ['cat_4'] }
                                 },
-                                // convention: without any and / or / not property, we assume and
+                                // convention: without any 'and' / 'or' / 'not' property, we assume 'and' (conjunctive) for easiest configuration?
                                 cfg: {
-                                    // and indicates all cfgs instructions within this object should give TRUE, no matter how these are composed 9id est: they could hold nested conditions that result false etc
                                     ALL_VISIBLE: ['cat_4', 'cat_5'], 
                                     ALL_INVALID: ['cat_4']
                                 }
                             },
+                            { type: 'minLength', params: [{ min: 10 }] }, 
+                            { type: 'maxLength', params: [{ max: 15 }] }, 
                         ],
                     },
                 ],
