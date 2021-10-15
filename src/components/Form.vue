@@ -49,16 +49,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, readonly, computed } from 'vue'
+import { ref, provide, readonly, computed, onBeforeUnmount } from 'vue'
 import FormDefinitionRecursor from '@/components/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
 import router from '@/router/routes';
 import Utils from '@/modules/utils'
 import EventService from '@/services/ApiService'
-import { messages, addSubmitMessage, addErrorMessage } from '@/modules/UseFormMessages'
+import { messages, addSubmitMessage, addErrorMessage, addWarningMessage } from '@/modules/UseFormMessages'
 import { setValidators, useValidation } from '@/modules/validate'
 import formConfigDefaults from '@/data/FormLayoutDefaults'
+
+onBeforeUnmount(() => {
+  // clear component based messages
+  messages.value = []
+})
 
 type FormProp = {
   config?: Fieldconfig[],
@@ -95,11 +100,14 @@ if (props.formLayoutKey) {
       // find will return array, get the first in this case
       // isLoading.value = false
       if (response.data.length > 0) {
-        myConfig.value = response.data[0].formDefinition
+        myConfig.value = response.data[0].config
       } else {
         const defaultConfig = formConfigDefaults[props.dataType]
         if (defaultConfig) {
           myConfig.value = defaultConfig
+          addWarningMessage(`No layout config was found for key: ${props.formLayoutKey}. Loading default layout ...`)
+        } else {
+          addWarningMessage(`No layout config was found for entity: ${props.dataType}.`)
         }
       }
       getFormData()

@@ -10,10 +10,22 @@ const addSubmitMessage = () => {
     )
 }
 
+const addSuccesMessage = (msg: string) => {
+    messages.value.push(
+        { severity: 'success', sticky: false, content: msg, id: count.value++ },
+    )
+}
+
 const addErrorMessage = (error: any) => {
     messages.value.push(
         { severity: 'error', sticky: true, content: error, id: count.value++ },
     )
 }
 
-export { messages, addSubmitMessage, addErrorMessage }
+const addWarningMessage = (warning: string) => {
+    messages.value.push(
+        { severity: 'warn', sticky: false, content: warning, id: count.value++ },
+    )
+}
+
+export { messages, addSubmitMessage, addSuccesMessage, addErrorMessage, addWarningMessage }

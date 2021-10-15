@@ -47,14 +47,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 import TableToolbar from '@/components/TableToolbar.vue'
 import _ from 'lodash';
 import Utils from '@/modules/utils'
-import MessageType from '@/types/message'
 import ColumnConfig from "@/types/columnconfig"
 import EventService from '@/services/ApiService'
 import router from '@/router/routes'
+import { messages, addSuccesMessage, addErrorMessage, addWarningMessage } from '@/modules/UseFormMessages'
+import TableLayoutDefaults from '@/data/TableLayoutDefaults'
+
+onBeforeUnmount(() => {
+    // clear component based messages
+    messages.value = []
+})
 
 type FormProps = {
     dataType: string,
@@ -74,41 +80,32 @@ const searchValue = ref<string[]>()
 const title = ref<string[]>()
 const formLayoutKey = ref<string>('dummy')
 const selected = ref<Object[]>()
-const messages = ref<MessageType[]>([])
-const count = ref(0);
 
 if (props.layoutKey) {
     EventService.getDataByFilter('layoutdefinition', props.layoutKey)
         .then((response: any) => {
             if (response.data.length > 0) {
                 const config = response.data[0]
-                columns.value = config.formDefinition
+                columns.value = config.config
                 formLayoutKey.value = config.layoutKey
                 title.value = config.label
             } else {
-                messages.value.push(
-                    { severity: 'warn', sticky: false, content: 'No layout config was found. Loading default columns', id: count.value++ },
-                )
-                columns.value = [
-                    {
-                        field: 'title',
-                        header: 'Title'
-                    }
-                ]
+                const defaultConfig = TableLayoutDefaults[props.dataType]
+                if (defaultConfig) {
+                    columns.value = defaultConfig
+                    addWarningMessage(`No layout config was found for key: ${props.layoutKey}. Loading default layout ...`)
+                } else {
+                    addWarningMessage(`No layout config was found for entity: ${props.dataType}.`)
+                }
             }
             getData()
         })
         .catch((error) => {
             // isLoading.value = false
-            // console.error('Could not fetch layoutdefinition! Going to hardcoded backup option.', error)
-            messages.value.push(
-                { severity: 'warn', sticky: false, content: error, id: count.value++ },
-            )
+            addErrorMessage(error)
         })
 } else {
-    messages.value.push(
-        { severity: 'warn', sticky: false, content: 'No layout key was provided.', id: count.value++ },
-    )
+    addErrorMessage('No layout key was provided.')
 }
 
 function getData() {
@@ -124,17 +121,13 @@ function getData() {
 function deleteSelection() {
     const selectedIds = _.map(selected.value, '_id')
     if (selectedIds.length === 0) {
-        messages.value.push(
-            { severity: 'warn', sticky: false, content: 'No selection was made.', id: count.value++ },
-        )
+        addWarningMessage('No selection was made.')
         return
     }
 
     EventService.deleteByIds(props.dataType, selectedIds)
         .then((response) => {
-            messages.value.push(
-                { severity: 'success', sticky: false, content: `${response.data && response.data.deletedCount | 0} document(s) were deleted.`, id: count.value++ },
-            )
+            addSuccesMessage(`${response.data && response.data.deletedCount | 0} document(s) were deleted.`)
             // but what if search filter is active ?! Keep track of filter value
             getData()
         })

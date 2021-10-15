@@ -52,11 +52,10 @@ const formConfig: FormConfig = {
             placeholder: 'Form Layout key',
         },
         {
-            id: 'formDefinition',
+            id: 'config',
             isField: true,
-            label: 'Layout Definition',
+            label: 'Layout configuration',
             type: 'JsonEditor',
-            placeholder: 'Layout Definition',
         }
     ],
     questions: [
