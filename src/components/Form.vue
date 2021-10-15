@@ -85,6 +85,9 @@ const compConfig = computed(
 const fieldValues: any = ref<object>({})
 const fields: any = ref<object>({})
 const myConfig: any = ref<object>({})
+// Use a simple ref for now as there is no combined logic for rules that need it to be computed
+// This way type casting stays in place
+const rules = ref()
 
 if (props.formLayoutKey) {
   EventService.getDataByFilter('layoutdefinition', props.formLayoutKey)
@@ -112,6 +115,8 @@ if (props.formLayoutKey) {
 
 function getFormData() {
   fields.value = getFieldsFromConfig(compConfig.value, 'isField', true)
+  rules.value = setValidators(fields.value, undefined, fieldValues)
+
   if (props.id) {
     EventService.getById(props.dataType, props.id)
       .then((response) => {
@@ -135,11 +140,6 @@ function getFormData() {
     })
   }
 }
-
-// Use a simple ref for now as there is no combined logic for rules that need it to be computed
-// This way type casting stays in place
-const rules = ref()
-rules.value = setValidators(fields.value, undefined, fieldValues)
 
 // TODO: we could have fully dynamical rules in the sense of: depending on form definition and form state, the rulesset could morph
 // const rules = computed(() => {
