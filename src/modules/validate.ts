@@ -2,14 +2,10 @@ import _ from 'lodash'
 import Validator from '@/types/validator'
 import Fieldconfig from '@/types/fieldconfig'
 import { useVuelidate, ValidationRule, ValidationRuleWithParams, ValidatorFn } from '@vuelidate/core'
-import { helpers, required, email, minLength, maxLength, between, maxValue } from '@vuelidate/validators'
+import { helpers, required, requiredIf, email, minLength, maxLength, between, maxValue } from '@vuelidate/validators'
 //import { isCustomValidatorType, RULE_GENERATOR, disablerIf, V_DISPLAYIF , V_DISABLEIF, VISIBILITY , SILENTVALIDITY , V_CUSTOM_PREFIX, CV_TYPE_DISABLE_IF} from '@/modules/validateHelpers' //custom vuelidate helpers...
 import cvh from '@/modules/validateHelpers' //custom vuelidate helpers...
-
-debugger
-// test what we got from validateHelpers ...
-console.log('cvh.disablerIf?????')
-console.log(cvh.disablerIf);
+import { V4MAPPED } from 'dns'
 
 // create an alias for cvh.helpers ?
 let v_h_ = cvh.cHelpers;
@@ -17,11 +13,12 @@ let v_h_ = cvh.cHelpers;
 // create a map to be able to dynamically refer to the vuelidate validators
 export const mapValidators = {
     required,
+    requiredIf,
     email,
     minLength,
     maxLength,
     between,
-    maxValue,
+    maxValue, 
     // custom validators...
     [cvh.CV_TYPE_DISABLE_IF]: cvh.disablerIf,
     [cvh.CV_TYPE_DISPLAY_IF]: cvh.displayerIf,
@@ -75,11 +72,11 @@ function addParamsTovalidator(addedParams = {}, validator: ValidationRuleWithPar
 }
 
 const visibility = (params: object, validatorFn: any, fieldCfg, formDefinition, formData) => {
-    //debugger;
+    //
     const mergedParams = Object.assign({},{ type: 'displayIf' } , params, { fieldCfg: fieldCfg}, { formDefinition: formDefinition} , {formData: formData} )
     return helpers.withParams(
         mergedParams,
-        // (value, vm , ...mergedParams) => { //debugger; console.log('hardcoded code'); return true;}
+        // (value, vm , ...mergedParams) => { // console.log('hardcoded code'); return true;}
         validatorFn
         )
     }
@@ -99,9 +96,9 @@ const ruleGenerator = function(type: string, params: object = {} , validatorFn: 
     let validator;
     let preliminaryValidator
     if (fieldCfg.id==='cat_5' && type==='disableIf'){
-        debugger;
+        
         try{
-            debugger;
+            
             // let lParams = {
             //     dependsOn: {
             //         // and indicates all cfgs instructions within this object should give TRUE, no matter how these are composed 9id est: they could hold nested conditions that result false etc
@@ -121,12 +118,12 @@ const ruleGenerator = function(type: string, params: object = {} , validatorFn: 
                 preliminaryValidator //this should now be in the format of a proper validator function for vuelidate!!!
             )
         } catch(e){
-            debugger
+            console.warn(e)
         }
     }
     // first create the basic validator ???????????????
     // let basic_validator = addParamsTovalidator({ type: type }, { $validator: validatorFn, $message: message } )
-    //let invocator = (fieldCfg, formData, formDefinition) => { //debugger; return validatorFn(value, vm, fieldCfg, formData, formDefinition)}
+    //let invocator = (fieldCfg, formData, formDefinition) => { // return validatorFn(value, vm, fieldCfg, formData, formDefinition)}
     //let test = () => validatorFn(value, vm, fieldCfg, formData, formDefinition)
     
     try {
@@ -153,9 +150,10 @@ const ruleGenerator = function(type: string, params: object = {} , validatorFn: 
         //     basic_validator)
     }
     catch(e){
-        //debugger
+        debugger
+        console.warn(e)
     }
-    //debugger;
+    //
     return validator
 }
    
@@ -186,8 +184,15 @@ export function validName(name) {
 interface formDefinition {
     [key: string]: Fieldconfig
 }
-// TODO:
-export function setValidators(v$, formDefinition: formDefinition, pValidatorRules: Object = {}, formData: Object = {}) {
+// TODO: removethe dependency on v$? that is an enormous reactive thing that might change all the time ... ??? or should we pass it in as a readOnly thing? 
+// We should only run setValidators when v$ is implicitely in some higher scope????
+export function setValidators(pv$, formDefinition: formDefinition, pValidatorRules: Object = {}, formData: Object = {}) {
+    let lv$
+    try {lv$ = pv$ ?? v$} catch(e){
+        console.warn(e)
+        debugger
+    }
+    
     const validatorRules = Object.assign({}, pValidatorRules)
     _.forEach(formDefinition, function (field) {
         let mappedValidator
@@ -213,7 +218,7 @@ export function setValidators(v$, formDefinition: formDefinition, pValidatorRule
             let isString = typeof cfgValidator === 'string'
             tag = isString ? cfgValidator : typeof cfgValidator === 'object' && typeof cfgValidator?.type === 'string' ? cfgValidator?.type : null
             if (!tag){
-                //debugger;
+                //
                 console.error('type is missing...')
                 return
                 //without the type we cannot proceed 
@@ -225,15 +230,15 @@ export function setValidators(v$, formDefinition: formDefinition, pValidatorRule
             // dus wanneer een veld indirect/gededuceerd dependents heeft, dan een rule NIET ignoren, omdat anders NOOIT een rule result wordt genoteerd over een veld en andere velden dat dan nooit kunnen consulteren?
             // Deze skip / ignore feature bewaren we voor later, als performance reasons dat vereisen.
 
-            //for dynamic isCustom validator configs, direct type is not present, instead the type must live inside the params instead of in the direct type
+            //for dynamic isCustom validator configs, direct type is not present, instea d the type must live inside the params instead of in the direct type
             if ( hasCustomPrefix && mapValidators[tag]){
-                debugger;
-                //register the state about having to addDisplayRule or addDisableRule or ...
-                addDisableRule = ( addDisableRule === false || tag === cvh.CV_TYPE_DISABLE_IF) || true
-                addDisplayRule = ( addDisplayRule === false || tag === cvh.CV_TYPE_DISPLAY_IF) || true
+                
+                //register the state about having to addDisplayRule or addDisableRule or ... Once false, it should remain false
+                addDisableRule = ( addDisableRule === false || tag === cvh.CV_TYPE_DISABLE_IF) ? false : true
+                addDisplayRule = ( addDisplayRule === false || tag === cvh.CV_TYPE_DISPLAY_IF) ? false : true
 
                 objParams = Object.assign({}, cfgValidator.params, { type: tag, fieldCfg: field, formDefinition: formDefinition, formData: formData, fieldLabel: fieldLabel } )
-                debugger;
+                
                 // we must map AND INVOKE a dedicated HOC... 
                 // bypassing the RULE_GENERATOR which is meant for rules based on passed fn: function IN the JSON instead of in the source code
                 mappedValidator = mapValidators[tag](objParams)
@@ -254,7 +259,7 @@ export function setValidators(v$, formDefinition: formDefinition, pValidatorRule
             else if ( cfgValidator.isCustom ){
                 // we must create the validator dynamically via the rule_generator...
                 // must we use a HOC to get the additional parametrization implemented?
-                mappedValidator = mapValidators[cvh.RULE_GENERATOR](tag, _.clone(cfgValidator.params), cfgValidator.fn, cfgValidator.message || "no message yet", field, formDefinition, formData, v$ )
+                mappedValidator = mapValidators[cvh.RULE_GENERATOR](tag, _.clone(cfgValidator.params), cfgValidator.fn, cfgValidator.message || "no message yet", field, formDefinition, formData, lv$)
             }
             else {
                 mappedValidator = mapValidators[tag] // only relevant if we did map it in the first place -for now: the config COULD carry it's own complete implementation???-
@@ -266,7 +271,9 @@ export function setValidators(v$, formDefinition: formDefinition, pValidatorRule
                 if (isString) { // unparameterized vuelidate built-in validator
                     augmentedValidator = addParamsTovalidator({ fieldLabel }, mappedValidator)
                 }
-                else if (isParam) { // parameterized vuelidate built-in validator, NOT meant for custom validators
+                else if (isParam) { // parameterized vuelidate built-in validator, NOT meant for custom validators, 
+                    // TODO !!!!! however, we might want to check if we can resolve dynamically for params !!!!!!
+                    // like requiredIf(data) the data must come from some field from formData!
                     let paramValues = []
                     let normalize = !cfgValidator?.normalizeParams || cfgValidator?.normalizeParams !== false
                     
@@ -274,23 +281,51 @@ export function setValidators(v$, formDefinition: formDefinition, pValidatorRule
                     //     mappedValidator = mapValidators[tag](_.clone(cfgValidator.params), cfgValidator.fn)
                     // }
                     // cfgValidator.params.forEach(function (paramEntry) {
+                    // Note: we usually want params to be an array to preserve the order in which they are passed... for BUILTIN validators that is necessary ... 
+                    // However, we should not enter this branch for our fully custom validators....?
                     _.forIn(cfgValidator.params, function (paramEntry) {
                         //cfgValidator.params.forEach(function (paramEntry) {
-                        if (normalize && paramEntry) {
-                            //debugger
+                        if (normalize === true && paramEntry !== undefined  && paramEntry !== null ) {
                             let iterator = Array.isArray(paramEntry) ? paramEntry : Object.values(paramEntry)
                             _.forEach(paramEntry, function (paramValue) {
-                                paramValues.push(paramValue)
+                                if ( paramEntry?.['$model']) {
+                                    try {
+                                        let tmp
+                                        //if $model is an array of strings, we have to pick up multiple dynamical values from the data in scope ...
+                                        if (_.isArray(paramEntry['$model'])){
+                                            let arrTmp = [];
+                                            // walk the array and push a value from the data in scope for each entry...
+                                            _.forEach(paramEntry['$model'], function(targetDataPoint){
+                                                    tmp = formData?.[targetDataPoint] ?? lv$?.[targetDataPoint]?.$model ?? null
+                                                    arrTmp.push(tmp) 
+                                            })
+                                            paramValue = arrTmp
+                                        }
+                                        else {
+                                            // just try to pick up one dynamical data parameter
+                                            let targetDataPoint = paramEntry.$model
+                                            paramValue = formData?.[targetDataPoint] ?? lv$?.[targetDataPoint]?.$model ?? null
+                                        }
+                                    }
+                                    catch(e) {
+                                        console.log(e)
+                                    }
+                                    paramValues.push(paramValue)
+                                }
+                                else {
+                                    paramValues.push(paramValue)
+                                }
                             })
                         }
-                        else { //push as is
+                        else { 
+                            //push as is
                             paramValues.push(paramEntry)
                         }
                     })
-                    //debugger
+                    
                     // if the mappedValidator can be invoked, set the validator to the parameterized invocation of it, since apparently we have params ...
                     if (typeof mappedValidator === 'function' && paramValues.length > 0){
-                        augmentedValidator = addParamsTovalidator({ fieldLabel }, mappedValidator(paramValues))
+                        augmentedValidator = addParamsTovalidator({ fieldLabel }, mappedValidator(...paramValues))
                     }
                     // else if we have passed it ourselves, it should already have the correct signature????
                     else {
@@ -303,7 +338,7 @@ export function setValidators(v$, formDefinition: formDefinition, pValidatorRule
                 objValidator[tag] = augmentedValidator
             }
             else {
-                debugger
+            
                 //for now only hardcoded on visibility?
                 // for totally extraneous rules, say from the server ...
                 if (cfgValidator.isCustom ){
@@ -317,7 +352,7 @@ export function setValidators(v$, formDefinition: formDefinition, pValidatorRule
                     if (isParam) { // parameterized custom validator
                         let paramValues = []
                         let normalize = !cfgValidator?.normalizeParams || cfgValidator?.normalizeParams !== false
-                        //debugger;
+                    
                         let iterator = Array.isArray(cfgValidator.params) ? cfgValidator.params : Object.values(cfgValidator.params)
                             iterator.forEach(function (paramEntry) {
                                 if(paramEntry){
@@ -356,22 +391,32 @@ export function setValidators(v$, formDefinition: formDefinition, pValidatorRule
 
         // A. If we still have to add a displayRule, do so.
         if (addDisplayRule){
-            tag = cvh.CV_TYPE_DISPLAY_IF
-            if ( mapValidators[tag] && cvh.isCustomValidatorType(tag)){
-                objParams = Object.assign({}, { type: tag, fieldCfg: field, formDefinition: formDefinition, formData: formData, fieldLabel: fieldLabel } )
-                mappedValidator = mapValidators[tag](objParams)
-                augmentedValidator = addParamsTovalidator(objParams, mappedValidator) 
-                objValidator[tag] = augmentedValidator
+            try{
+                tag = cvh.CV_TYPE_DISPLAY_IF
+                if ( mapValidators[tag] && cvh.isCustomValidatorType(tag)){
+                    objParams = Object.assign({}, { type: tag, fieldCfg: field, formDefinition: formDefinition, formData: formData, fieldLabel: fieldLabel } )
+                    mappedValidator = mapValidators[tag](objParams)
+                    augmentedValidator = addParamsTovalidator(objParams, mappedValidator) 
+                    objValidator[tag] = augmentedValidator
+                }
+            }
+            catch(e){
+                console.warn(e)
             }
         }
         // B. If we still have to add a disableRule, do so.
         if (addDisableRule){
-            tag = cvh.CV_TYPE_DISABLE_IF
-            if ( mapValidators[tag] && cvh.isCustomValidatorType(tag)){
-                objParams = Object.assign({}, { type: tag, fieldCfg: field, formDefinition: formDefinition, formData: formData, fieldLabel: fieldLabel } )
-                mappedValidator = mapValidators[tag](objParams)
-                augmentedValidator = addParamsTovalidator(objParams, mappedValidator) 
-                objValidator[tag] = augmentedValidator
+            try{
+                tag = cvh.CV_TYPE_DISABLE_IF
+                if ( mapValidators[tag] && cvh.isCustomValidatorType(tag)){
+                    objParams = Object.assign({}, { type: tag, fieldCfg: field, formDefinition: formDefinition, formData: formData, fieldLabel: fieldLabel } )
+                    mappedValidator = mapValidators[tag](objParams)
+                    augmentedValidator = addParamsTovalidator(objParams, mappedValidator) 
+                    objValidator[tag] = augmentedValidator
+                }
+            } catch(e){
+                console.warn(e)
+        
             }
         }
 

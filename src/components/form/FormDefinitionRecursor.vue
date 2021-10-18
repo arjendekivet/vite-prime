@@ -90,54 +90,8 @@ const calculateDependantFieldState: any = inject('calculateDependantFieldState')
  * If any of the criteria is false, we should hide the calling element.
  * TODO: moet config.hidden of config.systemHidden hier meespelen of moet dat in 
  */
-function doShow(config, v$){
-    if (config.id === 'answer'){
-        debugger
-    }
-    let criteria=[]
-    let result
-    try {
-        criteria.push(config?.hidden ?? true)
-        criteria.push(cHelpers.isVisible({ v$ }, config.id))
-    }
-    catch(e){
-        debugger;
-        console.warn(e)
-    }
-    // if any one is false, we should return false, meaning: only if all are true we return true
-    //TODO: faster would be to check for _.some, false and negate that, as it could end iterating asap.
-    result = _.every(criteria, Boolean)
-    
-    console.log('called doShow for ' + config.id + ": " + result)
-    return result
-    //return  !!!config?.hidden || cHelpers.isVisible({ v$ }, config.id)
-}
-function doShowBak(config, v$){
-    if (config.id === 'answer'){
-        debugger
-    }
-    //await $nextTick ??????
-    // unwrap the passed v$ ?? 
-    //let v$2 = pv$
-
-    let crit_1 = true
-    let crit_2 = true
-    let endResult
-    try {
-        crit_1 = !!!config?.hidden 
-        crit_2 = (v$?.[config.id]?.['displayIf']?.$response?.extraParams?.rule_result)
-    }
-    catch(e){
-        crit_2 = true
-    }
-    
-    // if any one is false, we should return false
-    // endResult = ( _.some([crit_1,crit_2], false)) ? false : true
-    // endResult = ( crit_1===false || crit_2===false) ? false : true
-    endResult = !( crit_1===false || crit_2===false )
-    
-    console.log('called doShow for ' + config.id + ": " + endResult)
-    return endResult
+function doShow(config, v$){   
+    return cHelpers.isVisible({ v$ }, config.id)
 }
 
 /**
@@ -148,23 +102,6 @@ function doShowBak(config, v$){
 function doDisable(config, v$){
     // we need to pass in a dummy object to hold v$ ... in order to comply to the signature of isDisabled, which expects vm as the first argument...
     return cHelpers.isDisabled({ v$ }, config.id)
-}
-
-function doDisableBak(config, v$){
-    let result
-    try{
-        //result = !!(v$ && v$[config.id] && v$[config.id][CV_TYPE_DISABLE_IF] && v$[config.id][CV_TYPE_DISABLE_IF].$response?.extraParams?.rule_result)
-        result = !!(v$?.[config.id]?.[CV_TYPE_DISABLE_IF]?.$response?.extraParams?.rule_result)
-        //debugger
-    }
-    catch(e)
-    {
-        debugger;
-        result = false;
-    }
-    //debugger
-    console.log(`called doEnable for '${config.id}' resulted in: ${result}`)
-    return result
 }
 function getRequired(field: Fieldconfig) {
     return _.isArray(field.validators) && _.indexOf(field.validators, 'required') > -1 ? ' *' : null

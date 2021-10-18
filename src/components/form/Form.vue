@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, readonly, reactive, computed } from 'vue'
+import { ref, provide, readonly, reactive, computed, watchEffect } from 'vue'
 import FormDefinitionRecursor from '@/components/form/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
@@ -99,40 +99,45 @@ if (props.id) {
 
 // TODO: if we need to pass in v$ into setValidators, we need a valid reference to v$ ???
 // but 
-let abortSetValidators = ref(true) // initially do not set up rules, until v$ is properly populated
 let v$ = ref({})
-let validatorRules = {}
+ // should validatorRules be a reactive object?
+let validatorRules = ref({})
+let abortSetValidators = ref(true) // initially do not set up rules, until v$ is properly populated
 
-// should validatorRules become a reactive object?
-validatorRules = setValidators(v$.value, fields.value, undefined, fieldValues)
+// TODO: remove the reactive dependency on v$ itself ????????? 
+// first initiate dummy rules?
+//validatorRules = setValidators(v$.value, fields.value, {}, fieldValues.value)
 
-debugger;
+watchEffect(() => fieldValues.value)
 
 // TODO: we could have fully dynamical rules in the sense of: depending on form definition and form state, the rulesset could morph
+// if some relevant state changes or metadata changes, we could recalculate the ruleset? but HOW exactly?
 const rules = computed(() => {
-  // if not rendered or if v$ is not instantiated properly yet, bail out?
-  // debugger;
-  let abort = true
-  try {
-    abort = Object.keys(v$.value).length === 0 
-  }
-  catch(e){
-    debugger
-    abort = true
+      console.log('executing computed "rules"')
+      // use some assignments simply to make rules explicitely dependent upon fields and FieldValues
+      let dep1 = fieldValues.value;
+      let dep2 = fields.value;
+      //let dep3 = v$.value;
+      //let lv$ = v$.value ????
+      //abortSetValidators.value = ?????
+      debugger;
+      //validatorRules = setValidators(v$.value, fields.value, {}, fieldValues.value)
+      return setValidators(undefined, fields.value, {}, fieldValues.value)
+    }, { 
+        onTrack(e) {
+          // triggered when the above is tracked as a dependency
+          //debugger
+          console.log('executing onTrack in computed "rules"')
+        },
+        onTrigger(e) {
+          // triggered when the above is mutated
+          debugger
+          console.log('executing onTrigger in computed "rules"')
+        }
     }
-  if (abort) {
-    debugger;
-    return validatorRules
-  }
+)
 
-  debugger;
-
-  // // should validatorRules be a reactive object?
-  //validatorRules = setValidators(v$.value, fields.value, undefined, fieldValues)
-
-  return validatorRules
-})
-
+// TODO useValidation plus extra global config like autoDirty or lazy or ???
 v$ = useValidation(rules, fieldValues,)
 
 const updateFieldValue = (fieldId: string, value: any) => {
@@ -231,6 +236,8 @@ function getFieldsFromConfig(arr: Fieldconfig[], key: string, value: string | bo
 }
 
 function calculateDependantFieldState(field: Fieldconfig, fieldValue: any) {
+  console.log('exiting calculateDependantFieldState')
+  return
   field.dependantFields?.forEach(function (fieldId: string) {
     const myField = fields.value[fieldId]
     if (myField) {
