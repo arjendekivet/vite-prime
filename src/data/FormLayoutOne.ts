@@ -560,10 +560,11 @@ formConfig.value = [
                         optionLabel: "label",
                         optionValue: "value",
                         editable: true,
+                        //hidden: false, // due to this the field will remain hidden/shown HARDCODED in the form REGARDLESS of any other rule dependency.
                         validators: [
                             //'required' Only whne the title has been filled out 
                             // AND the description ???
-                            { type: 'requiredIf', params: [{ $model: 'title' }] }
+                            { type: 'requiredIf', params: [{ $model: 'title' }] },
                         ]
                     },
                     {
@@ -603,6 +604,8 @@ formConfig.value = [
                         optionLabel: "label",
                         optionValue: "value",
                         editable: true,
+                        //hidden: false, // IF we DELETE/REMOVE the hidden flag, only then the CV_TYPE_DISPLAY_IF rule will kick in!!!!
+                        //disabled: true, // // IF we DELETE/REMOVE the disabled flag, only then the CV_TYPE_DISABLE_IF rule will kick in!!!!
                         validators: [
                             //'required', 
                             { type: 'minLength', params: [{ min: 10 }] }, //this should pick up the value of test dynamically, in order to specifiy which dynamical minLength to use ?
