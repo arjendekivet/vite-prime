@@ -98,8 +98,7 @@ export const cHelpers = {
      * @param fieldName 
      * @returns 
      */
-    isVisible: (vm, fieldName) => {
-        debugger;
+    isVisible: (vm, fieldName: string) => {
         let defaulted = true;
         let result, result_1, result_2;
         try {
@@ -112,12 +111,12 @@ export const cHelpers = {
             result = result_1 && result_2
         }
         catch(e) {
-            console.log(e);
+            console.warn(e);
             result = defaulted;
         }
         return result
     },
-    isDisabled: (vm, fieldName) => {
+    isDisabled: (vm, fieldName: string) => {
         let result, defaulted = false;
         try {
             result = !!(vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.extraParams?.rule_result)
@@ -129,7 +128,7 @@ export const cHelpers = {
         }
         return result
     },
-    isInvalid: (vm,fieldName) => {
+    isInvalid: (vm,fieldName: string) => {
         let result, defaulted = false;
         try {
             // invert the result because we re-use isValid, we returns true if valid
@@ -146,7 +145,7 @@ export const cHelpers = {
     //TODO make isInvalid based on re-use inverted isValid
     // etcetera etcetera etcetera 
 
-    someValidSilent:  (vm, arrFieldNames) => {
+    someValidSilent:  (vm, arrFieldNames: string[]) => {
         let result, defaulted = false;
         const arrResults = [];
         try {
@@ -163,8 +162,8 @@ export const cHelpers = {
         }
         return result
     },
-    allValidSilent:  (vm, arrFieldNames) => {        
-        let result = false;
+    allValidSilent:  (vm, arrFieldNames: string[]) => {        
+        let result, defaulted = true;
         let arrResults = [];
         try {
             _.forEach(arrFieldNames, function(fieldName) {
@@ -176,27 +175,25 @@ export const cHelpers = {
         }
         catch(e)
         {
-            console.log(e);
-            
+            console.warn(e);
+            result = defaulted;
         }
         return result
     },
-    allInvalidSilent:  (vm, arrFieldNames) => {
-        let result = false;
-        let arrResults = [];
+    allInvalidSilent:  (vm, arrFieldNames: string[]) => {
+        let result, defaulted = false;
         try {
             // re-use allValidSilent and negate it
             result = !( cHelpers.allValidSilent(vm, arrFieldNames))
         }
-        catch(e)
-        {
-            console.log(e);
-            
-        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        } 
         return result
     },
-    someValid:  (vm, arrFieldNames) => {
-        let result = false;
+    someValid:  (vm, arrFieldNames: string[]) => {
+        let result, defaulted = true;
         let arrResults = [];
         try {
             _.forEach(arrFieldNames, function(fieldName) {
@@ -206,15 +203,14 @@ export const cHelpers = {
             })
             result = _.some(arrResults, Boolean);
         }
-        catch(e)
-        {
-            console.log(e);
-            
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
         }
         return result
     },
-    allValid:  (vm, arrFieldNames) => {
-        let result = false;
+    allValid:  (vm, arrFieldNames: string[]) => {
+        let result, defaulted = true;
         let arrResults = [];
         try {
             _.forEach(arrFieldNames, function(fieldName) {
@@ -224,15 +220,14 @@ export const cHelpers = {
             })
             result = _.every(arrResults, Boolean);
         }
-        catch(e)
-        {
-            console.log(e);
-            
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
         }
         return result
     },
-    allInvalid:  (vm, arrFieldNames) => {
-        let result = false;
+    allInvalid:  (vm, arrFieldNames: string[]) => {
+        let result, defaulted = false;
         let arrResults = [];
         try {
             _.forEach(arrFieldNames, function(fieldName) {
@@ -244,64 +239,38 @@ export const cHelpers = {
             result = _.every(arrResults, Boolean);
             //result = !arrResults.includes(false);
         }
-        catch(e)
-        {
-            console.log(e);
-            
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
         }
         
         return result
     },
-    someInvalid:  (vm, arrFieldNames) => {
-        
-        let result = false;
+    someInvalid:  (vm, arrFieldNames: string[]) => {
+        let result, defaulted = false;
         let arrResults = [];
         try {
             _.forEach(arrFieldNames, function(fieldName) {
-                // re-use isValid and then in the end evalution we 
+                // re-use isValid
                 result =  cHelpers.isValid(vm,fieldName)
                 arrResults.push(result)
             })
-            //result = !_.every(arrResults, Boolean); // or _.some(arrResults, !false) ????
-            result = arrResults.includes(false); // if one entry is true, it indicates "some" are "invalid" ...
+            result = arrResults.includes(false);
         }
         catch(e) {
-            console.log(e);
-            
-        }
-        
+            console.warn(e);
+            result = defaulted;
+        }     
         return result
     },
     /**
-     * 
-     * TODO: should this also take into account !!config.hidden? or !!!config.systemHidden or such?
-    * from $response?.extraParams?.fieldCfg ...
-    * Hoe weet je wat de source of truth is? Stel field.hidden = true komt aanvankelijk binnen vanaf de server.
-    * als je niet steeds terug wil naar de server, en een rule execution rekent uit "show", 
-    * hoe moet je dan vastleggen dat de rule wint van de statische config?
-    * of moet de insteek zijn: als er geen regel is, bepaalt fieldCfg.hidden dat, maar als er wel een regel is dan bepaalt die regel het, omdat de regel dynamisch is ?
-    * 
-    * oftewel: als een veld, qua visibility, 
-    * 1. de eigen systemHidden property mag NIET worden overruled.
-    * 2. als het veld een dependsOn heeft, 
-    *      ???? EN de genoemde dependent field heeft inderdaad een visibility validator, ???? of gaat dit buiten de verantwoordelijkheid van dit veld ?????
-    *   dan bepaalt de dependsOn rule execution de visibility.
-    * 3. Als dit niet van toepassing is, dus geen systemHidden en geen dependsOn, dan bepaalt de eigen .hidden property de visibility.
-    * 
-    * Dezelfde logica zou kunnen gelden voor Read / Edit ( enbaled / disabled)
-    * * 1. de eigen readOnly property mag NIET worden overruled. (dat is als systemRead of systemDisabled )
-    * 2. als het veld een dependsOn heeft, 
-    *      ???? EN de genoemde dependent field heeft inderdaad een visibility validator, ???? of gaat dit buiten de verantwoordelijkheid van dit veld ?????
-    *   dan bepaalt de dependsOn rule execution de visibility.
-    * 3. Als dit niet van toepassing is, dus geen systemHidden en geen dependsOn, dan bepaalt de eigen .hidden property de visibility.
-    * 
      * @param vm 
      * @param fieldName 
      * @returns 
      * 
      */
-    someVisible:  (vm, arrFieldNames) => {
-        let result = false;
+    someVisible: (vm, arrFieldNames: string[]) => {
+        let result, defaulted = true;
         let arrResults = [];
         try {
             _.forEach(arrFieldNames, function(fieldName) {
@@ -311,15 +280,14 @@ export const cHelpers = {
             })
             result = _.some(arrResults, Boolean);
         }
-        catch(e)
-        {
-            console.log(e);
-            
-        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }  
         return result
     }, 
-    allVisible:  (vm, arrFieldNames) => {
-        let result = true;
+    allVisible: (vm, arrFieldNames: string[]) => {
+        let result, defaulted = true;
         let arrResults = [];
         try {
             _.forEach(arrFieldNames, function(fieldName) {
@@ -329,17 +297,14 @@ export const cHelpers = {
             })
             result = _.every(arrResults, Boolean);
         }
-        catch(e)
-        {
-            console.log(e);
-            
-        }
-        
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }  
         return result
     },
-    someDisabled:  (vm, arrFieldNames) => {
-        
-        let result = false;
+    someDisabled: (vm, arrFieldNames: string[]) => {
+        let result, defaulted = false;
         let arrResults = [];
         try {
             _.forEach(arrFieldNames, function(fieldName) {
@@ -348,35 +313,29 @@ export const cHelpers = {
             })
             result = _.some(arrResults, Boolean);
         }
-        catch(e)
-        {
-            console.log(e);
-            
-        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        } 
         return result
     }, 
-    allDisabled:  (vm, arrFieldNames) => {
-        
-        let result = false;
+    allDisabled: (vm, arrFieldNames: string[]) => {
+        let result, defaulted = false;
         let arrResults = [];
         try {
             _.forEach(arrFieldNames, function(fieldName) {
                 result = cHelpers.isDisabled(vm,fieldName)
-                
                 arrResults.push(result)
             })
             result = _.every(arrResults, Boolean);
         }
-        catch(e)
-        {
-            console.log(e);
-            
-        }
-        
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        } 
         return result
     },
 }
-
 
 /**
  * A HOF for type 'disABLERIf' and diplayerIf .... and ????
