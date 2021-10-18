@@ -58,7 +58,8 @@ export const CFG_PROP_ENTITY_DISABLE_INVERT = false; // indicates a disable rule
 // define helper functions like isValid, isVisible, isDisabled, that take a fieldname and return a boolean if the retrieved info qualifies.
 export const cHelpers = {
     /**
-     * * Inverts the result because vuelidate flags $error or $invalid, which is the opposite of what we test here.
+     * Checks if a field is silently -eagerly- valid. 
+     * Inverts the result because vuelidate flags $error or $invalid, which is the opposite of what we test here.
      * @param vm 
      * @param fieldName 
      * @returns 
@@ -76,6 +77,7 @@ export const cHelpers = {
         return result
     },
     /**
+     * Checks if a field is explicitely -being touched/dirty- valid. 
      * Inverts the result because vuelidate flags $error or $invalid, which is the opposite of what we test here.
      * @param vm 
      * @param fieldName 
@@ -116,6 +118,12 @@ export const cHelpers = {
         }
         return result
     },
+    /**
+     * Checks if a field is ruled to be disabled.
+     * @param vm 
+     * @param fieldName 
+     * @returns 
+     */
     isDisabled: (vm, fieldName: string) => {
         let result, defaulted = false;
         try {
@@ -144,7 +152,6 @@ export const cHelpers = {
     //TODO make isHidden based on re-use inverted isVisible
     //TODO make isInvalid based on re-use inverted isValid
     // etcetera etcetera etcetera 
-
     someValidSilent:  (vm, arrFieldNames: string[]) => {
         let result, defaulted = false;
         const arrResults = [];
@@ -180,7 +187,7 @@ export const cHelpers = {
         }
         return result
     },
-    allInvalidSilent:  (vm, arrFieldNames: string[]) => {
+    allInvalidSilent: (vm, arrFieldNames: string[]) => {
         let result, defaulted = false;
         try {
             // re-use allValidSilent and negate it
@@ -192,7 +199,7 @@ export const cHelpers = {
         } 
         return result
     },
-    someValid:  (vm, arrFieldNames: string[]) => {
+    someValid: (vm, arrFieldNames: string[]) => {
         let result, defaulted = true;
         let arrResults = [];
         try {
@@ -209,7 +216,7 @@ export const cHelpers = {
         }
         return result
     },
-    allValid:  (vm, arrFieldNames: string[]) => {
+    allValid: (vm, arrFieldNames: string[]) => {
         let result, defaulted = true;
         let arrResults = [];
         try {
@@ -226,16 +233,15 @@ export const cHelpers = {
         }
         return result
     },
-    allInvalid:  (vm, arrFieldNames: string[]) => {
+    allInvalid: (vm, arrFieldNames: string[]) => {
         let result, defaulted = false;
         let arrResults = [];
         try {
             _.forEach(arrFieldNames, function(fieldName) {
                 // re-use isValid but inverted
-                result =  !cHelpers.isValid(vm,fieldName)
+                result = !cHelpers.isValid(vm,fieldName)
                 arrResults.push(result)
             })
-            // ?????????????????????????????????????????????
             result = _.every(arrResults, Boolean);
             //result = !arrResults.includes(false);
         }
@@ -252,7 +258,7 @@ export const cHelpers = {
         try {
             _.forEach(arrFieldNames, function(fieldName) {
                 // re-use isValid
-                result =  cHelpers.isValid(vm,fieldName)
+                result = cHelpers.isValid(vm,fieldName)
                 arrResults.push(result)
             })
             result = arrResults.includes(false);
@@ -351,9 +357,9 @@ export const cHelpers = {
  * * TODO: write a parser / reducer which can walk the dependsOn object and map it to function invocations and reduce to a return value...
  * * TODO: write a parser / reducer which can walk the dependsOn object and map it to function invocations and reduce to a return value...
  * 
- * @param args. Array.  We expect to pass in one object containing all the necessary parametrizations. 
+ * @param args. Array.  We expect to get passed in all the necessary parametrizations. 
  * Supports refering to fields and their visibility-state or disabled-state or validity-state or their value ...
- * @returns a parameterized ruleFn for vuelidateto be used as a custom validator for vuelidate (as opposed to not a built-in one).
+ * @returns a parameterized ruleFn for vuelidate, to be used as a custom rule executioner for vuelidate (as opposed to only built-in ones and only for validation purposes).
  */
 const hofRuleFnGenerator = ( ...args) => {
     debugger
@@ -400,25 +406,13 @@ const hofRuleFnGenerator = ( ...args) => {
 }
 
 /**
- * A HOF for type 'disABLERIf', wich returns the parameterized version of a validator fn.
- * For now supports: 
- * conditioning on the eager validity of some/all fields.
- * conditioning on the lazy validity of some/all fields.
- * conditioning on the visibility of some/all fields.
- * conditioning on the disabled of some/all fields.
- * etcetera
- * * TODO: write a parser / reducer which can walk the dependsOn object and map it to function invocations and reduce to a return value...
- * * TODO: write a parser / reducer which can walk the dependsOn object and map it to function invocations and reduce to a return value...
- * * TODO: write a parser / reducer which can walk the dependsOn object and map it to function invocations and reduce to a return value...
- * * TODO: write a parser / reducer which can walk the dependsOn object and map it to function invocations and reduce to a return value...
- * 
+ * Configures and calls a Higher Order Function to generate a displayerIf rule-function for vuelidate.
  * @param args. Array.  We expect to pass in one object containing all the necessary parametrizations. 
  * Supports refering to fields and their visibility-state or disabled-state or validity-state or their value ...
  * @returns a parameterized ruleFn for vuelidateto be used as a custom validator for vuelidate (as opposed to not a built-in one).
  */
- export const disablerIf = ( args ) => {
+ export const disablerIf = (args) => {
     debugger;
-    // set some specifics for the disabler when it calls hofRuleGenerator ...
     const defaultRuleResult = false
     const staticConfigProperty = CFG_PROP_ENTITY_DISABLE
     const doInvertRuleResult = CFG_PROP_ENTITY_DISABLE_INVERT
@@ -431,9 +425,13 @@ const hofRuleFnGenerator = ( ...args) => {
     return resultFunction
 }
 
-export const displayerIf = ( args ) => {
+/**
+ * Configures and calls a Higher Order Function to generate a disablerIf rule-function for vuelidate.
+ * @param args 
+ * @returns 
+ */
+export const displayerIf = (args) => {
     debugger;
-    // set some specifics for the disabler when it calls hofRuleGenerator ...
     const defaultRuleResult = true;
     const staticConfigProperty = CFG_PROP_ENTITY_DISPLAY
     const doInvertRuleResult = CFG_PROP_ENTITY_DISPLAY_INVERT
@@ -445,342 +443,7 @@ export const displayerIf = ( args ) => {
     }
     return resultFunction
 }
-export const disablerIfNEW = ( ...args ) => {
-    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = args[0]
-    const ruleType = params.type || CV_TYPE_DISABLE_IF
-    const ruleDefaultResult = false; //should be as liberal as possible???
-    let resultFunction
-    let fallBackFunction = function ruleFn(value, vm){
-        return { $valid: true, extraParams: { rule_result: ruleDefaultResult , fieldCfg }, message: `Fallback or ty-catch rule. Either an error occurred or neither static config property nor any configured rule of type ${ruleType} for ${fieldCfg.label}` }
-    }
-    let pretest 
-    let hasStaticConfigProperty 
-    try {
-        pretest = fieldCfg?.[CFG_PROP_ENTITY_DISABLE] ?? "dummy"
-        hasStaticConfigProperty = !!!( pretest === "dummy")
-        
-        // 1. do we have a overruling static configuration property? Of: hoort hier niet thuis? Dit IS de ruleFn en die MAG alleen geimplemnteerd worden WANNEER er geen static overruler is? Nee kan wel ...
-        if ( hasStaticConfigProperty )
-        {
-            resultFunction = function ruleFn(value, vm){
-                console.log('running displayerIf validator from 1-st branch for ', fieldCfg.id)
-                const invert = CFG_PROP_ENTITY_DISABLE_INVERT; // indicates a display rule will have to negate the config prop
-                // meaning: the config prop conceptually is the opposite!!! If the config is { hidden: true } this displayerIf should return False.
-                let rule_result = invert ? !!!fieldCfg?.[CFG_PROP_ENTITY_DISABLE] : !!fieldCfg?.[CFG_PROP_ENTITY_DISABLE]
-                return { $valid: true, extraParams: { rule_result , fieldCfg }, message: `Message for rule of type ${ruleType} based to static configuration property (metadata) ${CFG_PROP_ENTITY_DISABLE} on ${fieldCfg.label}` }
-            }
-        }
-        // probe if we have a call for a supported custom rule function
-        if (!resultFunction){
-            debugger;
-            resultFunction = probeCustomRuleFn(args, ruleType)
-        }
-        // Again probe to make sure that if we did not have any function yet, we should return a liberal fallback function 
-        if (!resultFunction){
-            console.log('3-d branch for ', fieldCfg.id)
-            // if we did not have anything configured, we should return ruleDefaultResult ??? true or false or ????
-            resultFunction = fallBackFunction
-        }
 
-    } catch (error) {
-        console.log(error)
-        resultFunction = fallBackFunction
-    }
-    return resultFunction
-}
-
-const disablerIfBAK = ( ...args ) => {
-
-    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = args[0]
-    const ruleDefault = false; // meaning the rule tests such that if true, the rule will implement it.
-
-    let pretest = fieldCfg?.[CFG_PROP_ENTITY_DISABLE] ?? "dummy"
-    
-    let qualify = !!!(pretest === "dummy")
-    try {
-        
-        // 1. do we have a overruling static configuration property? Of: hoort hier niet thuis? Dit IS de ruleFn en die MAG alleen geimplemnteerd worden WANNEER er geen static overruler is? Nee kan wel ...
-        if ( qualify === true ){
-            return function ruleFn(value, vm){
-                console.log('running disABLERIf validator from 1-st branch for ', fieldCfg.id)
-                const invert = CFG_PROP_ENTITY_DISABLE_INVERT; // indicates a display rule will have to negate the config prop
-                ; // meaning: the config prop conceptually is the opposite!!! If the config is { hidden: true } this displayerIf should return False.
-                let rule_result = invert ? !!!fieldCfg?.[CFG_PROP_ENTITY_DISABLE] : !!fieldCfg?.[CFG_PROP_ENTITY_DISABLE]
-                return { $valid: true, extraParams: { rule_result , fieldCfg }, message: `static disabler rule for ${fieldCfg.label}` }
-            }
-        }
-        // TODO extend for all supported combinations ...
-        else if (dependsOn?.[ALL_VISIBLE] || dependsOn?.[IS_VISIBLE] || dependsOn?.[SOME_VISIBLE] || dependsOn?.[ALL_VALID] || dependsOn?.[ALL_INVALID]  || dependsOn?.[SOME_INVALID]  || dependsOn?.[IS_INVALID] ) {
-            
-            return function ruleFn(value, vm){
-            
-                console.log('running disABLERIf validator from 2-d branch for ', fieldCfg.id)
-                let rule_result = true; // by default we should display stuff ???????????????
-                let arrPartials = [];
-                // quick & dirty naieve implementation. For each relevant condition invoke it and add the result to the partials.
-                // assuming conjunctions we can test with _.every
-                let fn = IS_VISIBLE
-                let target = dependsOn?.[IS_VISIBLE]
-                if (dependsOn?.[IS_VISIBLE]){
-                    fn = IS_VISIBLE;
-                    target = dependsOn[IS_VISIBLE]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                }
-                if (dependsOn?.[ALL_VISIBLE]){
-                    fn = ALL_VISIBLE;
-                    target = dependsOn[ALL_VISIBLE]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                }   
-                if (dependsOn?.[SOME_VISIBLE]){
-                    fn = ALL_VISIBLE;
-                    target = dependsOn[SOME_VISIBLE]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                } 
-                if (dependsOn?.[ALL_VALID]){
-                    fn = ALL_VALID;
-                    target = dependsOn[ALL_VALID]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                } 
-                if (dependsOn?.[ALL_INVALID]){
-                    fn = ALL_INVALID;
-                    target = dependsOn[ALL_INVALID]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                    
-                } 
-                if (dependsOn?.[SOME_INVALID]){
-                    fn = SOME_INVALID;
-                    target = dependsOn[SOME_INVALID]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                } 
-                if (dependsOn?.[IS_INVALID]){
-                    fn = IS_INVALID;
-                    target = dependsOn[IS_INVALID]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                } 
-                
-                //TODO: write a parse which can walk the dependsOn object and map it to function invocations ...
-
-                // 1. If the dependsOn object contains an "and" property ...ALL_VISIBLE
-                if (dependsOn.and){}
-                else if(dependsOn.or){}
-                else if (dependsOn.not){}
-                else {
-                    
-                    rule_result = _.every(arrPartials, Boolean)
-                    
-                }
-                
-                // if ( <all kind og business logic>) { display_result = true/false }
-                // todo: message kan ook een function zijn ... dus daar kunnen we alles in passen?
-                return { $valid: true, extraParams: { rule_result , fieldCfg }, message: `test DISABLE rule for ${fieldCfg.label} dependent` }
-            }
-        }
-        else {
-            
-            // if we did not have anything configured, we should return true
-            return function ruleFn(value, vm){
-                console.log('running disABLERIf validator from 3-d branch for ', fieldCfg.id)
-                return { $valid: true, extraParams: { rule_result: ruleDefault , fieldCfg }, message: `Dummy rule. No configured disablerRule for ${fieldCfg.label}` }
-            }
-        }
-    } catch(e){
-        
-        console.log(error)
-        return function ruleFn(value, vm){
-            console.log('running disABLERIf validator from error branch for ', fieldCfg.id)        
-            return { $valid: true, extraParams: { rule_result: ruleDefault , fieldCfg }, message: `Try-Catch Liberal Fallback rule. Error configuring disablerRule for ${fieldCfg.label}` }
-        }
-    }
-}
-/**
- * TODO: write a parser / reducer which can walk the dependsOn object and map it to function invocations and reduce to a return value...
- * 
- * @param args
- * @returns 
- */
-export const displayerIfNEW = ( ...args ) => {
-    // naieve version, hard coded branching logi, to be replaced with intelligent recursive reducer / resolver ...
-    // or something that predefines like X supported combinations ...
-    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = args[0]
-    const ruleType = params.type || CV_TYPE_DISPLAY_IF
-    const ruleDefaultResult = true; //should be as liberal as possible???
-    let resultFunction
-    let fallBackFunction = function ruleFn(value, vm){
-        console.log('running displayerIf validator from 3-d branch for ', fieldCfg.id)
-        return { $valid: true, extraParams: { rule_result: ruleDefaultResult , fieldCfg }, message: `Fallback or ty-catch rule. Either an error occurred or neither static config property nor any configured rule of type ${ruleType} for ${fieldCfg.label}` }
-    }
-    let pretest 
-    let hasStaticConfigProperty 
-    try {
-        pretest = fieldCfg?.[CFG_PROP_ENTITY_DISPLAY] ?? "dummy"
-        hasStaticConfigProperty = !!!( pretest === "dummy")
-        
-        // 1. do we have a overruling static configuration property? Of: hoort hier niet thuis? Dit IS de ruleFn en die MAG alleen geimplemnteerd worden WANNEER er geen static overruler is? Nee kan wel ...
-        if ( hasStaticConfigProperty )
-        {
-            resultFunction = function ruleFn(value, vm){
-                console.log('running displayerIf validator from 1-st branch for ', fieldCfg.id)
-                const invert = CFG_PROP_ENTITY_DISPLAY_INVERT; // indicates a display rule will have to negate the config prop
-                // meaning: the config prop conceptually is the opposite!!! If the config is { hidden: true } this displayerIf should return False.
-                let rule_result = invert ? !!!fieldCfg?.[CFG_PROP_ENTITY_DISPLAY] : !!fieldCfg?.[CFG_PROP_ENTITY_DISPLAY]
-                return { $valid: true, extraParams: { rule_result , fieldCfg }, message: `Message for rule of type ${ruleType} based to static configuration property (metadata) ${CFG_PROP_ENTITY_DISPLAY} on ${fieldCfg.label}` }
-            }
-        }
-        // probe if we have a call for a supported custom rule function
-        if (!resultFunction){
-            debugger;
-            resultFunction = probeCustomRuleFn(args, ruleType)
-        }
-        // Again probe to make sure that if we did not have any function yet, we should return a liberal fallback function 
-        if (!resultFunction){
-            console.log('3-d branch for ', fieldCfg.id)
-            // if we did not have anything configured, we should return ruleDefaultResult ??? true or false or ????
-            resultFunction = fallBackFunction
-        }
-
-    } catch (error) {
-        console.log(error)
-        resultFunction = fallBackFunction
-    }
-    return resultFunction
-}
-
-export const displayerIfBAK = ( ...args ) => {
-    // naieve version, hard coded branching logi, to be replaced with intelligent recursive reducer / resolver ...
-    // or something that predefines like X supported combinations ...
-    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = args[0]
-
-    const ruleDefault = true;
-    let pretest 
-    let qualify 
-    try {
-        pretest = fieldCfg?.[CFG_PROP_ENTITY_DISPLAY] ?? "dummy"
-        qualify = false ;//!!!( pretest === "dummy")
-        
-        // 1. do we have a overruling static configuration property? Of: hoort hier niet thuis? Dit IS de ruleFn en die MAG alleen geimplemnteerd worden WANNEER er geen static overruler is? Nee kan wel ...
-        if ( qualify === true )
-        {
-            
-            return function ruleFn(value, vm){
-                console.log('running displayerIf validator from 1-st branch for ', fieldCfg.id)
-                const invert = CFG_PROP_ENTITY_DISPLAY_INVERT; // indicates a display rule will have to negate the config prop
-                // meaning: the config prop conceptually is the opposite!!! If the config is { hidden: true } this displayerIf should return False.
-                let rule_result = invert ? !!!fieldCfg?.[CFG_PROP_ENTITY_DISPLAY] : !!fieldCfg?.[CFG_PROP_ENTITY_DISPLAY]
-                return { $valid: true, extraParams: { rule_result , fieldCfg }, message: `static display rule for ${fieldCfg.label}` }
-            }
-        }
-        // 2. 
-        else if (dependsOn?.[ALL_VISIBLE] || dependsOn?.[IS_VISIBLE] || dependsOn?.[SOME_VISIBLE] || dependsOn?.[ALL_VALID] || dependsOn?.[ALL_INVALID] || dependsOn?.[SOME_INVALID] || dependsOn?.[IS_DISABLED]  || dependsOn?.[IS_INVALID]  || dependsOn?.[IS_VALID]){
-            debugger;
-            return getCustomRuleFn(args[0], params.type || CV_TYPE_DISPLAY_IF )
-            
-            return function ruleFn(value, vm){
-                
-                console.log('running displayerIf validator from 2-st branch for ', fieldCfg.id)
-                let rule_result = true; // by default we should display stuff ???????????????
-                let arrPartials = [];
-                // quick & dirty naieve implementation. For each relevant condition invoke it and add the result to the partials.
-                // assuming conjunctions we can test with _.every
-                let fn = IS_VISIBLE
-                let target = dependsOn?.[IS_VISIBLE]
-                if (dependsOn?.[IS_VISIBLE]){
-                    fn = IS_VISIBLE;
-                    target = dependsOn[IS_VISIBLE]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                }
-                if (dependsOn?.[ALL_VISIBLE]){
-                    fn = ALL_VISIBLE;
-                    target = dependsOn[ALL_VISIBLE]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                }   
-                if (dependsOn?.[SOME_VISIBLE]){
-                    fn = ALL_VISIBLE;
-                    target = dependsOn[SOME_VISIBLE]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                } 
-                if (dependsOn?.[ALL_VALID]){
-                    fn = ALL_VALID;
-                    target = dependsOn[ALL_VALID]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                } 
-                if (dependsOn?.[ALL_INVALID]){
-                    fn = ALL_INVALID;
-                    target = dependsOn[ALL_INVALID]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                } 
-                if (dependsOn?.[SOME_INVALID]){
-                    fn = SOME_INVALID;
-                    target = dependsOn[SOME_INVALID]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                } 
-                if (dependsOn?.[IS_DISABLED]){
-                    fn = IS_DISABLED;
-                    target = dependsOn[IS_DISABLED]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                }
-                if (dependsOn?.[IS_INVALID]){
-                    fn = IS_INVALID;
-                    target = dependsOn[IS_INVALID]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                } 
-                if (dependsOn?.[IS_VALID]){
-                    fn = IS_VALID;
-                    target = dependsOn[IS_VALID]
-                    
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                } 
-                
-                //TODO: write a parse which can walk the dependsOn object and map it to function invocations ...
-
-                // 1. If the dependsOn object contains an "and" property ...ALL_VISIBLE
-                if (dependsOn.and){}
-                else if(dependsOn.or){}
-                else if (dependsOn.not){}
-                else {
-                    
-                    rule_result = _.every(arrPartials, Boolean)
-                }
-                
-                // if ( <all kind og business logic>) { display_result = true/false }
-                // todo: message kan ook een function zijn ... dus daar kunnen we alles in passen?
-                return { $valid: true, extraParams: { rule_result , fieldCfg }, message: `test DISPLAY rule for ${fieldCfg.label} dependent on ${fn}` }
-            }
-        }
-        else {
-            // if we did not have anything configured, we should return true
-            
-            return function ruleFn(value, vm){
-                console.log('running displayerIf validator from 3-d branch for ', fieldCfg.id)
-                return { $valid: true, extraParams: { rule_result: ruleDefault , fieldCfg }, message: `Dummy rule. No configured displayerRule for ${fieldCfg.label}` }
-            }
-        }
-
-    } catch (error) {
-        console.log(error)
-            
-             // if we have a runtime error, return a liberal rule?
-             
-             return function ruleFn(value, vm){
-                console.log('running displayerIf validator from error branch for ', fieldCfg.id)
-                 return { $valid: true, extraParams: { rule_result: ruleDefault , fieldCfg }, message: `Try-Catch Liberal Fallback rule. Error configuring displayerRule for ${fieldCfg.label}` }
-             }
-    }
-}
 const probeCustomRuleFn = (arrCfg, pType) => {
     debugger
     const { dependsOn, fieldCfg, formData, formDefinition, ...params } = arrCfg[0]
@@ -792,7 +455,7 @@ const probeCustomRuleFn = (arrCfg, pType) => {
     if ( matched.length ){
         debugger
         return function ruleFn(value, vm){
-            console.log(`running cynapps custom rule validator -type: ${ruleType}- from 2-st branch for ${fieldCfg.id} `)
+            //console.log(`running cynapps custom rule validator -type: ${ruleType}- from 2-st branch for ${fieldCfg.id} `)
             let rule_result = true; // by default we should display stuff ???????????????
             let arrPartials = [];
             let fn, target
@@ -817,42 +480,6 @@ const probeCustomRuleFn = (arrCfg, pType) => {
 export const isCustomValidatorType = (type: string) => {
     const result = type?.indexOf(V_CUSTOM_PREFIX) > -1 ?? false
     return result
-}
-
-// example of config for field cat_5 to calculate if it should be "enabled or disabled". all conjunctive criteria should be grouped into the same array's and the disjunctive criteria should be in som other array etc etc
-//// The logic OR means either disjunctive or conjunctive, when there are more criteria.
-const ruleCfgProbeersel = { 
-    dependsOn: [ 
-        // rule result depends on cat_5 (which in this case refers to the field cat-5 itself, and it must be visible if it is to be enabled.  the logicOperator states the next critrium must be tru as well.
-        // rule result depends on field cat_4 OR cat_3, regarding that ONE OF their's visibility is OK silent validity is OK.
-        [
-            { 
-                field: 'cat_5' , should: [ { have: VISIBILITY, be: true } ], logically: 'AND' ,
-            },
-            [ 
-                { 
-                    field: 'cat_4', should: [ { have: VISIBILITY, be: true, logically: 'AND'} , { have: SILENTVALIDITY, be: true } ], 
-                    logically: 'OR' ,
-                } ,
-                { 
-                    field: 'cat_3' ,   
-                    should: [ 
-                        { have: VISIBILITY, be: true, logically: 'AND' } , 
-                        { have: SILENTVALIDITY, be: true}
-                    ] 
-                }
-            ]
-        ],
-    ],
-    // Deze boomstructuur van and / or geeft aan hoe de groepen van instructies logisch gegroepeerd moeten worden
-    alternativeFormulation: {
-        and: {
-            and: { ALL_VISIBLE: ['field_1', 'field_2'] , ALL_INVALID: ['field_1'] },
-            or: { isPersistent: 'field_4', someEnabled: ['field_5'] } 
-        }
-    },
-    // als je niets specificeert, doen we "AND" / conjunctie...
-    nogKorter: { ALL_VISIBLE: ['field_1', 'field_2'] , ALL_INVALID: ['field_1'] }
 }
 
 export default { 

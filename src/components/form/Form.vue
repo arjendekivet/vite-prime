@@ -108,31 +108,32 @@ let abortSetValidators = ref(true) // initially do not set up rules, until v$ is
 // first initiate dummy rules?
 //validatorRules = setValidators(v$.value, fields.value, {}, fieldValues.value)
 
-watchEffect(() => fieldValues.value)
+// TODO: should we use this one to regenerate rules if something relevant changes?
+// watchEffect(() => fieldValues.value)
 
 // TODO: we could have fully dynamical rules in the sense of: depending on form definition and form state, the rulesset could morph
 // if some relevant state changes or metadata changes, we could recalculate the ruleset? but HOW exactly?
 const rules = computed(() => {
       console.log('executing computed "rules"')
       // use some assignments simply to make rules explicitely dependent upon fields and FieldValues
-      let dep1 = fieldValues.value;
-      let dep2 = fields.value;
+      //let dep1 = fieldValues.value;
+      //let dep2 = fields.value;
       //let dep3 = v$.value;
       //let lv$ = v$.value ????
       //abortSetValidators.value = ?????
       debugger;
       //validatorRules = setValidators(v$.value, fields.value, {}, fieldValues.value)
-      return setValidators(undefined, fields.value, {}, fieldValues.value)
+      return setValidators(fields.value, {}, fieldValues.value)
     }, { 
         onTrack(e) {
           // triggered when the above is tracked as a dependency
           //debugger
-          console.log('executing onTrack in computed "rules"')
+          //console.log('executing onTrack in computed "rules"')
         },
         onTrigger(e) {
           // triggered when the above is mutated
-          debugger
-          console.log('executing onTrigger in computed "rules"')
+          //debugger
+          //console.log('executing onTrigger in computed "rules"')
         }
     }
 )

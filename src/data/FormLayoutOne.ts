@@ -521,9 +521,7 @@ formConfig.value = [
                                                 // fieldCfg is the current field config to which the rule is associated, context is the form-data context (like ref or reactive fieldValues)
                                                 debugger
                                                 // is v$ in scope? 
-                                                console.log('running fn in custom "validator/executor" for "displayIf"');
-                                                console.log(vm)
-                                                console.log('previous log was the passed vm...')
+                                                console.log('running fn in custom "validator/executor" for "displayIf" for field answer');
                                                 // perform all kind of logic using the vm, which is form and should have access to ALL relevant stuff in scope
                                                 // and the set the boolean result in rule_result
                                                 //fake some rule which states that 'firstname' is NOT hidden or 'title' does not contain the string 'pipo'?    
