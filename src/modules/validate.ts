@@ -331,11 +331,13 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
                     objValidator[tag] = augmentedValidator
                 }
                 else {
+                    console.log('is this a dead branch running ??? or for fields other then cat_5 ?????');
                     //for now only hardcoded on visibility? meant for one display rule with a FUNCTION in the JSON (field anwer hiding on 'pipo' in field title)
                     // for totally extraneous rules, say from the server ...
                     if (cfgValidator.isCustom && cfgValidator.type === 'displayIf'){
+                        debugger;
                         //TODO make this dynamically valid code, so that we will support validatrs of type: display, disableIf etc etc 
-                        mappedValidator = visibility(_.clone(cfgValidator.params), cfgValidator.fn)
+                        mappedValidator = visibility(cfgValidator.params, cfgValidator.fn, field, formDefinition, formData)
 
                         if (isParam) { // parameterized custom validator
                             let paramValues = []
