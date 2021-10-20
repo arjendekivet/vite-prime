@@ -2,7 +2,7 @@ import _ from 'lodash'
 import Validator from '@/types/validator'
 import Fieldconfig from '@/types/fieldconfig'
 import { useVuelidate, ValidationRule, ValidationRuleWithParams, ValidatorFn } from '@vuelidate/core'
-import { helpers, required, requiredIf, email, minLength, maxLength, between, maxValue } from '@vuelidate/validators'
+import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue } from '@vuelidate/validators'
 //import { isCustomValidatorType, RULE_GENERATOR, disablerIf, V_DISPLAYIF , V_DISABLEIF, VISIBILITY , SILENTVALIDITY , V_CUSTOM_PREFIX, CV_TYPE_DISABLE_IF} from '@/modules/validateHelpers' //custom vuelidate helpers...
 import cvh from '@/modules/validateHelpers' //custom vuelidate helpers...
 import { V4MAPPED } from 'dns'
@@ -14,6 +14,7 @@ let v_h_ = cvh.cHelpers;
 export const mapValidators = {
     required,
     requiredIf,
+    requiredUnless,
     email,
     minLength,
     maxLength,
@@ -315,7 +316,7 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
                                 paramValues.push(paramEntry)
                             }
                         })
-                        
+                        debugger;
                         // if the mappedValidator can be invoked, set the validator to the parameterized invocation of it, since apparently we have params ...
                         if (typeof mappedValidator === 'function' && paramValues.length > 0){
                             augmentedValidator = addParamsTovalidator({ fieldLabel }, mappedValidator(...paramValues))
@@ -391,6 +392,7 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
             try{
                 tag = cvh.CV_TYPE_DISABLE_IF
                 if ( mapValidators[tag] && cvh.isCustomValidatorType(tag)){
+                    debugger
                     objParams = Object.assign({}, { type: tag, fieldCfg: field, formDefinition: formDefinition, formData: formData, fieldLabel: fieldLabel } )
                     mappedValidator = mapValidators[tag](objParams)
                     augmentedValidator = addParamsTovalidator(objParams, mappedValidator) 
@@ -398,7 +400,6 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
                 }
             } catch(e){
                 console.warn(e)
-        
             }
         }
         if ( _.values(objValidator).length>0 ){

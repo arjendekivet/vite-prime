@@ -26,8 +26,9 @@ const catThree: OptionType[] = [
 
 const formConfigBak = ref<Fieldconfig[]>()
 const formConfig = ref<Fieldconfig[]>()
+const formConfigBakx = ref<Fieldconfig[]>()
 
-// formConfigBak.value = [
+//formConfigBak.value = [
 //     {
 //         id: "tabview1",
 //         label: "TabView 1",
@@ -407,7 +408,7 @@ const formConfig = ref<Fieldconfig[]>()
 //     },
 // ];
 
-formConfig.value = [
+formConfigBakx.value = [
     {
         id: "tabview1",
         label: "TabView 1",
@@ -516,12 +517,10 @@ formConfig.value = [
                                         * fn: (value, vm) => {
                                         */
                                         fn: function(value, vm){
-                                            debugger
                                             //return (fieldCfg, formData, formDefinition) => {
                                                 // fieldCfg is the current field config to which the rule is associated, context is the form-data context (like ref or reactive fieldValues)
-                                                debugger
                                                 // is v$ in scope? 
-                                                console.log('running fn in custom "validator/executor" for "displayIf" for field answer');
+                                                // console.log('running fn in custom "validator/executor" for "displayIf" for field answer');
                                                 // perform all kind of logic using the vm, which is form and should have access to ALL relevant stuff in scope
                                                 // and the set the boolean result in rule_result
                                                 //fake some rule which states that 'firstname' is NOT hidden or 'title' does not contain the string 'pipo'?    
@@ -582,9 +581,33 @@ formConfig.value = [
                                 type: cvh.CV_TYPE_DISPLAY_IF,
                                 //params: { dependsOn: { [cvh.ALL_VISIBLE]: ['cat_1'] , [cvh.ALL_VALID]: ['cat_1'] } }, // equivalent would be SOME_<> or IS_ when there is only 1 dependecy mentioned
                                 params: { 
-                                    dependsOn: { 
-                                        // required: 'cat_1', // hoe kunnen we dynamisch allerlei bestaande validators koppelen ? Willen we dat??????? zoals requiredIf or between etc etc binnen andere rules!!!!
-                                        [cvh.IS_VISIBLE]: ['cat_1'] } 
+                                    dependsOn: {
+                                        and: { 
+                                            // required: 'cat_1', // hoe kunnen we dynamisch allerlei bestaande validators koppelen ? Willen we dat??????? zoals requiredIf or between etc etc binnen andere rules!!!!
+                                            [cvh.IS_VISIBLE]: ['cat_1'],
+                                             or: {
+                                                //[cvh.ALL_VISIBLE]: ['test0','title'], 
+                                                [cvh.IS_VALID]: ['title'],
+                                                 not: {
+                                                        [cvh.IS_HIDDEN]: ['test1'],
+                                                        [cvh.IS_HIDDEN]: ['title'],
+                                                        [cvh.IS_VALID]: ['title'],
+                                                    },
+                                            },
+                                            // not: {
+                                            //     [cvh.IS_VALID]: ['title'],
+                                            // }
+                                                
+                                            // "AND": {
+                                            //     [cvh.ALL_RANDOM]: ['cat_11'] , [cvh.ALL_CRUCIAL]: ['cat_25']
+                                            //     ,
+                                            //     "NOT": {
+                                            //         [cvh.ALL_FREE]: ['cat_11'] , 
+                                            //         [cvh.ALL_EMPTY]: ['cat_25']
+                                            //     }
+                                            // }
+                                        },
+                                    }
                                 }, 
                             },
                             { 
@@ -610,45 +633,347 @@ formConfig.value = [
                             { type: 'maxLength', params: [{ max: 20 }] }, 
                             { 
                                 type: cvh.CV_TYPE_DISPLAY_IF,
-                                params: { dependsOn: { [cvh.IS_VALID]: ['title'] } }, // equivalent would be SOME_VISIBLE: ['cat_4'] or IS_VISIBLE: 'cat_4' when we are having just one dependency
+                                params: { dependsOn: { [cvh.IS_VISIBLE]: ['cat_2'] } }, // optionally we could add [cvh.IS_VALID]: ['cat_2']
                             },
-                            // { 
-                            //     type: cvh.CV_TYPE_DISPLAY_IF,
-                            //     params: { dependsOn: { [cvh.IS_VISIBLE]: ['cat_2'] } }, // optionally we could add [cvh.IS_VALID]: ['cat_2']
-                            // },
                             { 
                                 type: cvh.CV_TYPE_DISABLE_IF,
-                                params: { dependsOn: { [cvh.SOME_INVALID]: ['cat_2'] } }, // equivalent would be SOME_VISIBLE: ['cat_4'] or IS_VISIBLE: 'cat_4' when we are having just one dependency
+                                params: { dependsOn: { [cvh.IS_INVALID]: ['cat_2'] } }, // equivalent would be SOME_VISIBLE: ['cat_4'] or IS_VISIBLE: 'cat_4' when we are having just one dependency
                             },
                         ],
                     },
-                    // {
-                    //     id: 'cat_4',
-                    //     isField: true,
-                    //     label: 'Category 4',
-                    //     type: 'P_Dropdown',
-                    //     options: catThree,
-                    //     optionLabel: "label",
-                    //     optionValue: "value", 
-                    //     editable: true,
-                    //     validators: [
-                    //         // differs from cat_3: display only depends upon validity, not both visibility and validity of cat_3 ...
-                    //         { 
-                    //             type: cvh.CV_TYPE_DISPLAY_IF,
-                    //             params: { dependsOn: { [cvh.IS_VALID]: ['cat_3'] } }, // equivalent would be SOME_VISIBLE: ['cat_4'] or IS_VISIBLE: 'cat_4' when we are having just one dependency
-                    //         },
-                    //         // { 
-                    //         //     type: cvh.CV_TYPE_DISPLAY_IF,
-                    //         //     params: { dependsOn: { [cvh.IS_VISIBLE]: ['cat_3'] , [cvh.ALL_VALID]: ['cat_3'] } }, // equivalent would be SOME_VISIBLE: ['cat_4'] or IS_VISIBLE: 'cat_4' when we are having just one dependency
-                    //         // },
-                    //         // differs from cat_3: it does not need to be disabled IF it is NOT visible as long as cat_3 is not VISIBle
-                    //         { 
-                    //             type: cvh.CV_TYPE_DISABLE_IF,
-                    //             params: { dependsOn: { [cvh.IS_INVALID]: ['cat_3'] } }, // or SOME or ALL etc 
-                    //         },
-                    //     ],
-                    // }
+                    {
+                        id: 'cat_4',
+                        isField: true,
+                        label: 'Category 4',
+                        type: 'P_Dropdown',
+                        options: catThree,
+                        optionLabel: "label",
+                        optionValue: "value", 
+                        editable: true,
+                        validators: [
+                            // differs from cat_3: display only depends upon validity, not both visibility and validity of cat_3 ...
+                            { 
+                                type: cvh.CV_TYPE_DISPLAY_IF,
+                                params: { dependsOn: { [cvh.IS_EMPTY]: ['title'] } }, // equivalent would be SOME_VISIBLE: ['cat_4'] or IS_VISIBLE: 'cat_4' when we are having just one dependency
+                            },
+                            // differs from cat_3: it does not need to be disabled IF it is NOT visible as long as cat_3 is not VISIBle
+                            { 
+                                type: cvh.CV_TYPE_DISABLE_IF,
+                                params: { dependsOn: { [cvh.IS_INVALID]: ['cat_3'] } }, // or SOME or ALL etc 
+                            },
+                        ],
+                    }
                 ],
+            },
+        ],
+    },
+];
+
+formConfigBakx.value = [
+    {
+        id: "tabview1",
+        label: "TabView 1",
+        type: "TabView",
+        isContainer: true,
+        items: [
+            {
+                id: "tabpanel1",
+                label: "TabPanel 1",
+                type: "TabPanel",
+                isContainer: true,
+                items: [
+                    {
+                        id: "FieldSet1",
+                        label: "FieldSet 1",
+                        type: "FieldSet",
+                        isContainer: true,
+                        items: [
+                            {
+                                id: 'test0',
+                                isField: true,
+                                label: 'Test 0',
+                                type: 'P_InputText',
+                                placeholder: 'Test 0',
+                                defaultValue: 5,
+                                validators: [ 
+                                    'required',
+                                    { 
+                                        type: 'between', 
+                                        params: [ {min: 0}, {max: 10} ] 
+                                    } 
+                                ]
+                            },
+                            {
+                                id: 'test1',
+                                isField: true,
+                                label: 'Test 1',
+                                type: 'P_InputText',
+                                placeholder: 'Test 1',
+                                defaultValue: 5,
+                                validators: [ 
+                                    'required',
+                                    { 
+                                        type: 'between', 
+                                        params: [ {min: 0}, {max: 10} ] 
+                                    } 
+                                ]
+                            },
+                            {
+                                id: 'title',
+                                isField: true,
+                                label: 'Title',
+                                type: 'P_InputText',
+                                placeholder: 'Title',
+                                validators: [ 
+                                    //'required', 
+                                    { type: 'minLength', params: [{ $model: 'test0' }] }, //this should pick up the value of test dynamically, in order to specifiy which dynamical minLength to use ?
+                                    { type: 'maxLength', params: [{ max: 11 }] }, 
+                                ],
+                                icon: { type: 'right', name: 'pi-bookmark' }
+                            },
+                        ]
+                    },
+                ],
+            },
+            {
+                id: "tabpanel2",
+                label: "TabPanel 2",
+                type: "TabPanel",
+                isContainer: true,
+                items: [
+                    {
+                        id: 'cat_1',
+                        isField: true,
+                        label: 'Category 1',
+                        type: 'P_Dropdown',
+                        options: catOne,
+                        optionLabel: "label",
+                        optionValue: "value",
+                        validators: ['required'],
+                        hidden: false,
+                    },
+                    {
+                        id: 'cat_2',
+                        isField: true,
+                        label: 'Category 2',
+                        type: 'P_Dropdown',
+                        options: catTwo,
+                        optionLabel: "label",
+                        optionValue: "value",
+                        editable: true,
+                        // dependantFields: ['cat_3'],
+                        validators: [
+                            //'required',
+                            //{ type: 'requiredIf', params: [{ $model: 'cat_1' }] }, //how to dynamically insert the value of field cat_2 as the condition for requiredIf ??????
+                            { 
+                                type: cvh.CV_TYPE_DISPLAY_IF,
+                                //params: { dependsOn: { [cvh.ALL_VISIBLE]: ['cat_1'] , [cvh.ALL_VALID]: ['cat_1'] } }, // equivalent would be SOME_<> or IS_ when there is only 1 dependecy mentioned
+                                params: { 
+                                    dependsOn: {
+                                        and: { 
+                                            // required: 'cat_1', // hoe kunnen we dynamisch allerlei bestaande validators koppelen ? Willen we dat??????? zoals requiredIf or between etc etc binnen andere rules!!!!
+                                            [cvh.IS_VISIBLE]: ['cat_1'],
+                                             or: {
+                                                 //[cvh.ALL_VISIBLE]: ['test0','title'], 
+                                                 //[cvh.IS_VALID]: ['title'],
+                                                 not: {
+                                                        [cvh.IS_HIDDEN]: ['test1'],
+                                                        [cvh.IS_HIDDEN]: ['title'],
+                                                        [cvh.IS_VALID]: ['test1'],
+                                                    },
+                                            },
+                                            // not: {
+                                            //     [cvh.IS_VALID]: ['test1'],
+                                            // }
+                                                
+                                            // "AND": {
+                                            //     [cvh.ALL_RANDOM]: ['cat_11'] , [cvh.ALL_CRUCIAL]: ['cat_25']
+                                            //     ,
+                                            //     "NOT": {
+                                            //         [cvh.ALL_FREE]: ['cat_11'] , 
+                                            //         [cvh.ALL_EMPTY]: ['cat_25']
+                                            //     }
+                                            // }
+                                        }, 
+                                    },
+                                },
+                            },
+                            // { 
+                            //     type: cvh.CV_TYPE_DISABLE_IF,
+                            //     params: { dependsOn: { [cvh.ALL_INVALID]: ['cat_1'] } },
+                            // },
+                        ],
+                    },
+                ],
+            },
+        ],
+    },
+];
+
+formConfigBakx.value = [
+    {
+        id: "tabview1",
+        label: "TabView 1",
+        type: "TabView",
+        isContainer: true,
+        items: [
+            {
+                id: "tabpanel1",
+                label: "TabPanel 1",
+                type: "TabPanel",
+                isContainer: true,
+                items: [
+                    {
+                        id: "FieldSet1",
+                        label: "FieldSet 1",
+                        type: "FieldSet",
+                        isContainer: true,
+                        items: [
+                            {
+                                id: 'title',
+                                isField: true,
+                                label: 'Title',
+                                type: 'P_InputText',
+                                placeholder: 'Title',
+                                validators: [ 
+                                    //'required', 
+                                    { type: 'minLength', params: [{ min: 1 }] }, //this should pick up the value of test dynamically, in order to specifiy which dynamical minLength to use ?
+                                    { type: 'maxLength', params: [{ max: 10 }] }, 
+                                ],
+                                icon: { type: 'right', name: 'pi-bookmark' }
+                            },
+                        ]
+                    },
+                    
+                ],
+            },
+            {
+                id: "tabpanel2",
+                label: "TabPanel 2",
+                type: "TabPanel",
+                isContainer: true,
+                items: [
+                    {
+                        id: 'cat_1',
+                        isField: true,
+                        label: 'Category 1',
+                        type: 'P_Dropdown',
+                        options: catOne,
+                        optionLabel: "label",
+                        optionValue: "value",
+                        editable: true,
+                        //hidden: false, // due to this the field will remain hidden/shown HARDCODED in the form REGARDLESS of any other rule dependency.
+                        validators: [
+                            //'required' Only whne the title has been filled out 
+                            // AND the description ???
+                            { type: 'requiredIf', params: [{ $model: 'title' }] },
+                        ]
+                    },
+                ],
+            },
+        ],
+    },
+];
+
+formConfig.value = [
+    {
+        id: "tabview1",
+        label: "TabView 1",
+        type: "TabView",
+        isContainer: true,
+        items: [
+            {
+                id: "tabpanel1",
+                label: "TabPanel 1",
+                type: "TabPanel",
+                isContainer: true,
+                items: [
+                    {
+                        id: "FieldSet1",
+                        label: "FieldSet 1",
+                        type: "FieldSet",
+                        isContainer: true,
+                        items: [
+                            {
+                                id: 'title0',
+                                isField: true,
+                                label: 'Title 0',
+                                type: 'P_InputText',
+                                placeholder: 'Title 0',
+                                validators: [ 
+                                    'required', 
+                                    { type: 'minLength', params: [{ min: 10 }] }, //this should pick up the value of test dynamically, in order to specifiy which dynamical minLength to use ?
+                                    { type: 'maxLength', params: [{ max: 100 }] }, 
+                                ],
+                                icon: { type: 'right', name: 'pi-bookmark' }
+                            },
+                            {
+                                id: 'title',
+                                isField: true,
+                                label: 'Title',
+                                type: 'P_InputText',
+                                placeholder: 'Title',
+                                validators: [ 
+                                    'required', 
+                                    { type: 'minLength', params: [{ min: 4 }] }, //this should pick up the value of test dynamically, in order to specifiy which dynamical minLength to use ?
+                                    { type: 'maxLength', params: [{ max: 11 }] }, 
+                                ],
+                                icon: { type: 'right', name: 'pi-bookmark' }
+                            },
+                        ]
+                    },
+                ],
+            },
+            {
+                id: "tabpanel2",
+                label: "TabPanel 2",
+                type: "TabPanel",
+                isContainer: true,
+                items: [
+                    {
+                        id: 'cat_1',
+                        isField: true,
+                        label: 'Category 1',
+                        type: 'P_Dropdown',
+                        options: catOne,
+                        optionLabel: "label",
+                        optionValue: "value",
+                        editable: true,
+                        //hidden: false, // due to this the field will remain hidden/shown HARDCODED in the form REGARDLESS of any other rule dependency.
+                        validators: [
+                            //'required' Only whne the title has been filled out 
+                            // AND the description ???
+                            { type: 'requiredIf', params: [{ $model: 'title' }] },
+                        ]
+                    },
+                    {
+                        id: 'cat_4',
+                        isField: true,
+                        label: 'Category 4',
+                        type: 'P_Dropdown',
+                        options: catThree,
+                        optionLabel: "label",
+                        optionValue: "value",
+                        editable: true,
+                        // TODO with vuelidate validator rule: showIf/hideIf - enableIf/disableIf including specific dependencies via dependsOn ???
+                        validators: [ 
+                            //{ type: 'requiredUnless', params: [{ prop: false }] }, 
+                            { 
+                                type: cvh.CV_TYPE_DISPLAY_IF,
+                                params: { dependsOn: 
+                                    { 
+                                        [cvh.NONE_EMPTY]: ['title', 'title0'],
+                                        /// so this one below will consult the OPTIONAL result of the builtin requiredIf validator of field 'cat_1'.
+                                        // Note: the implicit assumptions then are: 
+                                        // 1. that rule was specified in the first place (cat_1 may very well NOT have a requiredIf validator at all) 
+                                        // 2. that rule was executed in time, namely before THIS ONE!!!
+                                        [cvh.IS_REQUIRED_IF]: ['cat_1'] 
+                                    } 
+                                }, 
+                            }
+                        ],
+                    }
+                ], 
             },
         ],
     },

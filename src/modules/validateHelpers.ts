@@ -14,9 +14,8 @@
 // TODO: if all methods used can come from Array instead of Lodash, drop Lodash dependency
 // like myArray =[] myArray.every instead of _.every( myArray, <bla>) etc 
 
-import { def } from '@vue/shared';
 import _ from 'lodash'
-import { matchedRouteKey } from 'vue-router';
+import { helpers, required, requiredIf, email, minLength, maxLength, between, maxValue } from '@vuelidate/validators'
 
 //const RULE_GENERATOR = Symbol('__RuleGenerator__');
 
@@ -28,19 +27,6 @@ export const V_VALID = '$invalid' // or $error NB: test for invalidity in vuelid
 export const V_DISPLAYIF = 'displayIf';
 export const V_DISABLEIF = 'disableIf';
 
-// terms to be used in the Configuration of validators (in the form definitions / fields definition) 
-export const ALL_VISIBLE = "allVisible";
-export const ALL_VALID = "allValid";
-export const IS_VALID = "isValid"
-export const IS_INVALID = "isInvalid"
-export const ALL_INVALID = "allInvalid";
-export const SOME_INVALID = "someInvalid";
-
-export const IS_VISIBLE = "isVisible";
-export const SOME_VISIBLE = "someVisible";
-
-export const IS_DISABLED = "isDisabled";
-
 // Introduce constants for the validator names/types in order NOT to clash with built-in and other imported working vuelidate validators
 export const V_CUSTOM_PREFIX = '__cv__';
 export const CV_TYPE_DISABLE_IF = `${V_CUSTOM_PREFIX}${V_DISABLEIF}`;
@@ -48,15 +34,218 @@ export const CV_TYPE_DISABLE_IF = `${V_CUSTOM_PREFIX}${V_DISABLEIF}`;
 export const CV_TYPE_DISPLAY_IF = `${V_CUSTOM_PREFIX}${V_DISPLAYIF}`;
 // todo terms for config props
 
+export const AND = "and";
+export const OR = "or";
+export const NOT = "not";
+
 export const CFG_PROP_ENTITY_DISPLAY = 'hidden'; // indicates in fieldCfg the optional property 'hidden' decides the field display
 export const CFG_PROP_ENTITY_DISPLAY_INVERT = true; // indicates a display rule will have to negate the config prop
 
 export const CFG_PROP_ENTITY_DISABLE = 'disabled'; // indicates in fieldCfg the optional property 'disabled' decides the field disabling
 export const CFG_PROP_ENTITY_DISABLE_INVERT = false; // indicates a disable rule will NOT ave to negate the config prop
 
+// terms to be used in the Configuration of validators (in the form definitions / fields definition) pointing to the supported retriever functions
+export const IS_VALID = "isValid"
+export const SOME_VALID = "someValid"
+export const ALL_VALID = "allValid";
 
-// define helper functions like isValid, isVisible, isDisabled, that take a fieldname and return a boolean if the retrieved info qualifies.
+export const IS_INVALID = "isInvalid"
+export const SOME_INVALID = "someInvalid";
+export const ALL_INVALID = "allInvalid";
+
+export const IS_VISIBLE = "isVisible";
+export const SOME_VISIBLE = "someVisible";
+export const ALL_VISIBLE = "allVisible";
+
+export const IS_HIDDEN = "isHidden";
+export const SOME_HIDDEN = "someHidden";
+export const ALL_HIDDEN = "allHidden";
+
+export const IS_DISABLED = "isDisabled";
+export const SOME_DISABLED = "someDisabled";
+export const ALL_DISABLED = "allDisabled";
+
+export const IS_ENABLED = "isEnabled";
+export const SOME_ENABLED = "someEnabled";
+export const ALL_ENABLED = "allEnabled";
+
+// can we use something that always depends on the $model of a field? This will require a dummy rule for a field of NO built in validator was specified at all...
+export const IS_EMPTY = "isEmpty";
+export const SOME_EMPTY = "someEmpty";
+export const ALL_EMPTY = "allEmpty";
+
+export const NOT_EMPTY = "notEmpty";
+export const SOME_NOT_EMPTY = "someNotEmpty";
+export const NONE_EMPTY = "noneEmpty";
+
+// EXPERIMENT: kunnen we met een helper ook makkelijk refererren naar built-in vuelidate rule RESULTS ??
+export const IS_REQUIRED_IF = "isRequiredIf"
+export const NOT_REQUIRED_IF = "notRequiredIf"
+
+export const SUPPORTED_RETRIEVERS = [
+    IS_VISIBLE, SOME_VISIBLE, ALL_VISIBLE, 
+    IS_VALID, SOME_VALID, ALL_VALID, 
+    IS_INVALID, SOME_INVALID, ALL_INVALID, 
+    IS_DISABLED, SOME_DISABLED, ALL_DISABLED, 
+    IS_HIDDEN, SOME_HIDDEN, ALL_HIDDEN ,
+    IS_EMPTY, SOME_EMPTY, ALL_EMPTY,
+    NOT_EMPTY, SOME_NOT_EMPTY, NONE_EMPTY,
+    // these search for the results for builtin vuelidate validators!!!!
+    IS_REQUIRED_IF, NOT_REQUIRED_IF
+]
+/**
+ * define helper functions like isValid, isVisible, isDisabled, that take a fieldname and return a boolean if the retrieved info qualifies.
+ * // TODO: if these helpers all work robustly, rewrite them to the shortest possible format? Voorbeeld
+ * isEnabled: (vm, fieldName: string) => {
+        let result, defaulted = true;
+        try {
+            result = !cHelpers.isDisabled(vm,fieldName)
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    isEnabled: (vm, fieldName: string) => {
+        * kunnen we -wat- korter schrijven als:
+        try {
+            return !cHelpers.isDisabled(vm,fieldName)
+        }
+        catch(e) { 
+            return true 
+        }
+    },
+ */
 export const cHelpers = {
+    /**
+     * Checks if for a field the -builtin- requiredIf validator resulted true.
+     * Note: this is only a retriever of a rule result, it does not calculate or execute a rule itself!
+     * This result will only exist IF for that field the builtIn requiredIf rule existed AND was called / registered before this retrieval helper method is called. 
+     * @param vm 
+     * @param fieldName 
+     * @returns 
+     */
+     isRequiredIf: (vm,fieldName: string) => {
+         debugger;
+        let result, defaulted = false;
+        try { 
+            result = vm?.v$?.[fieldName]?.requiredIf?.$invalid ?? defaulted;
+        }
+        catch(e) {
+            console.warn(e); 
+            result = defaulted;
+        }
+        debugger;
+        return result
+    },
+    notRequiredIf: (vm,fieldName: string) => {
+        let result, defaulted = true;
+        try { 
+            result = !cHelpers.isRequiredIf(vm,fieldName)
+        }
+        catch(e) {
+            console.warn(e); 
+            result = defaulted;
+        }
+        return result
+    },
+    /**
+     * Checks if a field is empty.
+     * Note: this is only a retriever of a rule result, it does not calculate or execute a rule itself!
+     * Since every field will have at least two rules ( for visibility and for disabling ) every field will be mapped and will have $model to consult!
+     * @param vm 
+     * @param fieldName 
+     * @returns 
+     */
+    isEmpty: (vm,fieldName: string) => {
+        let result, defaulted = true;
+        try { 
+            result = helpers.len( (vm?.v$?.[fieldName]?.$model ) ?? "" ) === 0;
+        }
+        catch(e) {
+            console.warn(e); 
+            result = defaulted;
+        }
+        return result
+    },
+    someEmpty: (vm, arrFieldNames: string[]) => {
+        let result, defaulted = true;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                result = cHelpers.isEmpty(vm, fieldName)
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    allEmpty: (vm, arrFieldNames: string[]) => {
+        let result, defaulted = true;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                result = cHelpers.isEmpty(vm, fieldName)
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    notEmpty: (vm,fieldName: string) => {
+        let result, defaulted = false;
+        try { 
+            result = !(cHelpers.isEmpty(vm, fieldName))
+        }
+        catch(e) {
+            console.warn(e); 
+            result = defaulted;
+        }
+        debugger;
+        return result
+    },
+    someNotEmpty: (vm, arrFieldNames: string[]) => {
+        let result, defaulted = false;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                result = !cHelpers.isEmpty(vm, fieldName)
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    noneEmpty: (vm, arrFieldNames: string[]) => {
+        let result, defaulted = false;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                result = !cHelpers.isEmpty(vm, fieldName)
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+            debugger
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
     /**
      * Checks if a field is silently -eagerly- valid. 
      * Inverts the result because vuelidate flags $error or $invalid, which is the opposite of what we test here.
@@ -136,11 +325,65 @@ export const cHelpers = {
         }
         return result
     },
+    isEnabled: (vm, fieldName: string) => {
+        let result, defaulted = true;
+        try {
+            result = !cHelpers.isDisabled(vm,fieldName)
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
     isInvalid: (vm,fieldName: string) => {
         let result, defaulted = false;
         try {
             // invert the result because we re-use isValid, we returns true if valid
             result = !cHelpers.isValid(vm,fieldName)
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    isHidden: (vm,fieldName: string) => {
+        let result, defaulted = false;
+        try {
+            result = !cHelpers.isVisible(vm,fieldName)
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    someHidden: (vm, arrFieldNames: string[]) => {
+        let result, defaulted = false;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                result = !cHelpers.isVisible(vm, fieldName)
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    allHidden: (vm, arrFieldNames: string[]) => {
+        let result, defaulted = false;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                result = !cHelpers.isVisible(vm,fieldName)
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
         }
         catch(e) {
             console.warn(e);
@@ -341,6 +584,38 @@ export const cHelpers = {
         } 
         return result
     },
+    someEnabled: (vm, arrFieldNames: string[]) => {
+        let result, defaulted = true;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                result = !cHelpers.isDisabled(vm, fieldName)
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        } 
+        return result
+    }, 
+    allEnabled: (vm, arrFieldNames: string[]) => {
+        let result, defaulted = true;
+        let arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                result = !cHelpers.isDisabled(vm,fieldName)
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        } 
+        return result
+    },
 }
 
 /**
@@ -360,9 +635,9 @@ export const cHelpers = {
  * @param args. Array.  We expect to get passed in all the necessary parametrizations. 
  * Supports refering to fields and their visibility-state or disabled-state or validity-state or their value ...
  * @returns a parameterized ruleFn for vuelidate, to be used as a custom rule executioner for vuelidate (as opposed to only built-in ones and only for validation purposes).
+ * TODO: make async?
  */
 const hofRuleFnGenerator = ( ...args) => {
-    debugger
     const { dependsOn, fieldCfg, formData, formDefinition, ...params } = args[0]
     const { defaultRuleResult, staticConfigProperty , doInvertRuleResult } = args[1]
     const ruleType = params.type
@@ -390,8 +665,7 @@ const hofRuleFnGenerator = ( ...args) => {
         }
         // probe if we have a call for a supported custom rule function
         if (!resultFunction){
-            debugger;
-            resultFunction = probeCustomRuleFn(args, ruleType)
+            resultFunction = probeCustomRuleFn(args)
         }
         // Again probe to make sure that if we did not have any function yet, we should return a liberal fallback function 
         if (!resultFunction){
@@ -412,7 +686,6 @@ const hofRuleFnGenerator = ( ...args) => {
  * @returns a parameterized ruleFn for vuelidateto be used as a custom validator for vuelidate (as opposed to not a built-in one).
  */
  export const disablerIf = (args) => {
-    debugger;
     const defaultRuleResult = false
     const staticConfigProperty = CFG_PROP_ENTITY_DISABLE
     const doInvertRuleResult = CFG_PROP_ENTITY_DISABLE_INVERT
@@ -426,12 +699,11 @@ const hofRuleFnGenerator = ( ...args) => {
 }
 
 /**
- * Configures and calls a Higher Order Function to generate a disablerIf rule-function for vuelidate.
+ * Configures and calls a Higher Order Function to generate a displayerIf rule-function for vuelidate.
  * @param args 
  * @returns 
  */
 export const displayerIf = (args) => {
-    debugger;
     const defaultRuleResult = true;
     const staticConfigProperty = CFG_PROP_ENTITY_DISPLAY
     const doInvertRuleResult = CFG_PROP_ENTITY_DISPLAY_INVERT
@@ -444,15 +716,16 @@ export const displayerIf = (args) => {
     return resultFunction
 }
 
-const probeCustomRuleFn = (arrCfg, pType) => {
-    debugger
+const probeCustomRuleFnBak = (arrCfg, pType) => {
+    
     const { dependsOn, fieldCfg, formData, formDefinition, ...params } = arrCfg[0]
     const ruleType = params?.type ?? pType
-    const arrSupported = [ ALL_VISIBLE, IS_VISIBLE, SOME_VISIBLE, ALL_VALID, ALL_INVALID, SOME_INVALID, IS_DISABLED, IS_INVALID, IS_VALID ]
+    const arrSupported = [ AND, OR, NOT, ALL_VISIBLE, IS_VISIBLE, SOME_VISIBLE, ALL_VALID, SOME_VALID, IS_VALID, ALL_INVALID, SOME_INVALID, IS_INVALID, IS_DISABLED, SOME_DISABLED, ALL_DISABLED, IS_HIDDEN, SOME_HIDDEN, ALL_HIDDEN ]
     const fnKeys = _.keys(dependsOn)
     const matched = []
     fnKeys.forEach((key) => ( _.includes(arrSupported, key) ) ? matched.push(dependsOn[key]) : null)
-    if ( matched.length ){
+    
+    if ( matched.length ){ 
         debugger
         return function ruleFn(value, vm){
             //console.log(`running cynapps custom rule validator -type: ${ruleType}- from 2-st branch for ${fieldCfg.id} `)
@@ -473,6 +746,100 @@ const probeCustomRuleFn = (arrCfg, pType) => {
         }
     }
 }
+
+// Om dit recursief te kunnen maken, moeten we dit gaan curryen? Hoe dan? Moeten we een versie van probeCustomRuleFn maken die NIET als return value 
+// dat object geeft maar alleen een boolean teruggeeft, zodat die in een hogere functie steeds in een partial array kan worden gepushed
+// waardoor een weer hogere functie daar een _.some / _.every al dan niet negated op kan doen?
+// alleen de laatste aanroep moet uiteindelijk het object voor vuelidate teruggeven... J
+// Je weet dat je de laatste bent als er geen enkele "and" / "or" or "not" in de keys van het config object level meer zitten...
+// if we are on the highest level of dependsOn, we should return the function which returns the object for vuelidate
+        // if we are deeper, we only need to return the boolean result of the and / or / not evaluation of the contained criteria, and so on recursively.
+
+// Try a different approach: the first invocation is to some regular function, and that one can call a recursive variant ....
+// AND the root dependsOn can also start with or / not / and !!!!!
+// TODO: MAKE async all the way through ???????????????
+const probeCustomRuleFn = (arrCfg) => {
+    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = arrCfg[0]
+    const { defaultRuleResult, staticConfigProperty , doInvertRuleResult } = arrCfg[1]
+    let tmp
+    return function ruleFn(value, vm){
+        tmp = probeCustomRuleFnRecursor(value, vm, arrCfg[0]) // ?? defaultRuleResult
+        let rule_result = tmp ?? defaultRuleResult
+        console.log(`running cynapps custom rule validator -type: ${params?.type}- from 2-st branch for ${fieldCfg?.id} resulted: ${rule_result}`)
+        return { $valid: true, extraParams: { rule_result , fieldCfg }, message: `Rule ${params?.type} for ${fieldCfg?.label}` }
+    }
+}
+
+/**
+ * 
+ * TODO: MAKE async all the way through ???????????????
+ *  
+ * Inner recursor for the probe.
+ * It should be able to recursively walk all nested conditions and return the correct Boolean evaluation result
+ * resulting from calling and evalutaing all combined condtions in the entire set of dependsOn criteria.
+ * @param value. Passed by vuelidate.
+ * @param vm. Passed by vuelidate. The viewmodel/component instance, which brought vuelidate (v$) into scope.
+ * @param cfg. The passed in rule evaluation params, including the dependsOn object tree.
+ * @param asLogicalOperator. The and/or/not logical operator for the relevant dependsOn leaf conditions object
+ * @returns rule_result Boolean.
+ */
+const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND ) => {
+    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = objCfg
+    const arrSupported = SUPPORTED_RETRIEVERS;
+    const arrToRecurse = [AND, OR, NOT]
+
+    let countAsResult = 0;
+    //console.log(`running cynapps custom rule validator -type: ${ruleType}- from 2-st branch for ${fieldCfg.id} `)
+    let rule_result;
+    let arrPartials = [];
+    let tmp
+    let iterator = dependsOn && typeof dependsOn === 'object' ? Object.entries(dependsOn) : {}
+    let doIterate = Object.keys(iterator).length > 0
+    try{
+        if (doIterate){
+            for (const [key, entryValue] of iterator) {
+                tmp = null
+                if (arrToRecurse.includes(key)){
+                    // to correctly recur downwards set the new dependsOn property to the relevant subset!
+                    let objCfg2 = { "dependsOn": entryValue, fieldCfg, formData, formDefinition, params }
+                    try { 
+                        tmp = probeCustomRuleFnRecursor(value, vm, objCfg2, key) 
+                        arrPartials.push(tmp)
+                        countAsResult++
+                    }
+                    catch(e) {
+                        console.warn(e)
+                    }
+                }
+                else if (arrSupported.includes(key)) {
+                    let fn = key;
+                    // let target = dependsOn[key]
+                    // is dependsOn[key] euqal to entryValue ???????? if so use entryValue !!!!! as target 
+                    try {
+                        tmp = cHelpers[fn]?.(vm, entryValue)
+                        countAsResult++
+                        arrPartials.push(tmp)
+                    }
+                    catch(e) {
+                        console.warn(e)
+                    }
+                }  
+            }
+        }
+    }
+    catch(e){
+        console.warn(e)
+        debugger
+    }
+
+    // depending upon asLogicalOperator, we reduce arrPartials to a boolean via _.some. _.every or !_.every
+    if (countAsResult){
+        rule_result = asLogical === AND ? _.every(arrPartials,Boolean) : asLogical === OR ? _.some(arrPartials,Boolean) : !(_.some(arrPartials,Boolean))
+    }
+    return rule_result
+}
+
+
 /**
  * 
  * @param type Returns true is the type name starts with our constant custom prefix: V_CUSTOM_PREFIX
@@ -495,14 +862,35 @@ export default {
     V_VALID ,
     V_DISPLAYIF ,
     V_DISABLEIF ,
-    ALL_VISIBLE ,
-    ALL_VALID ,
-    IS_VALID ,
-    IS_INVALID,
-    ALL_INVALID ,
-    SOME_INVALID ,
     CV_TYPE_DISABLE_IF, 
     CV_TYPE_DISPLAY_IF,
+    // some logic helper functions ...
     IS_VISIBLE,
-    IS_DISABLED,
+    SOME_VISIBLE,
+    ALL_VISIBLE,
+
+    IS_HIDDEN,
+    SOME_HIDDEN,
+    ALL_HIDDEN,
+
+    IS_VALID,
+    SOME_VALID,
+    ALL_VALID,
+
+    IS_INVALID, SOME_INVALID, ALL_INVALID,
+
+    IS_DISABLED, SOME_DISABLED, ALL_DISABLED,
+
+    IS_ENABLED,
+    SOME_ENABLED,
+    ALL_ENABLED,
+
+    AND,
+    OR,
+    NOT,
+
+    IS_EMPTY, SOME_EMPTY, ALL_EMPTY,
+    NOT_EMPTY, SOME_NOT_EMPTY, NONE_EMPTY,
+
+    IS_REQUIRED_IF, NOT_REQUIRED_IF
 };

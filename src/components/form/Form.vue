@@ -106,7 +106,7 @@ let abortSetValidators = ref(true) // initially do not set up rules, until v$ is
 
 // TODO: remove the reactive dependency on v$ itself ????????? 
 // first initiate dummy rules?
-//validatorRules = setValidators(v$.value, fields.value, {}, fieldValues.value)
+//validatorRules = setValidators(fields.value, {}, fieldValues.value)
 
 // TODO: should we use this one to regenerate rules if something relevant changes?
 // watchEffect(() => fieldValues.value)
@@ -115,6 +115,7 @@ let abortSetValidators = ref(true) // initially do not set up rules, until v$ is
 // if some relevant state changes or metadata changes, we could recalculate the ruleset? but HOW exactly?
 const rules = computed(() => {
       console.log('executing computed "rules"')
+      //return validatorRules;
       // use some assignments simply to make rules explicitely dependent upon fields and FieldValues
       //let dep1 = fieldValues.value;
       //let dep2 = fields.value;
@@ -122,7 +123,7 @@ const rules = computed(() => {
       //let lv$ = v$.value ????
       //abortSetValidators.value = ?????
       debugger;
-      //validatorRules = setValidators(v$.value, fields.value, {}, fieldValues.value)
+      //TODO this is extremely dynamical, but it will not be scalable or performant i am afraid!!!!
       return setValidators(fields.value, {}, fieldValues.value)
     }, { 
         onTrack(e) {
