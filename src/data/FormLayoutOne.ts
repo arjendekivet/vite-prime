@@ -408,7 +408,7 @@ const formConfigBakx = ref<Fieldconfig[]>()
 //     },
 // ];
 
-formConfigBakx.value = [
+formConfig.value = [
     {
         id: "tabview1",
         label: "TabView 1",
@@ -561,6 +561,8 @@ formConfigBakx.value = [
                         validators: [
                             //'required' Only whne the title has been filled out 
                             // AND the description ???
+                            // deze builtin geparametriseerde rule werkt dus niet zonder rules as "computed" being recomputed on each change
+                            // maar een versie van ons zou wel gaan werken zonder rules being recomputed all the time, als we een wrapper zouden maken die de aanroep opnieuw doet metd e actuele payload van het target field
                             { type: 'requiredIf', params: [{ $model: 'title' }] },
                         ]
                     },
@@ -654,12 +656,12 @@ formConfigBakx.value = [
                             // differs from cat_3: display only depends upon validity, not both visibility and validity of cat_3 ...
                             { 
                                 type: cvh.CV_TYPE_DISPLAY_IF,
-                                params: { dependsOn: { [cvh.IS_EMPTY]: ['title'] } }, // equivalent would be SOME_VISIBLE: ['cat_4'] or IS_VISIBLE: 'cat_4' when we are having just one dependency
+                                params: { dependsOn: { not: {[cvh.IS_EMPTY]: ['title'] }} }, // equivalent would be SOME_VISIBLE: ['cat_4'] or IS_VISIBLE: 'cat_4' when we are having just one dependency
                             },
                             // differs from cat_3: it does not need to be disabled IF it is NOT visible as long as cat_3 is not VISIBle
                             { 
                                 type: cvh.CV_TYPE_DISABLE_IF,
-                                params: { dependsOn: { [cvh.IS_INVALID]: ['cat_3'] } }, // or SOME or ALL etc 
+                                params: { dependsOn: { or: { [cvh.IS_EMPTY]: ['cat_3'], [cvh.IS_INVALID]: ['cat_3'] } } }, // or SOME or ALL etc 
                             },
                         ],
                     }
@@ -875,7 +877,7 @@ formConfigBakx.value = [
     },
 ];
 
-formConfig.value = [
+formConfigBakx.value = [
     {
         id: "tabview1",
         label: "TabView 1",

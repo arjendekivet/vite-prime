@@ -9,9 +9,9 @@ import cvh from '@/modules/validateHelpers' //custom vuelidate helpers...
 // create an alias for cvh.helpers ?
 let v_h_ = cvh.cHelpers;
 
-debugger;
-//inspect if between is callable???? sommige zijn callable, andere zijn normalized validator objects ...
-// en sommige kunnen herhaaldelijk worden aangeroepen, anderen niet. Between zet eenmaal de params en moet dan aangeroepen worden?
+// debugger;
+//inspect if between is callable???? sommige zijn callable (function,), andere zijn normalized validator objects ... met een $validator function erop
+// sommige kunnen herhaaldelijk worden aangeroepen, andere niet. Between biv. zet eenmaal de params en moet dan aangeroepen worden?
 
 // Voorbeeld uit de browser console van de "and" api van vuelidate:
 // let chk; try{ chk = and(requiredIf(true),requiredUnless(false),email.$validator('o.henneken@cynapps.nl')) } catch(e){ console.warn(e);debugger;} chk.$validator.toString()
@@ -22,9 +22,7 @@ debugger;
 //let chk; try{ chk = and(requiredIf("pipoooooooooooooooooooo"),minLength(22)) } catch(e){ console.warn(e);debugger;} chk.$validator('o.henneken@cynapps.nl')
 //false
 //etcetera 
-
-
-console.log(typeof(and))
+// console.log(typeof(and))
 
 // create a map to be able to dynamically refer to the vuelidate validators
 export const mapValidators = {
