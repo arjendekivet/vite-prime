@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { user } from '@/modules/globalState'
+import { getUser } from '@/modules/globalState'
 import Welcome from "@/pages/Welcome.vue";
 import Start from "@/pages/Start.vue";
 import Admin from "@/pages/Admin.vue";
@@ -109,7 +109,7 @@ const router = createRouter({
 
 // If not logged in route to signin page
 router.beforeEach((to, from, next) => {
-  if (!(to.name === 'signin' || to.name === 'signup') && !user.value) {
+  if (!(to.name === 'signin' || to.name === 'signup') && !getUser()) {
     next({ name: 'signin' })
   } else {
     next()

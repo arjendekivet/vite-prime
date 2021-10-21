@@ -12,4 +12,4 @@ const getUser = () => {
     return user.value
 }
 
-export { user, getUser, setUser }
+export { getUser, setUser }

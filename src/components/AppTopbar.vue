@@ -21,7 +21,10 @@
 
 <script setup lang="ts">
 import router from '@/router/routes';
-import { user } from '@/modules/globalState'
+import { getUser } from '@/modules/globalState'
+import { computed } from 'vue';
+
+const user = computed(() => getUser())
 
 const emit = defineEmits<{
     (event: 'menuToggle'): void
