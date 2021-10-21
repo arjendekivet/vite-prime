@@ -102,10 +102,7 @@ if (props.layoutKey) {
         })
         .catch((error) => {
             // isLoading.value = false
-            addErrorMessage(
-                error.response && error.response.data && error.response.data.message
-                    ? error + " ==> " + error.response.data.message
-                    : error)
+            addErrorMessage(error)
         })
 } else {
     addErrorMessage('No layout key was provided.')
@@ -121,10 +118,7 @@ function getData() {
             tableData.value = response.data
         })
         .catch((error) => {
-            addErrorMessage(
-                error.response && error.response.data && error.response.data.message
-                    ? error + " ==> " + error.response.data.message
-                    : error)
+            addErrorMessage(error)
         })
 }
 
@@ -142,10 +136,7 @@ function deleteSelection() {
             getData()
         })
         .catch((error) => {
-            addErrorMessage(
-                error.response && error.response.data && error.response.data.message
-                    ? error + " ==> " + error.response.data.message
-                    : error)
+            addErrorMessage(error)
         })
 }
 
@@ -165,10 +156,7 @@ function searchUpdate(searchValue: string) {
                 tableData.value = response.data
             })
             .catch((error) => {
-                addErrorMessage(
-                    error.response && error.response.data && error.response.data.message
-                        ? error + " ==> " + error.response.data.message
-                        : error)
+                addErrorMessage(error)
             })
     }
 }

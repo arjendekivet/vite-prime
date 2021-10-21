@@ -16,9 +16,17 @@ const addSuccesMessage = (msg: string) => {
     )
 }
 
-const addErrorMessage = (error: any) => {
+const addErrorMessage = (error: string | any) => {
+    let content = error
+    if (typeof (error) === 'object') {
+        content = error.response?.data?.message
+            ? error + " ==> " + error.response.data.message
+            : content = error.response?.data?.error
+                ? error + " ==> " + error.response.data.error
+                : error
+    }
     messages.value.push(
-        { severity: 'error', sticky: true, content: error, id: count.value++ },
+        { severity: 'error', sticky: true, content: content, id: count.value++ },
     )
 }
 

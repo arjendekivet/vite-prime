@@ -188,10 +188,7 @@ async function submitForm(dataType: string) {
         addSubmitMessage()
       })
       .catch((error) => {
-        addErrorMessage(
-          error.response && error.response.data && error.response.data.error
-            ? error + " ==> " + error.response.data.error
-            : error)
+        addErrorMessage(error)
       })
   } else {
     EventService.postForm(dataType, submitValue)
@@ -201,10 +198,7 @@ async function submitForm(dataType: string) {
         addSubmitMessage()
       })
       .catch((error) => {
-        addErrorMessage(
-          error.response && error.response.data && error.response.data.error
-            ? error + " ==> " + error.response.data.error
-            : error)
+        addErrorMessage(error)
       })
   }
 }

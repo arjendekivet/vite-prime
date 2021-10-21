@@ -71,10 +71,7 @@ function submitForm() {
       }
     })
     .catch((error) => {
-      addErrorMessage(
-        error.response && error.response.data && error.response.data.message
-          ? error + " ==> " + error.response.data.message
-          : error)
+      addErrorMessage(error)
     })
 }
 </script>
