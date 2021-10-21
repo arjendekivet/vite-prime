@@ -6,7 +6,7 @@
         v-for="msg of messages"
         v-bind="msg"
         :key="msg.id"
-        @close="Utils.removeMessage(messages, msg.id)"
+        @close="removeMessage(msg.id)"
       >{{ msg.content }}</Message>
       <Message
         v-if="v$.$errors.length > 0"
@@ -119,6 +119,10 @@ if (props.formLayoutKey) {
     })
 } else {
   getFormData()
+}
+
+function removeMessage(id: number) {
+  Utils.removeMessage(messages, id)
 }
 
 function getFormData() {

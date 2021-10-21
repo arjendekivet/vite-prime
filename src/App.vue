@@ -2,6 +2,17 @@
   <router-view />
 </template>
 
+<script setup lang="ts">
+import { setUser } from '@/modules/globalState'
+import Utils from '@/modules/utils'
+import Constants from '@/modules/constants'
+
+const lUser = Utils.getFromLocalStorage(Constants.LOCALSTORAGEUSERKEY)
+if (lUser) {
+  setUser(JSON.parse(lUser))
+}
+</script>
+
 <style lang="scss">
 html,
 body {

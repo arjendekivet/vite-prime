@@ -7,7 +7,7 @@
             :key="msg.id"
             :life="msg.life"
             :sticky="msg.sticky"
-            @close="Utils.removeMessage(messages, msg.id)"
+            @close="removeMessage(msg.id)"
         >{{ msg.content }}</Message>
     </transition-group>
     <DataTable
@@ -102,10 +102,17 @@ if (props.layoutKey) {
         })
         .catch((error) => {
             // isLoading.value = false
-            addErrorMessage(error)
+            addErrorMessage(
+                error.response && error.response.data && error.response.data.message
+                    ? error + " ==> " + error.response.data.message
+                    : error)
         })
 } else {
     addErrorMessage('No layout key was provided.')
+}
+
+function removeMessage(id: number) {
+    Utils.removeMessage(messages, id)
 }
 
 function getData() {
@@ -114,7 +121,10 @@ function getData() {
             tableData.value = response.data
         })
         .catch((error) => {
-            console.log(error)
+            addErrorMessage(
+                error.response && error.response.data && error.response.data.message
+                    ? error + " ==> " + error.response.data.message
+                    : error)
         })
 }
 
@@ -132,7 +142,10 @@ function deleteSelection() {
             getData()
         })
         .catch((error) => {
-            console.error(error);
+            addErrorMessage(
+                error.response && error.response.data && error.response.data.message
+                    ? error + " ==> " + error.response.data.message
+                    : error)
         })
 }
 
@@ -152,7 +165,10 @@ function searchUpdate(searchValue: string) {
                 tableData.value = response.data
             })
             .catch((error) => {
-                console.log(error)
+                addErrorMessage(
+                    error.response && error.response.data && error.response.data.message
+                        ? error + " ==> " + error.response.data.message
+                        : error)
             })
     }
 }

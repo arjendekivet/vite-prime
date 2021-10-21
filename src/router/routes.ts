@@ -1,9 +1,13 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { user } from '@/modules/globalState'
 import Welcome from "@/pages/Welcome.vue";
 import Start from "@/pages/Start.vue";
 import Admin from "@/pages/Admin.vue";
 import Table from "@/components/Table.vue";
 import Form from "@/components/Form.vue";
+import AppSignUp from "@/components/AppSignUp.vue";
+import AppSignIn from "@/components/AppSignIn.vue";
+import AppSignOut from "@/components/AppSignOut.vue";
 
 import ExampleForm from "@/components/forms/ExampleForm.vue";
 import ExampleFormTwo from "@/components/forms/ExampleFormTwo.vue";
@@ -16,6 +20,21 @@ const router = createRouter({
     {
       path: "/",
       redirect: { name: "home" },
+    },
+    {
+      path: "/signup",
+      name: "signup",
+      component: AppSignUp,
+    },
+    {
+      path: "/signin",
+      name: "signin",
+      component: AppSignIn,
+    },
+    {
+      path: "/signout",
+      name: "signout",
+      component: AppSignOut,
     },
     {
       path: "/home",
@@ -87,5 +106,14 @@ const router = createRouter({
     },
   ],
 });
+
+// If not logged in route to signin page
+router.beforeEach((to, from, next) => {
+  if (!(to.name === 'signin' || to.name === 'signup') && !user.value) {
+    next({ name: 'signin' })
+  } else {
+    next()
+  }
+})
 
 export default router;

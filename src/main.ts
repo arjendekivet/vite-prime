@@ -31,6 +31,20 @@ import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 
 import ProgressSpinner from 'primevue/progressspinner';
+import Password from 'primevue/password';
+import MultiSelect from 'primevue/multiselect';
+import Checkbox from 'primevue/checkbox';
+import SplitButton from 'primevue/splitbutton'
+
+// Override logic to add close emit
+Message.mounted = function () {
+    if (!this.sticky) {
+        setTimeout(() => {
+            this.visible = false;
+            this.$emit('close', event);
+        }, this.life);
+    }
+}
 
 const app = createApp(App);
 
@@ -60,5 +74,9 @@ app.component('TabView', TabView);
 app.component('TabPanel', TabPanel);
 
 app.component('ProgressSpinner', ProgressSpinner);
+app.component('Password', Password);
+app.component('MultiSelect', MultiSelect);
+app.component('Checkbox', Checkbox);
+app.component('SplitButton', SplitButton);
 
 app.mount('#app')
