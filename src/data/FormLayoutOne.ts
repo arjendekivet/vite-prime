@@ -967,7 +967,7 @@ formConfig.value = [
                                         // Note: the implicit assumptions then are: 
                                         // 1. that rule was specified in the first place (cat_1 may very well NOT have a requiredIf validator at all) 
                                         // 2. that rule was executed in time, namely before THIS ONE!!!
-                                        [cvh.IS_REQUIRED_IF]: ['cat_1'] 
+                                        //[cvh.IS_REQUIRED_IF]: ['cat_1'] 
                                     } 
                                 }, 
                             }

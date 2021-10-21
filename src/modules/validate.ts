@@ -2,13 +2,29 @@ import _ from 'lodash'
 import Validator from '@/types/validator'
 import Fieldconfig from '@/types/fieldconfig'
 import { useVuelidate, ValidationRule, ValidationRuleWithParams, ValidatorFn } from '@vuelidate/core'
-import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue } from '@vuelidate/validators'
+import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue , and } from '@vuelidate/validators'
 //import { isCustomValidatorType, RULE_GENERATOR, disablerIf, V_DISPLAYIF , V_DISABLEIF, VISIBILITY , SILENTVALIDITY , V_CUSTOM_PREFIX, CV_TYPE_DISABLE_IF} from '@/modules/validateHelpers' //custom vuelidate helpers...
 import cvh from '@/modules/validateHelpers' //custom vuelidate helpers...
-import { V4MAPPED } from 'dns'
 
 // create an alias for cvh.helpers ?
 let v_h_ = cvh.cHelpers;
+
+debugger;
+//inspect if between is callable???? sommige zijn callable, andere zijn normalized validator objects ...
+// en sommige kunnen herhaaldelijk worden aangeroepen, anderen niet. Between zet eenmaal de params en moet dan aangeroepen worden?
+
+// Voorbeeld uit de browser console van de "and" api van vuelidate:
+// let chk; try{ chk = and(requiredIf(true),requiredUnless(false),email.$validator('o.henneken@cynapps.nl')) } catch(e){ console.warn(e);debugger;} chk.$validator.toString()
+//'function(...args) {\n    return validators.reduce((valid, fn) => {\n      if (!unwrapValidatorResponse(valid))\n        return valid;\n      return unwrapNormalizedValidator(fn).apply(this, args);\n    }, true);\n  }'
+// running voorbeeld uit de browser console
+// let chk; try{ chk = and(requiredIf("pipoooooooooooooooooooo"),minLength(21)) } catch(e){ console.warn(e);debugger;} chk.$validator('o.henneken@cynapps.nl')
+// true
+//let chk; try{ chk = and(requiredIf("pipoooooooooooooooooooo"),minLength(22)) } catch(e){ console.warn(e);debugger;} chk.$validator('o.henneken@cynapps.nl')
+//false
+//etcetera 
+
+
+console.log(typeof(and))
 
 // create a map to be able to dynamically refer to the vuelidate validators
 export const mapValidators = {
@@ -20,7 +36,7 @@ export const mapValidators = {
     maxLength,
     between,
     maxValue, 
-    // custom cynapps validators which are rule-executioners for NON-validation purposes, like visibility, and enabling
+    // custom cynapps validators which are rule-executioners for NON-validation purposes, like "display", and "disable".
     [cvh.CV_TYPE_DISABLE_IF]: cvh.disablerIf,
     [cvh.CV_TYPE_DISPLAY_IF]: cvh.displayerIf,
 }

@@ -90,7 +90,7 @@ export const SUPPORTED_RETRIEVERS = [
     IS_HIDDEN, SOME_HIDDEN, ALL_HIDDEN ,
     IS_EMPTY, SOME_EMPTY, ALL_EMPTY,
     NOT_EMPTY, SOME_NOT_EMPTY, NONE_EMPTY,
-    // these search for the results for builtin vuelidate validators!!!!
+    // these search for the results for builtin vuelidate validators!!!! They do not -yet- rerun proper validators thmeselves???
     IS_REQUIRED_IF, NOT_REQUIRED_IF
 ]
 /**
@@ -658,16 +658,16 @@ const hofRuleFnGenerator = ( ...args) => {
         if ( hasStaticConfigProperty )
         {
             resultFunction = function ruleFn(value, vm){
-                console.log('running displayerIf validator from 1-st branch for ', fieldCfg.id)
+                console.log('running validator from 1-st branch for ', fieldCfg.id)
                 let rule_result = doInvertRuleResult ? !!!fieldCfg?.[staticConfigProperty] : !!fieldCfg?.[staticConfigProperty]
                 return { $valid: true, extraParams: { rule_result , fieldCfg }, message: `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticConfigProperty} on ${fieldCfg.label}` }
             }
         }
-        // probe if we have a call for a supported custom rule function
+        // 2. probe if we have a call for a supported custom rule function
         if (!resultFunction){
             resultFunction = probeCustomRuleFn(args)
         }
-        // Again probe to make sure that if we did not have any function yet, we should return a liberal fallback function 
+        // 3. Again probe to make sure that if we did not have any function yet, we should return a liberal/neutraal fallback function 
         if (!resultFunction){
             resultFunction = fallBackFunction
         }
@@ -773,7 +773,16 @@ const probeCustomRuleFn = (arrCfg) => {
 /**
  * 
  * TODO: MAKE async all the way through ???????????????
+ * TODO: should we always pass in value and vm, like vuelidate itself does, and then the fieldName / arrFieldNames
+ * in order to be able to truely call builtin validators????
+ * eg our custom isDynamicalCynappsRule(value, vm, 'pipo' , params) might want to actually first call the built in
+ * between(min,max) vuelidate validator on field 'pipo' and do other logic 
+ * the question is, is vuelidate between(10,20) callable from field A about field C?
+ * The passed in value we have IS from field A, so no...
+ * the question is: is vuelidate between(10,20) callable from field A about field A without being modelled as a validator?
+ * 
  *  
+ *   
  * Inner recursor for the probe.
  * It should be able to recursively walk all nested conditions and return the correct Boolean evaluation result
  * resulting from calling and evalutaing all combined condtions in the entire set of dependsOn criteria.
