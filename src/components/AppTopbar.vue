@@ -23,6 +23,7 @@
 import router from '@/router/routes';
 import { getUser } from '@/modules/globalState'
 import { computed } from 'vue';
+import { indexOf } from 'lodash';
 
 const user = computed(() => getUser())
 
@@ -42,7 +43,7 @@ const items = [
     {
         label: 'Create Account',
         icon: 'pi pi-user-plus',
-        visible: user.value ? false : true,
+        visible: indexOf(user.value?.roles, 'ROLE_ADMIN') > -1 ? true : false,
         command: () => {
             router.push({ name: 'signup' })
         }

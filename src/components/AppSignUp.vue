@@ -80,8 +80,8 @@ function submitForm() {
     })
     .catch((error) => {
       addErrorMessage(
-        error.response && error.response.data && error.response.data.error
-          ? error + " ==> " + error.response.data.error
+        error.response && error.response.data && error.response.data.message
+          ? error + " ==> " + error.response.data.message
           : error)
     })
 }
