@@ -10,10 +10,30 @@ const addSubmitMessage = () => {
     )
 }
 
-const addErrorMessage = (error: any) => {
+const addSuccesMessage = (msg: string) => {
     messages.value.push(
-        { severity: 'error', sticky: true, content: error, id: count.value++ },
+        { severity: 'success', sticky: false, content: msg, id: count.value++ },
     )
 }
 
-export { messages, addSubmitMessage, addErrorMessage }
+const addErrorMessage = (error: string | any) => {
+    let content = error
+    if (typeof (error) === 'object') {
+        content = error.response?.data?.message
+            ? error + " ==> " + error.response.data.message
+            : content = error.response?.data?.error
+                ? error + " ==> " + error.response.data.error
+                : error
+    }
+    messages.value.push(
+        { severity: 'error', sticky: true, content: content, id: count.value++ },
+    )
+}
+
+const addWarningMessage = (warning: string) => {
+    messages.value.push(
+        { severity: 'warn', sticky: false, content: warning, id: count.value++ },
+    )
+}
+
+export { messages, addSubmitMessage, addSuccesMessage, addErrorMessage, addWarningMessage }

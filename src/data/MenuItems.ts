@@ -10,89 +10,46 @@ menuItems.value = [{
 },
 {
     key: '1',
-    label: 'Admin',
+    label: 'Admin tables',
     icon: 'pi pi-fw pi-user',
     items: [
         {
             key: '1_1',
             label: 'Questions',
             icon: 'pi pi-fw pi-list',
-            to: { name: 'questions' }
+            to: { name: 'table', params: { type: 'questions', layout: 'question-table' } }
         },
         {
-            key: '1_2',
-            label: 'Events',
+            key: '1_3',
+            label: 'Layout Definition',
             icon: 'pi pi-fw pi-list',
-            to: { name: 'events' }
-        },
-    ]
-},
-{
-    key: '4',
-    label: 'Forms',
-    icon: 'pi pi-fw pi-file',
-    items: [{
-        key: '4_0',
-        label: 'Question form',
-        icon: 'pi pi-fw pi-list',
-        to: { name: 'questionform' }
-    },
-    {
-        key: '4_1',
-        label: 'Answer form',
-        icon: 'pi pi-fw pi-list',
-        to: { name: 'answerform' }
-    },
-    {
-        key: '4_2',
-        label: 'Example form',
-        icon: 'pi pi-fw pi-list',
-        to: { name: 'exampleform' }
-    },
-    {
-        key: '4_3',
-        label: 'Example form 2',
-        icon: 'pi pi-fw pi-list',
-        to: { name: 'exampleform2' }
-    },
+            to: { name: 'table', params: { type: 'layoutdefinition', layout: 'layoutdefinition-table' } }
+        }
     ]
 },
 {
     key: '2',
-    label: 'Test',
-    icon: 'pi pi-fw pi-user',
-    items: [{
-        key: '2_0',
-        label: 'Event',
-        icon: 'pi pi-fw pi-user-plus',
-
-    },
-    {
-        key: '2_1',
-        label: 'Delete',
-        icon: 'pi pi-fw pi-user-minus',
-    },
-    {
-        key: '2_2',
-        label: 'Search',
-        icon: 'pi pi-fw pi-users',
-        items: [{
-            key: '2_2_0',
-            label: 'Filter',
-            icon: 'pi pi-fw pi-filter',
-            items: [{
-                key: '2_2_0_0',
-                label: 'Print',
-                icon: 'pi pi-fw pi-print'
-            }]
+    label: 'Test forms',
+    icon: 'pi pi-fw pi-file',
+    items: [
+        {
+            key: '2_1',
+            label: 'Answer form',
+            icon: 'pi pi-fw pi-list',
+            to: { name: 'answerform' }
         },
         {
-            key: '2_2_1',
-            icon: 'pi pi-fw pi-bars',
-            label: 'List'
+            key: '2_2',
+            label: 'Example form',
+            icon: 'pi pi-fw pi-list',
+            to: { name: 'exampleform' }
+        },
+        {
+            key: '4_3',
+            label: 'Example form 2',
+            icon: 'pi pi-fw pi-list',
+            to: { name: 'exampleform2' }
         }
-        ]
-    }
     ]
 },
 ];

@@ -2,11 +2,23 @@
   <router-view />
 </template>
 
+<script setup lang="ts">
+import { setUser } from '@/modules/globalState'
+import Utils from '@/modules/utils'
+import Constants from '@/modules/constants'
+
+const lUser = Utils.getFromLocalStorage(Constants.LOCALSTORAGEUSERKEY)
+if (lUser) {
+  setUser(JSON.parse(lUser))
+}
+</script>
+
 <style lang="scss">
 html,
 body {
   margin: 0;
   height: 100%;
+  overflow: hidden;
 }
 
 #app {
@@ -16,6 +28,5 @@ body {
   text-align: center;
   color: #2c3e50;
   margin: 0;
-  height: 100%;
 }
 </style>

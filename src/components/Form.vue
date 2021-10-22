@@ -6,7 +6,7 @@
         v-for="msg of messages"
         v-bind="msg"
         :key="msg.id"
-        @close="Utils.removeMessage(messages, msg.id)"
+        @close="removeMessage(msg.id)"
       >{{ msg.content }}</Message>
       <Message
         v-if="v$.$errors.length > 0"
@@ -17,7 +17,7 @@
     </transition-group>
     <div class="p-fluid p-formgrid p-grid">
       <FormDefinitionRecursor
-        v-for="configObject in config"
+        v-for="configObject in compConfig"
         :config="configObject"
         :readOnly="readOnly"
       ></FormDefinitionRecursor>
@@ -28,7 +28,13 @@
           <Button type="button" label="Edit" @click="readOnly = false" icon="pi pi-pencil" />
         </template>
         <template v-else>
-          <Button type="button" label="Submit" :disabled="v$.$invalid" @click="submitForm(dataType)" icon="pi pi-check" />
+          <Button
+            :disabled="v$.$invalid"
+            type="button"
+            label="Submit"
+            @click="submitForm(dataType)"
+            icon="pi pi-check"
+          />
         </template>
         <Button
           type="button"
@@ -43,23 +49,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, readonly, reactive, computed, watchEffect } from 'vue'
-import FormDefinitionRecursor from '@/components/form/FormDefinitionRecursor.vue'
+import { ref, provide, readonly, computed, onBeforeUnmount } from 'vue'
+import FormDefinitionRecursor from '@/components/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
 import router from '@/router/routes';
 import Utils from '@/modules/utils'
-import EventService from '@/services/EventService'
-import { messages, addSubmitMessage, addErrorMessage } from '@/modules/UseFormMessages'
-import { validate, mapValidators, setValidators, useValidation } from '@/modules/validate'
+import EventService from '@/services/ApiService'
+import { messages, addSubmitMessage, addErrorMessage, addWarningMessage } from '@/modules/UseFormMessages'
+import { setValidators, useValidation } from '@/modules/validate'
+import formConfigDefaults from '@/data/FormLayoutDefaults'
+
+onBeforeUnmount(() => {
+  // clear component based messages
+  messages.value = []
+})
 
 type FormProp = {
-  config: Fieldconfig[],
+  config?: Fieldconfig[],
   dataType: string,
   id?: string,
   columns?: number,
   title?: string,
   readOnly?: boolean,
+  formLayoutKey?: string,
 }
 
 const props = withDefaults(defineProps<FormProp>(), {
@@ -68,51 +81,84 @@ const props = withDefaults(defineProps<FormProp>(), {
   config: undefined,
 })
 const emit = defineEmits(['updateFieldValue'])
+const compConfig = computed(
+  () => {
+    return props.config ? props.config : myConfig.value
+  }
+)
 
 const fieldValues: any = ref<object>({})
 const fields: any = ref<object>({})
+const myConfig: any = ref<object>({})
+// Use a simple ref for now as there is no combined logic for rules that need it to be computed
+// This way type casting stays in place
+const rules = ref()
 
-fields.value = getFieldsFromConfig(props.config, 'isField', true)
-
-if (props.id) {
-  const record = EventService.getById(props.dataType, props.id)
-    .then((response) => {
-      const convertedResponseData = convertResponseData(response.data)
-      fieldValues.value = convertedResponseData
-
-      _.forIn(fields.value, function (field, fieldId) {
-        const fieldValue = fieldValues.value[fieldId]
-        calculateDependantFieldState(field, fieldValue)
-      })
+if (props.formLayoutKey) {
+  EventService.getDataByFilter('layoutdefinition', props.formLayoutKey)
+    .then((response: any) => {
+      // find will return array, get the first in this case
+      // isLoading.value = false
+      if (response.data.length > 0) {
+        myConfig.value = response.data[0].config
+      } else {
+        const defaultConfig = formConfigDefaults[props.dataType]
+        if (defaultConfig) {
+          myConfig.value = defaultConfig
+          addWarningMessage(`No layout config was found for key: ${props.formLayoutKey}. Loading default layout ...`)
+        } else {
+          addWarningMessage(`No layout config was found for entity: ${props.dataType}.`)
+        }
+      }
+      getFormData()
     })
     .catch((error) => {
-      console.error('There was an error!', error);
+      // isLoading.value = false
+      console.error('Could not fetch layoutdefinition! Going to hardcoded backup option.', error)
+      // myConfig.value = formConfigHardcoded
     })
 } else {
-  _.forIn(fields.value, function (field, fieldId) {
-    if (field && field.defaultValue) {
-      fieldValues.value[field.id] = field.defaultValue
-    }
-    calculateDependantFieldState(field, fieldValues.value[field.id])
-  })
+  getFormData()
 }
- 
-let v$ = ref({})
- // should validatorRules be a reactive object instead of a ref?
-let validatorRules = ref({})
 
-// first initiate static rules?
-validatorRules = setValidators(fields.value, {}, fieldValues.value)
+function removeMessage(id: number) {
+  Utils.removeMessage(messages, id)
+}
 
-// TODO: if some relevant state changes or metadata changes, we could recalculate the ruleset? 
-// Extremely dynamical, but it will not be scalable or performant. All rules are discarded and rebuilt? //return setValidators(fields.value, {}, fieldValues.value)
-const rules = computed(() => {
-      return validatorRules
-    }
-)
+function getFormData() {
+  fields.value = getFieldsFromConfig(compConfig.value, 'isField', true)
+  rules.value = setValidators(fields.value, undefined, fieldValues)
 
-// TODO useValidation plus extra global config like autoDirty or lazy or ???
-v$ = useValidation(rules, fieldValues,)
+  if (props.id) {
+    EventService.getById(props.dataType, props.id)
+      .then((response) => {
+        const convertedResponseData = convertResponseData(response.data)
+        fieldValues.value = convertedResponseData
+
+        _.forIn(fields.value, function (field, fieldId) {
+          const fieldValue = fieldValues.value[fieldId]
+          calculateDependantFieldState(field, fieldValue)
+        })
+      })
+      .catch((error) => {
+        console.error('There was an error!', error);
+      })
+  } else {
+    _.forIn(fields.value, function (field, fieldId) {
+      if (field && field.defaultValue) {
+        fieldValues.value[field.id] = field.defaultValue
+      }
+      calculateDependantFieldState(field, fieldValues.value[field.id])
+    })
+  }
+}
+
+// TODO: we could have fully dynamical rules in the sense of: depending on form definition and form state, the rulesset could morph
+// const rules = computed(() => {
+//   return validatorRules
+// })
+
+const v$ = useValidation(rules, fieldValues,)
 
 const updateFieldValue = (fieldId: string, value: any) => {
   fieldValues.value[fieldId] = value
@@ -122,24 +168,9 @@ const updateFieldValue = (fieldId: string, value: any) => {
   }
 }
 
-const addField = (fieldId: string, field: any) => {
-  fields.value[fieldId] = field
-}
-
-const updateFieldErrors = (fieldId: string, valid: boolean, info: string) => {
-  if (!valid) {
-    errorFieldsInfo.value[fieldId] = info
-    errorFields.value[fieldId] = !valid
-  } else {
-    delete errorFieldsInfo.value[fieldId]
-    delete errorFields.value[fieldId]
-  }
-}
-
 async function submitForm(dataType: string) {
-  
-  const hasErrors = await v$.value.$validate()
-  if (hasErrors) {
+  await v$.value.$validate()
+  if (v$.value.$invalid) {
     const errors = _.map(v$.value.$errors, '$params.fieldLabel')
     addErrorMessage(`The following fields have issues: ${errors.join(', ')}`)
     return
@@ -157,10 +188,7 @@ async function submitForm(dataType: string) {
         addSubmitMessage()
       })
       .catch((error) => {
-        addErrorMessage(
-          error.response && error.response.data && error.response.data.error
-            ? error + " ==> " + error.response.data.error
-            : error)
+        addErrorMessage(error)
       })
   } else {
     EventService.postForm(dataType, submitValue)
@@ -170,10 +198,7 @@ async function submitForm(dataType: string) {
         addSubmitMessage()
       })
       .catch((error) => {
-        addErrorMessage(
-          error.response && error.response.data && error.response.data.error
-            ? error + " ==> " + error.response.data.error
-            : error)
+        addErrorMessage(error)
       })
   }
 }
@@ -193,10 +218,10 @@ function convertResponseData(responseData: object): object {
 }
 
 function getFieldsFromConfig(arr: Fieldconfig[], key: string, value: string | boolean) {
-  let matches: object = {};
+  let matches: any = {};
   if (!Array.isArray(arr)) return matches;
 
-  arr.forEach(function (fieldConfig: Fieldconfig) {
+  arr.forEach(function (fieldConfig) {
     if (fieldConfig[key] === value) {
       matches[fieldConfig.id] = fieldConfig
     } else {
@@ -210,8 +235,6 @@ function getFieldsFromConfig(arr: Fieldconfig[], key: string, value: string | bo
 }
 
 function calculateDependantFieldState(field: Fieldconfig, fieldValue: any) {
-  console.log('exiting calculateDependantFieldState')
-  return
   field.dependantFields?.forEach(function (fieldId: string) {
     const myField = fields.value[fieldId]
     if (myField) {
@@ -235,7 +258,7 @@ provide('v$', v$)
 </script>
 
 <style lang="scss">
-@import "@/components/form/fieldicons.scss";
+@import "@/css/fieldicons.scss";
 
 .dynamicform {
   .p-formgrid {

@@ -35,7 +35,7 @@
                 :class="`p-field p-text-left ${getIconType(config)} p-col-12 p-md-12`"
             >
                 <label :for="config.id">{{ config.label }}{{ getRequired(config) }}</label>
-                <template v-if="readOnly">
+                <template v-if="readOnly && config.type !== 'JsonEditor'">
                     <div>{{ fieldValues[config.id] }}</div>
                 </template>
                 <template v-else>
@@ -45,9 +45,12 @@
                         :is="config.type"
                         :modelValue="fieldValues[config.id]"
                         @update:modelValue="updateFieldValue(config, $event)"
+                        :disabled="doDisable(config, v$)"
+                        @blur="v$[config.id].$validate()"
                         :class="v$[config.id]?.$error ? 'p-invalid' : ''"
                         :aria-describedby="`${config.id}-help`"
-                        :disabled="doDisable(config, v$)"
+                        :rows="config.type === 'P_Textarea' ? 5 : undefined"
+                        :readOnly="readOnly"
                     ></component>
                     <small
                         :id="`${config.id}-help`"
@@ -62,8 +65,10 @@
 <script setup lang="ts">
 import { inject } from 'vue'
 import Fieldconfig from '@/types/fieldconfig'
+
 import { validate } from '@/modules/validate'
 import { cHelpers } from '@/modules/validateHelpers'
+
 import _ from 'lodash'
 
 type FormProp = {
@@ -103,6 +108,7 @@ function doDisable(config, v$){
     // we need to pass in a dummy object to hold v$ ... in order to comply to the signature of isDisabled, which expects vm as the first argument...
     return cHelpers.isDisabled({ v$ }, config.id)
 }
+
 function getRequired(field: Fieldconfig) {
     return _.isArray(field.validators) && _.indexOf(field.validators, 'required') > -1 ? ' *' : null
 }
