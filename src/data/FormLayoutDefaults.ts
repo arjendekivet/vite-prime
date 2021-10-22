@@ -94,6 +94,10 @@ const formConfig: FormConfig = {
                 "required", 
                 { type: 'minLength', params: [{ min: 10 }] },
                 { type: 'maxLength', params: [{ max: 500 }] }, 
+                { 
+                    type: cvh.CV_TYPE_DISABLE_IF,
+                    params: { dependsOn: { [cvh.IS_INVALID]: ["title"] } },
+                }
             ]
         },
         {
