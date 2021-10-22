@@ -3,7 +3,9 @@ import router from '@/router/routes'
 import App from '@/App.vue';
 import PrimeVue from 'primevue/config';
 
-import 'primevue/resources/themes/bootstrap4-light-blue/theme.css' //theme
+// import 'primevue/resources/themes/bootstrap4-light-blue/theme.css' //theme
+// import '@/themes/nova-vue/theme.css' // local theme 01
+import '@/themes/bootstrap4-light-blue/theme.css' // local theme 02
 import 'primevue/resources/primevue.min.css'            //core css
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';                     //icons
