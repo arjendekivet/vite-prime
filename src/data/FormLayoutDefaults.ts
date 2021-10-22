@@ -71,7 +71,6 @@ const formConfig: FormConfig = {
             "placeholder": "Title",
             "validators": [
                 "required",
-                { "type": "minLength", "params": [{ "min": 10 }] },
                 { "type": "maxLength", "params": [{ "max": 200 }] }
             ],
             "icon": { "type": "right", "name": "pi-bookmark" }
@@ -92,7 +91,7 @@ const formConfig: FormConfig = {
             "maxColumns": 1,
             "validators":[
                 "required", 
-                { type: 'minLength', params: [{ min: 10 }] },
+                { type: 'minLength', params: [{ $model: 'title' }] },
                 { type: 'maxLength', params: [{ max: 500 }] }, 
                 { 
                     type: cvh.CV_TYPE_DISABLE_IF,
