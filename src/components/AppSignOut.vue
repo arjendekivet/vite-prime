@@ -38,7 +38,7 @@ Utils.removeFromLocalStorage(Constants.LOCALSTORAGEUSERKEY)
 setUser(null)
 addSuccesMessage('You have been signed out ...')
 
-setTimeout(() => router.push({ name: 'signin' }), 5000)
+setTimeout(() => router.push({ name: 'signin' }), 2000)
 
 function removeMessage(id: number) {
   Utils.removeMessage(messages, id)
