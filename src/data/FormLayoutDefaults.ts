@@ -1,4 +1,5 @@
 import Fieldconfig from '@/types/fieldconfig'
+import cvh from '@/modules/validateHelpers' //custom vuelidate helpers...
 
 type FormConfig = {
     [layoutdefinition: string]: Fieldconfig[]
@@ -13,7 +14,10 @@ const formConfig: FormConfig = {
             label: 'Title',
             type: 'P_InputText',
             placeholder: 'Title',
-            validators: ['required'],
+            validators: ['required',
+                { type: 'minLength', params: [{ min: 10 }] }, 
+                { type: 'maxLength', params: [{ max: 200 }] },
+            ],
             icon: { type: 'right', name: 'pi-bookmark' }
         },
         {
@@ -62,13 +66,13 @@ const formConfig: FormConfig = {
         {
             "id": "title",
             "isField": true,
-            "label": "Key",
+            "label": "Title",
             "type": "P_InputText",
-            "placeholder": "Key",
+            "placeholder": "Title",
             "validators": [
                 "required",
-                { "type": "minLength", "params": [{ "min": 2 }] },
-                { "type": "maxLength", "params": [{ "max": 10 }] }
+                { "type": "minLength", "params": [{ "min": 10 }] },
+                { "type": "maxLength", "params": [{ "max": 200 }] }
             ],
             "icon": { "type": "right", "name": "pi-bookmark" }
         },
@@ -179,7 +183,21 @@ const formConfig: FormConfig = {
             ],
             "optionLabel": "label",
             "optionValue": "value",
-            "editable": true
+            "editable": true, 
+            //disabled: false 
+            //hidden: true
+            "validators": [
+                // differs from cat_3: display only depends upon validity, not both visibility and validity of cat_3 ...
+                { 
+                    type: cvh.CV_TYPE_DISPLAY_IF,
+                    params: { dependsOn: { [cvh.NOT_EMPTY]: ['title'] } }, // equivalent would be SOME_VISIBLE: ['cat_4'] or IS_VISIBLE: 'cat_4' when we are having just one dependency
+                },
+                // differs from cat_3: it does not need to be disabled IF it is NOT visible as long as cat_3 is not VISIBle
+                { 
+                    type: cvh.CV_TYPE_DISABLE_IF,
+                    params: { dependsOn: { or: { [cvh.IS_EMPTY]: ['cat_2'], [cvh.IS_INVALID]: ['cat_2'] } } }, // or SOME or ALL etc 
+                },
+            ],
         }
     ]
 }

@@ -71,7 +71,7 @@ formConfig.value = [
                                     { 
                                         type: 'between', 
                                         params: [ {min: 11}, {max: 20} ] 
-                                    } 
+                                    }
                                 ]
                             },
                             {
@@ -269,7 +269,7 @@ formConfig.value = [
                             { 
                                 type: cvh.CV_TYPE_DISABLE_IF,
                                 params: { dependsOn: { or: { [cvh.IS_EMPTY]: ['cat_3'], [cvh.IS_INVALID]: ['cat_3'] } } }, // or SOME or ALL etc 
-                            },
+                            },        
                         ],
                     }
                 ],
