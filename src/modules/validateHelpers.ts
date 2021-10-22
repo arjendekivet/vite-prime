@@ -39,13 +39,21 @@ export const CFG_PROP_ENTITY_DISABLE = 'disabled'; // indicates in fieldCfg the 
 export const CFG_PROP_ENTITY_DISABLE_INVERT = false; // indicates a disable rule will NOT ave to negate the config prop
 
 // terms to be used in the Configuration of validators (in the form definitions / fields definition) pointing to the supported retriever functions
-export const IS_VALID = "isValid"
-export const SOME_VALID = "someValid"
-export const ALL_VALID = "allValid";
+export const IS_VALID = "isValidSilent"
+export const SOME_VALID = "someValidSilent"
+export const ALL_VALID = "allValidSilent";
 
-export const IS_INVALID = "isInvalid"
-export const SOME_INVALID = "someInvalid";
-export const ALL_INVALID = "allInvalid";
+export const IS_INVALID = "isInvalidSilent"
+export const SOME_INVALID = "someInvalidSilent";
+export const ALL_INVALID = "allInvalidSilent";
+
+export const IS_VALID_LAZY = "isValid"
+export const SOME_VALID_LAZY = "someValid"
+export const ALL_VALID_LAZY = "allValid";
+
+export const IS_INVALID_LAZY = "isInvalid"
+export const SOME_INVALID_LAZY = "someInvalid";
+export const ALL_INVALID_LAZY = "allInvalid";
 
 export const IS_VISIBLE = "isVisible";
 export const SOME_VISIBLE = "someVisible";
@@ -254,6 +262,7 @@ export const cHelpers = {
             console.warn(e); 
             result = defaulted;
         }
+        debugger
         return result
     },
     /**
@@ -339,6 +348,19 @@ export const cHelpers = {
         }
         return result
     },
+    isInvalidSilent: (vm, fieldName: string) => {
+        let result, defaulted = false;
+        try {
+            // inverts: (if lenght > 0) then there are errors. primary result = true. (!result => false) !!result=true !!!result=false 
+            result = !cHelpers.isValidSilent(vm,fieldName)
+        }
+        catch(e) {
+            console.warn(e); 
+            result = defaulted;
+        }
+        debugger
+        return result
+    },
     isHidden: (vm,fieldName: string) => {
         let result, defaulted = false;
         try {
@@ -389,6 +411,23 @@ export const cHelpers = {
             _.forEach(arrFieldNames, function(fieldName) {
                 // re-use isValidSilent
                 result =  cHelpers.isValidSilent(vm,fieldName)
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e){
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    someInvalidSilent:  (vm, arrFieldNames: string[]) => {
+        let result, defaulted = false;
+        const arrResults = [];
+        try {
+            _.forEach(arrFieldNames, function(fieldName) {
+                // re-use isValidSilent
+                result = !cHelpers.isValidSilent(vm,fieldName)
                 arrResults.push(result)
             })
             result = _.some(arrResults, Boolean);
@@ -797,24 +836,18 @@ export default {
     V_DISABLEIF ,
     CV_TYPE_DISABLE_IF, 
     CV_TYPE_DISPLAY_IF,
-    IS_VISIBLE,
-    SOME_VISIBLE,
-    ALL_VISIBLE,
-    IS_HIDDEN,
-    SOME_HIDDEN,
-    ALL_HIDDEN,
-    IS_VALID,
-    SOME_VALID,
-    ALL_VALID,
-    IS_INVALID, SOME_INVALID, ALL_INVALID,
-    IS_DISABLED, SOME_DISABLED, ALL_DISABLED,
-    IS_ENABLED,
-    SOME_ENABLED,
-    ALL_ENABLED,
+    IS_VISIBLE,SOME_VISIBLE,ALL_VISIBLE,
+    IS_HIDDEN,SOME_HIDDEN,ALL_HIDDEN,
+    IS_VALID,SOME_VALID,ALL_VALID,
+    IS_INVALID,SOME_INVALID, ALL_INVALID,
+    IS_VALID_LAZY,SOME_VALID_LAZY,ALL_VALID_LAZY,
+    IS_INVALID_LAZY,SOME_INVALID_LAZY,ALL_INVALID_LAZY,
+    IS_DISABLED,SOME_DISABLED,ALL_DISABLED,
+    IS_ENABLED,SOME_ENABLED,ALL_ENABLED,
     AND,
     OR,
     NOT,
-    IS_EMPTY, SOME_EMPTY, ALL_EMPTY,
-    NOT_EMPTY, SOME_NOT_EMPTY, NONE_EMPTY,
+    IS_EMPTY,SOME_EMPTY,ALL_EMPTY,
+    NOT_EMPTY,SOME_NOT_EMPTY,NONE_EMPTY,
     IS_REQUIRED_IF, NOT_REQUIRED_IF
 };

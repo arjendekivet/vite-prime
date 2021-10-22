@@ -89,7 +89,12 @@ const formConfig: FormConfig = {
             "label": "Description",
             "type": "P_Textarea",
             "placeholder": "Description",
-            "maxColumns": 1
+            "maxColumns": 1,
+            "validators":[
+                "required", 
+                { type: 'minLength', params: [{ min: 10 }] },
+                { type: 'maxLength', params: [{ max: 500 }] }, 
+            ]
         },
         {
             "id": "answer",
@@ -121,12 +126,20 @@ const formConfig: FormConfig = {
             "optionLabel": "label",
             "optionValue": "value",
             "editable": true,
-            "validators": [
-                "required"
-            ],
             "dependantFields": [
                 "cat_2"
-            ]
+            ],
+            "validators": [
+                "required", 
+                { 
+                    type: cvh.CV_TYPE_DISPLAY_IF,
+                    params: { dependsOn: { or: { [cvh.IS_VALID]: ["description"] , [cvh.NOT_EMPTY]: ["cat_1"] } } },
+                },
+                { 
+                    type: cvh.CV_TYPE_DISABLE_IF,
+                    params: { dependsOn: { or: { [cvh.IS_EMPTY]: ["description"] , [cvh.IS_INVALID]: ["description"] } } },
+                }
+            ],
         },
         {
             "id": "cat_2",
@@ -152,7 +165,17 @@ const formConfig: FormConfig = {
             "editable": true,
             "dependantFields": [
                 "cat_3"
-            ]
+            ],
+            "validators": [
+                { 
+                    type: cvh.CV_TYPE_DISPLAY_IF,
+                    params: { dependsOn: { or: { [cvh.IS_VALID]: ["cat_1"] , [cvh.NOT_EMPTY]: ["cat_2"] } } },
+                },
+                { 
+                    type: cvh.CV_TYPE_DISABLE_IF,
+                    params: { dependsOn: { or: { [cvh.IS_EMPTY]: ["cat_1"] , [cvh.IS_INVALID]: ["cat_1"], [cvh.IS_DISABLED]: ["cat_1"] } } },
+                }
+            ],
         },
         {
             "id": "cat_3",
@@ -187,16 +210,14 @@ const formConfig: FormConfig = {
             //disabled: false 
             //hidden: true
             "validators": [
-                // differs from cat_3: display only depends upon validity, not both visibility and validity of cat_3 ...
                 { 
                     type: cvh.CV_TYPE_DISPLAY_IF,
-                    params: { dependsOn: { [cvh.NOT_EMPTY]: ['title'] } }, // equivalent would be SOME_VISIBLE: ['cat_4'] or IS_VISIBLE: 'cat_4' when we are having just one dependency
+                    params: { dependsOn: { or: { [cvh.IS_VALID]: ["cat_2"] , [cvh.NOT_EMPTY]: ["cat_3"] } } },
                 },
-                // differs from cat_3: it does not need to be disabled IF it is NOT visible as long as cat_3 is not VISIBle
                 { 
                     type: cvh.CV_TYPE_DISABLE_IF,
-                    params: { dependsOn: { or: { [cvh.IS_EMPTY]: ['cat_2'], [cvh.IS_INVALID]: ['cat_2'] } } }, // or SOME or ALL etc 
-                },
+                    params: { dependsOn: { or: { [cvh.IS_EMPTY]: ["cat_2"] , [cvh.IS_INVALID]: ["cat_2"] , [cvh.IS_DISABLED]: ["cat_2"] } } },
+                }
             ],
         }
     ]
