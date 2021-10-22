@@ -96,40 +96,18 @@ if (props.id) {
     calculateDependantFieldState(field, fieldValues.value[field.id])
   })
 }
-
-// TODO: if we need to pass in v$ into setValidators, we need a valid reference to v$ ???
-// but 
+ 
 let v$ = ref({})
- // should validatorRules be a reactive object?
+ // should validatorRules be a reactive object instead of a ref?
 let validatorRules = ref({})
-let abortSetValidators = ref(true) // initially do not set up rules, until v$ is properly populated
 
-// TODO: remove the reactive dependency on v$ itself ????????? 
-// first initiate dummy rules?
+// first initiate static rules?
 validatorRules = setValidators(fields.value, {}, fieldValues.value)
 
-// TODO: should we use this one to regenerate rules if something relevant changes?
-// watchEffect(() => fieldValues.value)
-
-// TODO: we could have fully dynamical rules in the sense of: depending on form definition and form state, the rulesset could morph
-// if some relevant state changes or metadata changes, we could recalculate the ruleset? but HOW exactly?
+// TODO: if some relevant state changes or metadata changes, we could recalculate the ruleset? 
+// Extremely dynamical, but it will not be scalable or performant. All rules are discarded and rebuilt? //return setValidators(fields.value, {}, fieldValues.value)
 const rules = computed(() => {
-      console.log('executing computed "rules"')
-      debugger;
-      //TODO this is extremely dynamical, but it will not be scalable or performant. All rules are discarded and rebuilt???? 
-      //return setValidators(fields.value, {}, fieldValues.value)
       return validatorRules
-    }, { 
-        onTrack(e) {
-          // triggered when the above is tracked as a dependency
-          //debugger
-          //console.log('executing onTrack in computed "rules"')
-        },
-        onTrigger(e) {
-          // triggered when the above is mutated
-          //debugger
-          //console.log('executing onTrigger in computed "rules"')
-        }
     }
 )
 

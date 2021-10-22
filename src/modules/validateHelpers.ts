@@ -7,17 +7,13 @@
 * 2. Als het veld dat niet heeft, maar wel een "dependency in een rule" heeft, dan bepaalt die dependency rule het resultaat van die feature.
 *      Bijvoorbeeld: veld heeft "dependsOn" of upstream heeft "dependents" die op dit veld slaat.
 *      Vraagstuk: Moet de genoemde dependent field daadwerkelijk een relevante visibility validator hebben, of gaat dit buiten de verantwoordelijkheid van dit veld om? 
-*      In de zin van: geen rule is ook een rule. Geen rule om visibility te negeren betekent toestemming voor visibility.
-*
-* uitzondering bij validatie: systemrequired voor savedraft versus required, requiredIf etc etc
+*      In de zin van: geen rule is ook een rule. Geen rule om visibility te negeren betekent toestemming voor visibility. etc.
 */ 
 // TODO: if all methods used can come from Array instead of Lodash, drop Lodash dependency
 // like myArray =[] myArray.every instead of _.every( myArray, <bla>) etc 
 
 import _ from 'lodash'
-import { helpers, required, requiredIf, email, minLength, maxLength, between, maxValue } from '@vuelidate/validators'
-
-//const RULE_GENERATOR = Symbol('__RuleGenerator__');
+import { helpers } from '@vuelidate/validators'
 
 export const RULE_GENERATOR = "RULE_GENERATOR";
 export const VISIBILITY = 'displayIf';
@@ -30,9 +26,7 @@ export const V_DISABLEIF = 'disableIf';
 // Introduce constants for the validator names/types in order NOT to clash with built-in and other imported working vuelidate validators
 export const V_CUSTOM_PREFIX = '__cv__';
 export const CV_TYPE_DISABLE_IF = `${V_CUSTOM_PREFIX}${V_DISABLEIF}`;
-// todo
 export const CV_TYPE_DISPLAY_IF = `${V_CUSTOM_PREFIX}${V_DISPLAYIF}`;
-// todo terms for config props
 
 export const AND = "and";
 export const OR = "or";
@@ -69,7 +63,8 @@ export const IS_ENABLED = "isEnabled";
 export const SOME_ENABLED = "someEnabled";
 export const ALL_ENABLED = "allEnabled";
 
-// can we use something that always depends on the $model of a field? This will require a dummy rule for a field of NO built in validator was specified at all...
+// note: "empty" rules depend on the $model of the specified field. This assumes the two-way binding AND a dummy rule for a field when NO built in validator was specified at all. 
+// We already use two of such dummy rules, namely for visibility and for enabling for each field, so $model should be present for each field.
 export const IS_EMPTY = "isEmpty";
 export const SOME_EMPTY = "someEmpty";
 export const ALL_EMPTY = "allEmpty";
@@ -78,11 +73,11 @@ export const NOT_EMPTY = "notEmpty";
 export const SOME_NOT_EMPTY = "someNotEmpty";
 export const NONE_EMPTY = "noneEmpty";
 
-// EXPERIMENT: kunnen we met een helper ook makkelijk refererren naar built-in vuelidate rule RESULTS ??
+// EXPERIMENT: support two helpers to retrieve the rule results of the built-in vuelidate requiredIf validator
 export const IS_REQUIRED_IF = "isRequiredIf"
 export const NOT_REQUIRED_IF = "notRequiredIf"
 
-export const SUPPORTED_RETRIEVERS = [
+const SUPPORTED_RETRIEVERS = [
     IS_VISIBLE, SOME_VISIBLE, ALL_VISIBLE, 
     IS_VALID, SOME_VALID, ALL_VALID, 
     IS_INVALID, SOME_INVALID, ALL_INVALID, 
@@ -90,7 +85,7 @@ export const SUPPORTED_RETRIEVERS = [
     IS_HIDDEN, SOME_HIDDEN, ALL_HIDDEN ,
     IS_EMPTY, SOME_EMPTY, ALL_EMPTY,
     NOT_EMPTY, SOME_NOT_EMPTY, NONE_EMPTY,
-    // these search for the results for builtin vuelidate validators!!!! They do not -yet- rerun proper validators thmeselves???
+    // these search for the results for builtin vuelidate validators!!!! They do not -yet- rerun proper validators thmeselves.
     IS_REQUIRED_IF, NOT_REQUIRED_IF
 ]
 /**
@@ -107,8 +102,8 @@ export const SUPPORTED_RETRIEVERS = [
         }
         return result
     },
+    * kunnen we -wat- korter schrijven als:
     isEnabled: (vm, fieldName: string) => {
-        * kunnen we -wat- korter schrijven als:
         try {
             return !cHelpers.isDisabled(vm,fieldName)
         }
@@ -120,14 +115,13 @@ export const SUPPORTED_RETRIEVERS = [
 export const cHelpers = {
     /**
      * Checks if for a field the -builtin- requiredIf validator resulted true.
-     * Note: this is only a retriever of a rule result, it does not calculate or execute a rule itself!
-     * This result will only exist IF for that field the builtIn requiredIf rule existed AND was called / registered before this retrieval helper method is called. 
+     * Note: this is only a retriever of a rule result, it does not calculate or execute a rule itself.
+     * This result will only indeed exist IF for that field the builtIn requiredIf rule existed AND was called & registered, before this retrieval helper method is called. 
      * @param vm 
      * @param fieldName 
      * @returns 
      */
      isRequiredIf: (vm,fieldName: string) => {
-         debugger;
         let result, defaulted = false;
         try { 
             result = vm?.v$?.[fieldName]?.requiredIf?.$invalid ?? defaulted;
@@ -136,7 +130,6 @@ export const cHelpers = {
             console.warn(e); 
             result = defaulted;
         }
-        debugger;
         return result
     },
     notRequiredIf: (vm,fieldName: string) => {
@@ -210,7 +203,6 @@ export const cHelpers = {
             console.warn(e); 
             result = defaulted;
         }
-        debugger;
         return result
     },
     someNotEmpty: (vm, arrFieldNames: string[]) => {
@@ -238,7 +230,6 @@ export const cHelpers = {
                 arrResults.push(result)
             })
             result = _.every(arrResults, Boolean);
-            debugger
         }
         catch(e) {
             console.warn(e);
@@ -391,10 +382,6 @@ export const cHelpers = {
         }
         return result
     },
-    //TODO make isEnabled based on re-use inverted isDisabled
-    //TODO make isHidden based on re-use inverted isVisible
-    //TODO make isInvalid based on re-use inverted isValid
-    // etcetera etcetera etcetera 
     someValidSilent:  (vm, arrFieldNames: string[]) => {
         let result, defaulted = false;
         const arrResults = [];
@@ -619,21 +606,15 @@ export const cHelpers = {
 }
 
 /**
- * A HOF for type 'disABLERIf' and diplayerIf .... and ????
- * Returns the parameterized version of a validator fn.
+ * A HOF that composes the parameterized version of a validator fn.
+ * For now used by custom validators of type 'disABLERIf' and diplayerIf .... and ????
  * For now supports: 
  * conditioning on the eager validity of some/all fields.
  * conditioning on the lazy validity of some/all fields.
  * conditioning on the visibility of some/all fields.
  * conditioning on the disabled of some/all fields.
- * etcetera
- * * TODO: write a parser / reducer which can walk the dependsOn object and map it to function invocations and reduce to a return value...
- * * TODO: write a parser / reducer which can walk the dependsOn object and map it to function invocations and reduce to a return value...
- * * TODO: write a parser / reducer which can walk the dependsOn object and map it to function invocations and reduce to a return value...
- * * TODO: write a parser / reducer which can walk the dependsOn object and map it to function invocations and reduce to a return value...
- * 
+ * conditioning on the empty / not-empty of some/all fields.
  * @param args. Array.  We expect to get passed in all the necessary parametrizations. 
- * Supports refering to fields and their visibility-state or disabled-state or validity-state or their value ...
  * @returns a parameterized ruleFn for vuelidate, to be used as a custom rule executioner for vuelidate (as opposed to only built-in ones and only for validation purposes).
  * TODO: make async?
  */
@@ -651,23 +632,20 @@ const hofRuleFnGenerator = ( ...args) => {
     let pretest 
     let hasStaticConfigProperty 
     try {
-        pretest = fieldCfg?.[staticConfigProperty] ?? "dummy"
-        hasStaticConfigProperty = !!!( pretest === "dummy")
-        
-        // 1. do we have a overruling static configuration property? Of: hoort hier niet thuis? Dit IS de ruleFn en die MAG alleen geimplemnteerd worden WANNEER er geen static overruler is? Nee kan wel ...
+        // 1. do we have a overruling static configuration property?
+        hasStaticConfigProperty = ( fieldCfg?.[staticConfigProperty] ?? false ) !== false
         if ( hasStaticConfigProperty )
         {
             resultFunction = function ruleFn(value, vm){
-                console.log('running validator from 1-st branch for ', fieldCfg.id)
                 let rule_result = doInvertRuleResult ? !!!fieldCfg?.[staticConfigProperty] : !!fieldCfg?.[staticConfigProperty]
                 return { $valid: true, extraParams: { rule_result , fieldCfg }, message: `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticConfigProperty} on ${fieldCfg.label}` }
             }
         }
-        // 2. probe if we have a call for a supported custom rule function
-        if (!resultFunction){
+        // 2. probe for a supported custom rule function
+        else if (!resultFunction){
             resultFunction = probeCustomRuleFn(args)
         }
-        // 3. Again probe to make sure that if we did not have any function yet, we should return a liberal/neutraal fallback function 
+        // 3. make sure that if we did not have any function yet, we should return a liberal/neutral fallback function 
         if (!resultFunction){
             resultFunction = fallBackFunction
         }
@@ -680,13 +658,14 @@ const hofRuleFnGenerator = ( ...args) => {
 }
 
 /**
- * Configures and calls a Higher Order Function to generate a displayerIf rule-function for vuelidate.
+ * Generates a disablerIf rule-function for vuelidate.
+ * Supports refering to (other) field(s) regarding their visibility-state and/or disabled-state and/or validity-state or their value ...
+ * Configures a part of the arguments to call a Higher Order Function for that.
  * @param args. Array.  We expect to pass in one object containing all the necessary parametrizations. 
- * Supports refering to fields and their visibility-state or disabled-state or validity-state or their value ...
  * @returns a parameterized ruleFn for vuelidateto be used as a custom validator for vuelidate (as opposed to not a built-in one).
  */
  export const disablerIf = (args) => {
-    const defaultRuleResult = false
+    const defaultRuleResult = false;
     const staticConfigProperty = CFG_PROP_ENTITY_DISABLE
     const doInvertRuleResult = CFG_PROP_ENTITY_DISABLE_INVERT
     let resultFunction
@@ -699,7 +678,9 @@ const hofRuleFnGenerator = ( ...args) => {
 }
 
 /**
- * Configures and calls a Higher Order Function to generate a displayerIf rule-function for vuelidate.
+ * Generates a displayerIf rule-function for vuelidate.
+ * Supports refering to (other) field(s) regarding their visibility-state and/or disabled-state and/or validity-state or their value ...
+ * Configures a part of the arguments to call a Higher Order Function for that.
  * @param args 
  * @returns 
  */
@@ -716,74 +697,24 @@ export const displayerIf = (args) => {
     return resultFunction
 }
 
-const probeCustomRuleFnBak = (arrCfg, pType) => {
-    
-    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = arrCfg[0]
-    const ruleType = params?.type ?? pType
-    const arrSupported = [ AND, OR, NOT, ALL_VISIBLE, IS_VISIBLE, SOME_VISIBLE, ALL_VALID, SOME_VALID, IS_VALID, ALL_INVALID, SOME_INVALID, IS_INVALID, IS_DISABLED, SOME_DISABLED, ALL_DISABLED, IS_HIDDEN, SOME_HIDDEN, ALL_HIDDEN ]
-    const fnKeys = _.keys(dependsOn)
-    const matched = []
-    fnKeys.forEach((key) => ( _.includes(arrSupported, key) ) ? matched.push(dependsOn[key]) : null)
-    
-    if ( matched.length ){ 
-        debugger
-        return function ruleFn(value, vm){
-            //console.log(`running cynapps custom rule validator -type: ${ruleType}- from 2-st branch for ${fieldCfg.id} `)
-            let rule_result = true; // by default we should display stuff ???????????????
-            let arrPartials = [];
-            let fn, target
-            // we should iterate all matched fn and deal with them ...   FOR NOW assume only conjunctions!!!!
-            fnKeys.forEach((key) => { 
-                if ( _.includes(arrSupported, key) ) {
-                    fn = key;
-                    target = dependsOn[key]
-                    arrPartials.push( cHelpers[fn]?.(vm, target) )
-                }       
-            })
-            rule_result = _.every(arrPartials, Boolean)
-            // todo: message kan ook een function zijn ... dus daar kunnen we alles in passen?
-            return { $valid: true, extraParams: { rule_result , fieldCfg }, message: `Rule ${ruleType} for ${fieldCfg.label} dependent on ${fn}` }
-        }
-    }
-}
-
-// Om dit recursief te kunnen maken, moeten we dit gaan curryen? Hoe dan? Moeten we een versie van probeCustomRuleFn maken die NIET als return value 
-// dat object geeft maar alleen een boolean teruggeeft, zodat die in een hogere functie steeds in een partial array kan worden gepushed
-// waardoor een weer hogere functie daar een _.some / _.every al dan niet negated op kan doen?
-// alleen de laatste aanroep moet uiteindelijk het object voor vuelidate teruggeven... J
-// Je weet dat je de laatste bent als er geen enkele "and" / "or" or "not" in de keys van het config object level meer zitten...
-// if we are on the highest level of dependsOn, we should return the function which returns the object for vuelidate
-        // if we are deeper, we only need to return the boolean result of the and / or / not evaluation of the contained criteria, and so on recursively.
-
-// Try a different approach: the first invocation is to some regular function, and that one can call a recursive variant ....
-// AND the root dependsOn can also start with or / not / and !!!!!
-// TODO: MAKE async all the way through ???????????????
+/**
+ * Returns a vuelidate rule function, which returns a response object needed for custom vuelidate validators/rules.
+ * Calls a recursive funciton.
+ * @param arrCfg 
+ * @returns 
+ */
 const probeCustomRuleFn = (arrCfg) => {
     const { dependsOn, fieldCfg, formData, formDefinition, ...params } = arrCfg[0]
     const { defaultRuleResult, staticConfigProperty , doInvertRuleResult } = arrCfg[1]
-    let tmp
     return function ruleFn(value, vm){
-        tmp = probeCustomRuleFnRecursor(value, vm, arrCfg[0]) // ?? defaultRuleResult
-        let rule_result = tmp ?? defaultRuleResult
-        console.log(`running cynapps custom rule validator -type: ${params?.type}- from 2-st branch for ${fieldCfg?.id} resulted: ${rule_result}`)
-        return { $valid: true, extraParams: { rule_result , fieldCfg }, message: `Rule ${params?.type} for ${fieldCfg?.label}` }
+        let rule_result = probeCustomRuleFnRecursor(value, vm, arrCfg[0]) ?? defaultRuleResult
+        // console.log(`running cynapps custom rule validator -type: ${params?.type} - from probeCustomRuleFn called via 2-st branch of hofRuleFnGenerator via ${params?.type?.indexOf('disable')>-1 ? 'disablerIf' : 'displayerIf' } for ${fieldCfg?.id} resulted: ${rule_result}`)
+        return { $valid: true, extraParams: { rule_result , fieldCfg }, message: `Rule of type ${params?.type} for field ${fieldCfg?.label} returned: ${rule_result}.` }
     }
 }
 
 /**
- * 
- * TODO: MAKE async all the way through ???????????????
- * TODO: should we always pass in value and vm, like vuelidate itself does, and then the fieldName / arrFieldNames
- * in order to be able to truely call builtin validators????
- * eg our custom isDynamicalCynappsRule(value, vm, 'pipo' , params) might want to actually first call the built in
- * between(min,max) vuelidate validator on field 'pipo' and do other logic 
- * the question is, is vuelidate between(10,20) callable from field A about field C?
- * The passed in value we have IS from field A, so no...
- * the question is: is vuelidate between(10,20) callable from field A about field A without being modelled as a validator?
- * 
- *  
- *   
- * Inner recursor for the probe.
+ * Inner recursor for the probeCustomRuleFn.
  * It should be able to recursively walk all nested conditions and return the correct Boolean evaluation result
  * resulting from calling and evalutaing all combined condtions in the entire set of dependsOn criteria.
  * @param value. Passed by vuelidate.
@@ -798,7 +729,6 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND ) => {
     const arrToRecurse = [AND, OR, NOT]
 
     let countAsResult = 0;
-    //console.log(`running cynapps custom rule validator -type: ${ruleType}- from 2-st branch for ${fieldCfg.id} `)
     let rule_result;
     let arrPartials = [];
     let tmp
@@ -809,7 +739,7 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND ) => {
             for (const [key, entryValue] of iterator) {
                 tmp = null
                 if (arrToRecurse.includes(key)){
-                    // to correctly recur downwards set the new dependsOn property to the relevant subset!
+                    // to correctly recur downwards set the new dependsOn property to the relevant subset!!!!
                     let objCfg2 = { "dependsOn": entryValue, fieldCfg, formData, formDefinition, params }
                     try { 
                         tmp = probeCustomRuleFnRecursor(value, vm, objCfg2, key) 
@@ -822,8 +752,6 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND ) => {
                 }
                 else if (arrSupported.includes(key)) {
                     let fn = key;
-                    // let target = dependsOn[key]
-                    // is dependsOn[key] euqal to entryValue ???????? if so use entryValue !!!!! as target 
                     try {
                         tmp = cHelpers[fn]?.(vm, entryValue)
                         countAsResult++
@@ -838,7 +766,6 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND ) => {
     }
     catch(e){
         console.warn(e)
-        debugger
     }
 
     // depending upon asLogicalOperator, we reduce arrPartials to a boolean via _.some. _.every or !_.every
@@ -848,14 +775,11 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND ) => {
     return rule_result
 }
 
-
-/**
- * 
- * @param type Returns true is the type name starts with our constant custom prefix: V_CUSTOM_PREFIX
+/*** 
+ * Indicates if a validator is a cynapps custom validator, when the type name starts with our constant custom prefix: V_CUSTOM_PREFIX
  */
 export const isCustomValidatorType = (type: string) => {
-    const result = type?.indexOf(V_CUSTOM_PREFIX) > -1 ?? false
-    return result
+    return type?.indexOf?.(V_CUSTOM_PREFIX) > -1 ?? false
 }
 
 export default { 
@@ -873,33 +797,24 @@ export default {
     V_DISABLEIF ,
     CV_TYPE_DISABLE_IF, 
     CV_TYPE_DISPLAY_IF,
-    // some logic helper functions ...
     IS_VISIBLE,
     SOME_VISIBLE,
     ALL_VISIBLE,
-
     IS_HIDDEN,
     SOME_HIDDEN,
     ALL_HIDDEN,
-
     IS_VALID,
     SOME_VALID,
     ALL_VALID,
-
     IS_INVALID, SOME_INVALID, ALL_INVALID,
-
     IS_DISABLED, SOME_DISABLED, ALL_DISABLED,
-
     IS_ENABLED,
     SOME_ENABLED,
     ALL_ENABLED,
-
     AND,
     OR,
     NOT,
-
     IS_EMPTY, SOME_EMPTY, ALL_EMPTY,
     NOT_EMPTY, SOME_NOT_EMPTY, NONE_EMPTY,
-
     IS_REQUIRED_IF, NOT_REQUIRED_IF
 };
