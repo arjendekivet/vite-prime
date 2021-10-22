@@ -64,6 +64,15 @@ const formConfig: FormConfig = {
     ],
     questions: [
         {
+            "id": "setting0",
+            "isField": true,
+            "label": "Setting0",
+            "type": "P_InputText",
+            "defaultValue": 5,
+            // "hidden": true,
+            //"disabled": true,
+        },
+        {
             "id": "title",
             "isField": true,
             "label": "Title",
@@ -91,7 +100,8 @@ const formConfig: FormConfig = {
             "maxColumns": 1,
             "validators":[
                 "required", 
-                { type: 'minLength', params: [{ $model: 'title' }] },
+                //{ type: 'minLength', params: [{ $model: 'setting0' }] },
+                { type: 'minLength', params: [{ min: 10 }] },
                 { type: 'maxLength', params: [{ max: 500 }] }, 
                 { 
                     type: cvh.CV_TYPE_DISABLE_IF,
