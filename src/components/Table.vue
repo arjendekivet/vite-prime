@@ -11,7 +11,7 @@
         >{{ msg.content }}</Message>
     </transition-group>
     <DataTable
-        :value="tableData"
+        :value="compTableData"
         v-model:selection="selected"
         data-key="_id"
         class="base-table"
@@ -53,7 +53,6 @@ import _ from 'lodash';
 import Utils from '@/modules/utils'
 import ColumnConfig from "@/types/columnconfig"
 import EventService from '@/services/ApiService'
-import router from '@/router/routes'
 import { messages, addSuccesMessage, addErrorMessage, addWarningMessage } from '@/modules/UseFormMessages'
 import TableLayoutDefaults from '@/data/TableLayoutDefaults'
 
@@ -70,7 +69,8 @@ type Props = {
     formLayoutKey?: string,
     selectionMode?: string,
     openDocumentRow?: boolean,
-    title?: string
+    title?: string,
+    tableData?: object
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -79,13 +79,18 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const columns = ref<ColumnConfig[]>()
-const tableData = ref()
+const fetchedTableData = ref()
 const searchValue = ref<string[]>()
 const configTitle = ref<string>()
 const formLayoutKey = ref<string>('dummy')
 const selected = ref<Object[]>()
 
 const compTitle = computed(() => props.title ? props.title : configTitle.value)
+const compTableData = computed(() => searchedTableData.value ? searchedTableData.value :
+    props.tableData ? props.tableData :
+        fetchedTableData.value)
+
+const searchedTableData = ref()
 
 if (props.layoutKey) {
     EventService.getDataByFilter('layoutdefinition', props.layoutKey)
@@ -124,13 +129,15 @@ function removeMessage(id: number) {
 }
 
 function getData() {
-    EventService.getData(props.dataType, false, 0)
-        .then((response) => {
-            tableData.value = response.data
-        })
-        .catch((error) => {
-            addErrorMessage(error)
-        })
+    if (!props.tableData) {
+        EventService.getData(props.dataType, false, 0)
+            .then((response) => {
+                fetchedTableData.value = response.data
+            })
+            .catch((error) => {
+                addErrorMessage(error)
+            })
+    }
 }
 
 function deleteSelection() {
@@ -152,23 +159,39 @@ function deleteSelection() {
 }
 
 function openDocument(dataType: string, rowData: any, readOnly: boolean) {
-    const id = rowData._id
+    const id = rowData?._id
     if (id) {
-        pushToRouter({ name: 'form', params: { type: dataType, id: id, layout: formLayoutKey.value }, query: { readOnly: readOnly.toString() } })
+        pushToRouter({
+            name: 'form',
+            params: { type: dataType, id: id, layout: formLayoutKey.value },
+            query: { readOnly: readOnly.toString() }
+        })
     }
 }
 
 function searchUpdate(searchValue: string) {
     if (searchValue === '') {
-        getData()
+        if (props.tableData) {
+            searchedTableData.value = null
+        } else {
+            getData()
+        }
     } else {
-        EventService.getDataByFilter(props.dataType, searchValue, false, 0)
-            .then((response) => {
-                tableData.value = response.data
-            })
-            .catch((error) => {
-                addErrorMessage(error)
-            })
+        if (props.tableData) {
+            searchedTableData.value = _.filter(
+                props.tableData,
+                function (o: any) { return o.title?.indexOf(searchValue) > -1 }
+            )
+        } else {
+            EventService.getDataByFilter(props.dataType, searchValue, false, 0)
+                .then((response) => {
+                    fetchedTableData.value = response.data
+                })
+                .catch((error) => {
+                    addErrorMessage(error)
+                })
+        }
+
     }
 }
 
