@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from 'vue'
+import { onBeforeUnmount, ref, inject } from 'vue'
 import TableToolbar from '@/components/TableToolbar.vue'
 import _ from 'lodash';
 import Utils from '@/modules/utils'
@@ -57,19 +57,22 @@ import router from '@/router/routes'
 import { messages, addSuccesMessage, addErrorMessage, addWarningMessage } from '@/modules/UseFormMessages'
 import TableLayoutDefaults from '@/data/TableLayoutDefaults'
 
+const pushToRouter: any = inject('pushToRouter')
+
 onBeforeUnmount(() => {
     // clear component based messages
     messages.value = []
 })
 
-type FormProps = {
+type Props = {
     dataType: string,
-    layoutKey: string,
+    layoutKey?: string,
+    formLayoutKey?: string,
     selectionMode?: string,
     openDocumentRow?: boolean,
 }
 
-const props = withDefaults(defineProps<FormProps>(), {
+const props = withDefaults(defineProps<Props>(), {
     selectionMode: 'multiple',
     openDocumentRow: true,
 })
@@ -90,13 +93,7 @@ if (props.layoutKey) {
                 formLayoutKey.value = config.layoutKey
                 title.value = config.label
             } else {
-                const defaultConfig = TableLayoutDefaults[props.dataType]
-                if (defaultConfig) {
-                    columns.value = defaultConfig
-                    addWarningMessage(`No layout config was found for key: ${props.layoutKey}. Loading default layout ...`)
-                } else {
-                    addWarningMessage(`No layout config was found for entity: ${props.dataType}.`)
-                }
+                setDefaultLayout()
             }
             getData()
         })
@@ -105,7 +102,18 @@ if (props.layoutKey) {
             addErrorMessage(error)
         })
 } else {
-    addErrorMessage('No layout key was provided.')
+    setDefaultLayout()
+    getData()
+}
+
+function setDefaultLayout() {
+    const defaultConfig = TableLayoutDefaults[props.dataType]
+    if (defaultConfig) {
+        columns.value = defaultConfig
+        addWarningMessage(`No layout config was found for key: ${props.layoutKey}. Loading default layout ...`)
+    } else {
+        addWarningMessage(`No layout config was found for entity: ${props.dataType}.`)
+    }
 }
 
 function removeMessage(id: number) {
@@ -143,7 +151,7 @@ function deleteSelection() {
 function openDocument(dataType: string, rowData: any, readOnly: boolean) {
     const id = rowData._id
     if (id) {
-        router.push({ name: 'formbyid', params: { type: dataType, id: id, layout: formLayoutKey.value }, query: { readOnly: readOnly.toString() } })
+        router.push({ name: 'form', params: { type: dataType, id: id, layout: formLayoutKey.value }, query: { readOnly: readOnly.toString() } })
     }
 }
 
@@ -162,7 +170,8 @@ function searchUpdate(searchValue: string) {
 }
 
 function newDoc() {
-    router.push({ name: 'newform' })
+    router.push({ name: 'form', params: { type: props.dataType, id: '0', layout: props.formLayoutKey } })
+    // pushToRouter({ name: 'form', params: { type: props.dataType, id: '0', layout: props.formLayoutKey } })
 }
 </script>
 

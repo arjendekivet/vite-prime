@@ -4,9 +4,9 @@ import "primeflex/primeflex.css";
 import "primeicons/primeicons.css"; //icons
 
 import { app } from "@storybook/vue3";
-// import router from "@/router/routes";
+import router from "@/router/routes";
 import PrimeVue from "primevue/config";
-// app.use(router);
+app.use(router);
 app.use(PrimeVue);
 
 import InputText from "primevue/inputtext";
