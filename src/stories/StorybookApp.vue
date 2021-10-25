@@ -6,11 +6,13 @@
 
 <script setup lang="ts">
 import { provide } from 'vue'
+import { action } from '@storybook/addon-actions';
 
 provide('pushToRouter', pushToRouter)
 
-function pushToRouter(routerConfig: RouteLocationRaw) {
-  console.info(routerConfig)
+function pushToRouter(routerConfig: any) {
+  console.info('pushToRouter', routerConfig)
+  action('pushToRouter')(routerConfig)
 }
 
 </script>
@@ -20,7 +22,7 @@ html,
 body {
   margin: 0;
   height: 100%;
-  overflow: hidden;
+  // overflow: hidden;
 }
 
 .app {
