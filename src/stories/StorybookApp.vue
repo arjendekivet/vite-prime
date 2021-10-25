@@ -1,26 +1,16 @@
 <template>
   <div class="app">
-    <router-view />
+    <slot></slot>
   </div>
 </template>
 
 <script setup lang="ts">
 import { provide } from 'vue'
-import { RouteLocationRaw } from 'vue-router'
-import router from '@/router/routes'
-import { setUser } from '@/modules/globalState'
-import Utils from '@/modules/utils'
-import Constants from '@/modules/constants'
-
-const lUser = Utils.getFromLocalStorage(Constants.LOCALSTORAGEUSERKEY)
-if (lUser) {
-  setUser(JSON.parse(lUser))
-}
 
 provide('pushToRouter', pushToRouter)
 
 function pushToRouter(routerConfig: RouteLocationRaw) {
-  router.push(routerConfig)
+  console.info(routerConfig)
 }
 
 </script>

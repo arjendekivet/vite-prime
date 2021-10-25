@@ -1,4 +1,5 @@
 import Table from '@/components/Table.vue';
+// import StoryBookApp from '@/stories/StorybookApp.vue';
 
 export default {
   title: 'Cynapps/Questions Table',
@@ -16,11 +17,13 @@ const Template: any = (args: any) => ({
     return { args };
   },
   // And then the `args` are bound to your component with `v-bind="args"`
-  template: '<Table v-bind="args" />',
+  template: '<Table v-bind="args" />'
+  //template: '<StoryBookApp><Table v-bind="args" /></StoryBookApp>',
 });
 
 // Not working yet !!!!
 export const Primary = Template.bind({});
 Primary.args = {
   dataType: 'questions',
+  title: 'Questions'
 };

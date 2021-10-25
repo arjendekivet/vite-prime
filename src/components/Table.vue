@@ -1,5 +1,5 @@
 <template>
-    <h3 v-if="title">{{ title }}</h3>
+    <h3 v-if="compTitle">{{ compTitle }}</h3>
     <transition-group name="p-message" tag="div">
         <Message
             v-for="msg of messages"
@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, ref, inject } from 'vue'
+import { onBeforeUnmount, ref, inject, computed } from 'vue'
 import TableToolbar from '@/components/TableToolbar.vue'
 import _ from 'lodash';
 import Utils from '@/modules/utils'
@@ -70,6 +70,7 @@ type Props = {
     formLayoutKey?: string,
     selectionMode?: string,
     openDocumentRow?: boolean,
+    title?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -80,9 +81,11 @@ const props = withDefaults(defineProps<Props>(), {
 const columns = ref<ColumnConfig[]>()
 const tableData = ref()
 const searchValue = ref<string[]>()
-const title = ref<string[]>()
+const configTitle = ref<string>()
 const formLayoutKey = ref<string>('dummy')
 const selected = ref<Object[]>()
+
+const compTitle = computed(() => props.title ? props.title : configTitle.value)
 
 if (props.layoutKey) {
     EventService.getDataByFilter('layoutdefinition', props.layoutKey)
@@ -91,7 +94,7 @@ if (props.layoutKey) {
                 const config = response.data[0]
                 columns.value = config.config
                 formLayoutKey.value = config.layoutKey
-                title.value = config.label
+                configTitle.value = config.label
             } else {
                 setDefaultLayout()
             }
@@ -151,7 +154,7 @@ function deleteSelection() {
 function openDocument(dataType: string, rowData: any, readOnly: boolean) {
     const id = rowData._id
     if (id) {
-        router.push({ name: 'form', params: { type: dataType, id: id, layout: formLayoutKey.value }, query: { readOnly: readOnly.toString() } })
+        pushToRouter({ name: 'form', params: { type: dataType, id: id, layout: formLayoutKey.value }, query: { readOnly: readOnly.toString() } })
     }
 }
 
@@ -170,8 +173,7 @@ function searchUpdate(searchValue: string) {
 }
 
 function newDoc() {
-    router.push({ name: 'form', params: { type: props.dataType, id: '0', layout: props.formLayoutKey } })
-    // pushToRouter({ name: 'form', params: { type: props.dataType, id: '0', layout: props.formLayoutKey } })
+    pushToRouter({ name: 'form', params: { type: props.dataType, id: '0', layout: props.formLayoutKey } })
 }
 </script>
 
