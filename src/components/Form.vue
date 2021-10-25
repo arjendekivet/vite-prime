@@ -9,7 +9,7 @@
         @close="removeMessage(msg.id)"
       >{{ msg.content }}</Message>
       <Message
-        v-if="v$.$errors.length > 0"
+        v-if="v$?.$errors?.length > 0"
         key="invalid-fields"
         :sticky="true"
         :severity="'error'"
@@ -29,7 +29,7 @@
         </template>
         <template v-else>
           <Button
-            :disabled="v$.$invalid"
+            :disabled="v$?.$invalid"
             type="button"
             label="Submit"
             @click="submitForm(dataType)"
@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, readonly, computed, onBeforeUnmount } from 'vue'
+import { ref, provide, readonly, computed, onBeforeUnmount , reactive } from 'vue'
 import FormDefinitionRecursor from '@/components/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
@@ -94,7 +94,10 @@ const myConfig: any = ref<object>({})
 
 // Use a simple ref for now as there is no combined logic for rules that need it to be computed
 // This way type casting stays in place
-const rules = ref()
+const rules = ref({})
+// define reactive for formData and then use a torefs on that to get a ref for each fieldValue, for usage in vuelidate dynamic parametrizations?????
+
+// rules.value = setValidators(fields.value, undefined, fieldValues)
 
 if (props.formLayoutKey) {
   EventService.getDataByFilter('layoutdefinition', props.formLayoutKey)
@@ -136,6 +139,8 @@ function getFormData() {
         const convertedResponseData = convertResponseData(response.data)
         fieldValues.value = convertedResponseData
         rules.value = setValidators(fields.value, undefined, fieldValues)
+        //v$ = useValidation(rules, fieldValues,)
+
       })
       .catch((error) => {
         console.error('There was an error!', error);
@@ -146,11 +151,14 @@ function getFormData() {
         fieldValues.value[field.id] = field.defaultValue
       }
       rules.value = setValidators(fields.value, undefined, fieldValues)
+      //v$ = useValidation(rules, fieldValues,)
+
     })
   }
 }
 
-const v$ = useValidation(rules, fieldValues,)
+debugger; //let above or const her? 
+const v$ = useValidation(rules, fieldValues, { $lazy: true }) // $lazy doet niks?
 
 const updateFieldValue = (fieldId: string, value: any) => {
   fieldValues.value[fieldId] = value

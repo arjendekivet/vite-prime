@@ -2,11 +2,13 @@ import _ from 'lodash'
 import Validator from '@/types/validator'
 import Fieldconfig from '@/types/fieldconfig'
 import { useVuelidate, ValidationRule, ValidationRuleWithParams, ValidatorFn } from '@vuelidate/core'
-import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue , and } from '@vuelidate/validators'
+import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue } from '@vuelidate/validators'
 import cvh from '@/modules/validateHelpers' //custom vuelidate helpers...
 
 // create an alias for cvh.helpers?
 let v_h_ = cvh.cHelpers;
+
+debugger;
 
 // create a map to be able to dynamically refer to the vuelidate validators
 export const mapValidators = {
@@ -14,13 +16,18 @@ export const mapValidators = {
     requiredIf,
     requiredUnless,
     email,
-    minLength,
-    maxLength,
-    between,
+    // minLength, // omit this and substitute it with a cynapps custom version [cvh.CV_TYPE_MIN_LENGTH]: cvh._minLength
+    // maxLength,  // omit this and substitute it with a cynapps custom version [cvh.CV_TYPE_MAX_LENGTH]: cvh._maxLength
+    // between,// omit this and substitute it with a cynapps custom version [cvh.CV_TYPE_BETWEEN]: cvh._between
     maxValue, 
-    // custom cynapps validators which are rule-executioners for NON-validation purposes, like "display", and "disable".
+    // custom cynapps validators which are rule-executioners for NON-validation purposes, like "display", and "disable". So these does not register in $errors etc.
     [cvh.CV_TYPE_DISABLE_IF]: cvh.disablerIf,
     [cvh.CV_TYPE_DISPLAY_IF]: cvh.displayerIf,
+    // custom cynapps validators which are substitutions of vuelidat builtins. 
+    // These are rule-executioners for validation purposes, so they run when $validate() is called AND they show up in v$ as regular validator results in $errors, $silenterrors, etc
+    [cvh.CV_TYPE_MIN_LENGTH]: cvh._minLength,
+    [cvh.CV_TYPE_MAX_LENGTH]: cvh._maxLength,
+    [cvh.CV_TYPE_BETWEEN]: cvh._between,
 }
 
 /**
@@ -129,6 +136,7 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
             // Deze skip / ignore feature bewaren we voor later, als performance reasons dat vereisen.
             if ( hasCustomPrefix ){
                 if (mapValidators[tag]){
+                    debugger;
                     //register the state about having to addDisplayRule or addDisableRule or ... Once false, it should remain false
                     addDisableRule = ( addDisableRule === false || tag === cvh.CV_TYPE_DISABLE_IF) ? false : true
                     addDisplayRule = ( addDisplayRule === false || tag === cvh.CV_TYPE_DISPLAY_IF) ? false : true
@@ -171,6 +179,8 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
                     }
                     // parameterized vuelidate built-in validator, note NOT meant for our fully custom validators from hofRuleFnGenerator... 
                     else if (isParam) { 
+                        //TODO: wrap it first in a HOF if it uses $model ... it should dynamically fetch the param payload and reset the $params YET work correctly as a proper builtin validator!
+                        
                         // TODO !!!!! however, we might want to check if we can resolve dynamically for params !!!!!!
                         // like requiredIf(data) the data must come from some field from formData!
                         let paramValues = []
@@ -227,6 +237,79 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
                             augmentedValidator = addParamsTovalidator({ fieldLabel }, mappedValidator)
                         }
                     }        
+
+                    // hardcoded quick & dirty intervention to create a HOF that truely dynamically populates the params payload and THEN calls the original validator.
+                    // if (cfgValidator.type==='minLength' &&  fieldName === 'description'){
+                    //         debugger;
+                    //         try{
+                    //             // quick & dirty get to it ...
+                    //             let testFor$Model
+
+                    //             _.forIn(cfgValidator.params, function (paramEntry) {
+                    //                 _.forEach(paramEntry, function (paramValue) {
+                    //                     if ( paramEntry?.['$model']) {
+                    //                         testFor$Model = true
+                    //                     }
+                    //                 })
+                    //             })
+                    //             if (testFor$Model){
+                    //                 // first create the normalized validator, trivially ??????????
+                    //                 //const normalizedValidator = mappedValidator()
+                    //                 // then create a function that should act a the $validator? to try to wrap the regular validator for dynamical parametrization
+                    //                 let params = cfgValidator.params[0];
+                    //                 const dynamicalHOFValidatorGenerator = function(params){
+                    //                     debugger;
+                    //                     // const sourceFieldName = params.$model
+                    //                     // const min = Number(vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName])
+                                        
+                    //                     return { 
+                    //                         $params:  { min: params, type: "minLength" },
+                    //                         $validator: function(value, vm){
+                    //                             debugger;
+                    //                             let min;
+                    //                             try{
+                    //                             const sourceFieldName = params.$model
+                    //                             min = Number(vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName])
+                    //                             if (_.isNaN(min)){
+                    //                                 min = params?.default || 0
+                    //                             }
+                    //                             //const normalizedValidator = mappedValidator(min)
+                    //                             } catch(e){
+                    //                                 debugger
+                    //                                 min = params?.default || 0
+                    //                             }
+                                                
+                    //                             // we should be able to go up and get to $params to change them if needed
+                    //                             // use the normalized validator to get the correct function & paramsetrization
+                    //                             let result = !helpers.req(value) || helpers.len(value) >= helpers.unwrap(min);
+
+                    //                             return result;
+                    //                         },
+                    //                         $message: function({$params} , ...args){ 
+                    //                             debugger;
+                    //                             let min; 
+                    //                             try{
+                    //                                 const sourceFieldName = params.$model
+                    //                                 min = Number(vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName])
+                    //                             if (_.isNaN(min)){
+                    //                                 min = params?.default || 666
+                    //                             }
+                    //                         }
+                    //                         catch(e){
+                    //                             debugger
+                    //                         }
+                    //                             return `This field should have a minimal length of ${min}`
+                    //                         },
+                    //                     };
+                    //                 }
+
+                    //                 let intermediateValidator = dynamicalHOFValidatorGenerator(params);
+                    //                 augmentedValidator = addParamsTovalidator({ fieldLabel }, intermediateValidator)
+                    //             }
+                    //         } catch(e){ 
+                    //             debugger 
+                    //         }
+                    // }
                     objValidator[tag] = augmentedValidator
                 }
                 else {

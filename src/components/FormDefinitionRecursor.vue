@@ -41,21 +41,23 @@
                 <template v-else>
                     <i v-if="getIconName(config)" :class="`pi ${getIconName(config)}`" />
                     <component
+                        ref="config.id"
                         v-bind="config"
                         :is="config.type"
                         :modelValue="fieldValues[config.id]"
                         @update:modelValue="updateFieldValue(config, $event)"
                         :disabled="doDisable(config, v$)"
-                        @blur="v$[config.id].$validate()"
+                        @blur="doBlur(config, v$)"
                         :class="v$[config.id]?.$error ? 'p-invalid' : ''"
                         :aria-describedby="`${config.id}-help`"
                         :rows="config.type === 'P_Textarea' ? 5 : undefined"
                         :readOnly="readOnly"
                     ></component>
                     <small
+                        v-show="showFieldMessage(config, v$)"
                         :id="`${config.id}-help`"
                         class="p-error"
-                    >{{ v$[config.id]?.$errors[0]?.$message }}</small>
+                    >{{ doFieldMessage(config, v$) }}</small>
                 </template>
             </div>
         </template>
@@ -97,6 +99,32 @@ const calculateDependantFieldState: any = inject('calculateDependantFieldState')
  */
 function doShow(config, v$){   
     return cHelpers.isVisible({ v$ }, config.id)
+}
+
+/**
+ * If any of the criteria is false, we should hide the calling element.
+ * TODO: moet config.hidden of config.systemHidden hier meespelen of moet dat in 
+ */
+function doBlur(config, pv$){   
+    debugger;
+    let ns = pv$ || v$.value
+    let chk
+    try{
+        chk = ns?.[config?.id]?.$validate?.()
+    }
+    catch(e){
+        console.warn(e)
+    }
+}
+
+function showFieldMessage(config, pv$){
+    let ns = pv$ || v$.value
+    return ns?.[config?.id]?.$errors?.length ?? false
+}
+
+function doFieldMessage(config, pv$){
+    let ns = pv$ || v$.value
+    return ns?.[config?.id]?.$errors[0]?.$message || ns?.[config?.id]?.$errors[0]?.$response?.message || ""
 }
 
 /**
