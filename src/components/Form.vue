@@ -73,6 +73,7 @@ type FormProp = {
   title?: string,
   readOnly?: boolean,
   formLayoutKey?: string,
+  initialFormData?: any
 }
 
 const props = withDefaults(defineProps<FormProp>(), {
@@ -134,7 +135,9 @@ function getFormData() {
   fields.value = getFieldsFromConfig(compConfig.value, 'isField', true)
   rules.value = setValidators(fields.value, undefined, fieldValues)
 
-  if (props.id) {
+  if (props.initialFormData) {
+    fieldValues.value = props.initialFormData
+  } else if (props.id) {
     EventService.getById(props.dataType, props.id)
       .then((response) => {
         const convertedResponseData = convertResponseData(response.data)
