@@ -8,12 +8,11 @@
 import { provide } from 'vue'
 import { action } from '@storybook/addon-actions';
 
-provide('pushToRouter', pushToRouter)
+const router: any = {}
+router.push = (routerConfig: any) => action('router.push')(routerConfig)
+router.back = () => action('router.back')()
 
-function pushToRouter(routerConfig: any) {
-  console.info('pushToRouter', routerConfig)
-  action('pushToRouter')(routerConfig)
-}
+provide('router', router)
 
 </script>
 

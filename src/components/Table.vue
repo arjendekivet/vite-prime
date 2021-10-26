@@ -58,7 +58,7 @@ import EventService from '@/services/ApiService'
 import { messages, addSuccesMessage, addErrorMessage, addWarningMessage } from '@/modules/UseFormMessages'
 import TableLayoutDefaults from '@/data/TableLayoutDefaults'
 
-const pushToRouter: any = inject('pushToRouter')
+const router: any = inject('router')
 
 onBeforeUnmount(() => {
     // clear component based messages
@@ -166,7 +166,7 @@ function deleteSelection() {
 function openDocument(dataType: string, rowData: any, readOnly: boolean) {
     const id = rowData?._id
     if (id) {
-        pushToRouter({
+        router.push({
             name: 'form',
             params: { type: dataType, id: id, layout: formLayoutKey.value },
             query: { readOnly: readOnly.toString() }
@@ -201,7 +201,7 @@ function searchUpdate(searchValue: string) {
 }
 
 function newDoc() {
-    pushToRouter({ name: 'form', params: { type: props.dataType, id: '0', layout: props.formLayoutKey } })
+    router.push({ name: 'form', params: { type: props.dataType, id: '0', layout: props.formLayoutKey } })
 }
 </script>
 

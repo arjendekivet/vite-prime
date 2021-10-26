@@ -17,11 +17,7 @@ if (lUser) {
   setUser(JSON.parse(lUser))
 }
 
-provide('pushToRouter', pushToRouter)
-
-function pushToRouter(routerConfig: RouteLocationRaw) {
-  router.push(routerConfig)
-}
+provide('router', router)
 
 </script>
 

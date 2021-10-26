@@ -49,11 +49,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, readonly, computed, onBeforeUnmount } from 'vue'
+import { ref, provide, readonly, computed, onBeforeUnmount, inject } from 'vue'
 import FormDefinitionRecursor from '@/components/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
-import router from '@/router/routes';
 import Utils from '@/modules/utils'
 import EventService from '@/services/ApiService'
 import { messages, addSubmitMessage, addErrorMessage, addWarningMessage } from '@/modules/UseFormMessages'
@@ -76,6 +75,8 @@ type FormProp = {
   initialFormData?: any
 }
 
+const router: any = inject('router')
+
 const props = withDefaults(defineProps<FormProp>(), {
   columns: 1,
   id: undefined,
@@ -95,7 +96,10 @@ const myConfig: any = ref<object>({})
 // This way type casting stays in place
 const rules = ref()
 
-if (props.formLayoutKey) {
+if (props.config) {
+  myConfig.value = props.config
+  getFormData()
+} else if (props.formLayoutKey) {
   EventService.getDataByFilter('layoutdefinition', props.formLayoutKey)
     .then((response: any) => {
       // find will return array, get the first in this case
