@@ -41,11 +41,17 @@ const Template: any = (args: any) => ({
   //template: '<StoryBookApp><Table v-bind="args" /></StoryBookApp>',
 });
 
-// Not working yet !!!!
 export const Primary = Template.bind({});
 Primary.args = {
   dataType: 'questions',
   title: 'Questions',
   tableData: tableData,
   tableDefinition: tableDefinition
+};
+
+export const Secundary = Template.bind({});
+Secundary.args = {
+  dataType: 'questions',
+  title: 'Questions',
+  tableData: tableData
 };

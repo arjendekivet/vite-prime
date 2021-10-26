@@ -144,19 +144,19 @@ const formData: any = {
   "description": "het pak"
 }
 
-export const WithDefinitionAndData = Template.bind({});
-WithDefinitionAndData.args = {
+export const ANewDocument = Template.bind({});
+ANewDocument.args = {
+  config: fields,
+  dataType: "questions",
+  title: "Question",
+  readOnly: false
+};
+
+export const BExistingDocument = Template.bind({});
+BExistingDocument.args = {
   config: fields,
   dataType: "questions",
   title: "Question",
   readOnly: false,
   initialFormData: formData
-};
-
-export const WithoutDefinitionAndData = Template.bind({});
-WithoutDefinitionAndData.args = {
-  config: fields,
-  dataType: "questions",
-  title: "Question",
-  readOnly: false
 };
