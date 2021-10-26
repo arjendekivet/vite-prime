@@ -97,19 +97,18 @@ const calculateDependantFieldState: any = inject('calculateDependantFieldState')
  * If any of the criteria is false, we should hide the calling element.
  * TODO: moet config.hidden of config.systemHidden hier meespelen of moet dat in 
  */
-function doShow(config, v$){   
-    return cHelpers.isVisible({ v$ }, config.id)
+function doShow(config, pv$){   
+    return cHelpers.isVisible({ v$: pv$ }, { fieldNames: config.id })
 }
 
 /**
- * If any of the criteria is false, we should hide the calling element.
- * TODO: moet config.hidden of config.systemHidden hier meespelen of moet dat in 
+ * Or should this be onChange?
+ * TODO: should we get rid of the passed pV$? If it is a global 
  */
 function doBlur(config, pv$){   
-    debugger;
     let ns = pv$ || v$.value
     let chk
-    try{
+    try {
         chk = ns?.[config?.id]?.$validate?.()
     }
     catch(e){
@@ -118,13 +117,18 @@ function doBlur(config, pv$){
 }
 
 function showFieldMessage(config, pv$){
-    let ns = pv$ || v$.value
-    return ns?.[config?.id]?.$errors?.length ?? false
+    let probe = cHelpers.isInvalid({ v$: pv$  }, { fieldNames: config.id })
+    // let ns = pv$ || v$.value
+    // let result = ns?.[config?.id]?.$errors?.length ?? false
+    return probe
 }
 
 function doFieldMessage(config, pv$){
-    let ns = pv$ || v$.value
-    return ns?.[config?.id]?.$errors[0]?.$message || ns?.[config?.id]?.$errors[0]?.$response?.message || ""
+    let probe = cHelpers.getInvalidMessage({ v$: pv$ }, { fieldNames: config.id });
+    //TODO: relay to a helper function? getInvalidMessage() or such!!!
+    // let ns = pv$ || v$.value
+    // let result = ns?.[config?.id]?.$errors[0]?.$message || ns?.[config?.id]?.$errors[0]?.$response?.message || ""
+    return probe
 }
 
 /**
@@ -132,9 +136,13 @@ function doFieldMessage(config, pv$){
  * Based on the retrieval of the rule execution result for vuelidate (custom validator) rule of type CV_TYPE_DISABLE_IF via cHelpers to get to it.
  * TODO: should this also take into account !!config.disabled? or !!!config.enabled === false???
  */
-function doDisable(config, v$){
+function doDisable(config, pv$){
+    if (config.id==='title'){
+        debugger
+    }
     // we need to pass in a dummy object to hold v$ ... in order to comply to the signature of isDisabled, which expects vm as the first argument...
-    return cHelpers.isDisabled({ v$ }, config.id)
+    let result = cHelpers.isDisabled({ v$: pv$ }, { fieldNames: config.id })
+    return result
 }
 
 function getRequired(field: Fieldconfig) {

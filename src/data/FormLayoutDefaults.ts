@@ -70,22 +70,39 @@ const formConfig: FormConfig = {
             "type": "P_InputText",
             //"defaultValue": 5,
             //"placeholder": "setting0. Should implement a static 'between' validator with range 3-15.",
-            "placeholder": "setting0. Should implement a static MIN_LENGTH validator (1).",
+            "placeholder": "setting0. Should implement a static MIN_LENGTH validator (2).",
             //"hidden": true,
             //"disabled": true,
             "validators": [
+                //"required",
                 //{ "type": cvh.CV_TYPE_BETWEEN, params: { min: 3 , max: 15 } },
                 { "type": cvh.CV_TYPE_MIN_LENGTH, params: { min: 2 } }, 
                 //{ "type": "between", "params": [{ "min": 10 }, { "max": 20 }] }
+                
             ]
         },
         {
             "id": "setting1",
             "isField": true,
-            "label": "Setting0",
+            "label": "Setting1",
             "type": "P_InputText",
             //"defaultValue": 15,
-            "placeholder": "setting1. Should implement a static 'between' validator with range 16-30.",
+            //"placeholder": "setting1. Should implement a static 'between' validator with range 16-30.",
+            //"hidden": true,
+            //"disabled": true,
+            "validators": [
+                //{ "type": cvh.CV_TYPE_BETWEEN, params: { min: 16 , max: 30 } },
+                //{ "type": cvh.CV_TYPE_MIN_LENGTH, params: { min: { $model: 'title'} } }, 
+                //{ "type": "between", "params": [{ "min": 10 }, { "max": 20 }] }
+            ]
+        },
+        {
+            "id": "setting2",
+            "isField": true,
+            "label": "Setting2",
+            "type": "P_InputText",
+            //"defaultValue": 15,
+            //"placeholder": "setting1. Should implement a static 'between' validator with range 16-30.",
             //"hidden": true,
             //"disabled": true,
             "validators": [
@@ -105,11 +122,20 @@ const formConfig: FormConfig = {
                 //{ "type": cvh.CV_TYPE_MIN_LENGTH, params: { min: { ref: 'setting0'} } }, 
                 //{ "type": cvh.CV_TYPE_MIN_LENGTH, params: { min: { $model: 'setting0'} } },
                 //{ "type": cvh.CV_TYPE_MAX_LENGTH, params: { max: { $model: 'setting1'} } },
-                //{ "type": cvh.CV_TYPE_BETWEEN, params: { min: { $model: 'setting0'} , max: { $model: 'setting1'} } },
+                { "type": cvh.CV_TYPE_BETWEEN, params: { min: { $model: 'setting0'} , max: { $model: 'setting1'} } },
+                // { 
+                //     type: cvh.CV_TYPE_DISABLE_IF,
+                //     params: { dependsOn: { not: { [cvh.IS_MIN_LENGTH]: ["setting0"] } } },
+                // },
                 { 
                     type: cvh.CV_TYPE_DISABLE_IF,
-                    params: { dependsOn: { not: { [cvh.IS_MIN_LENGTH]: ["setting0"] } } },
-                }
+                    //params: { dependsOn: { [cvh.ALL_VISIBLE]: ['cat_1'] , [cvh.ALL_VALID]: ['cat_1'] } }, // equivalent would be SOME_<> or IS_ when there is only 1 dependecy mentioned
+                    params: { 
+                        dependsOn: {
+                            [cvh.ALL_VISIBLE]: ['setting1','setting2'],
+                        },
+                    }, 
+                },
             ],
             "icon": { "type": "right", "name": "pi-bookmark" }
         },

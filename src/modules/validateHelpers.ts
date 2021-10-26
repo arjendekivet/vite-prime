@@ -116,6 +116,7 @@ export const NOT_REQUIRED_IF = "notRequiredIf"
 
 // TODO EXPERIMENT: helpers to retrieve the rule results of the built-in vuelidate minLength validator
 export const IS_MIN_LENGTH = "isMinLength";
+export const IS_MAX_LENGTH = "isMaxLength";
 
 const SUPPORTED_RETRIEVERS = [
     IS_VISIBLE, SOME_VISIBLE, ALL_VISIBLE, 
@@ -216,12 +217,14 @@ export const cHelpers = {
     },
     /**
      * Retrieves the rule result from a supposed previous run of a rule of type CV_TYPE_MIN_LENGTH on field objparams.fieldName or such
+     * The passed in const { value, fieldName, params, ...cfg } = objContext is augmented to support rerunning of the rule.
+     * For now we only retrieve info but we could opt to rerun rules. Note: if 1 call is async we should make the entire chain async.
      * @param vm 
      * @param objParams 
      * @returns 
      */
     isMinLength: (vm, objContext: object) => {
-        const { value, fieldName, params, ...cfg } = objContext
+        const { fieldName } = objContext
         let result, defaulted = true
         try { 
             if (!fieldName){
@@ -281,6 +284,24 @@ export const cHelpers = {
             }
         }
         return { result, message } ;
+    },
+    /**
+     * Receives //const { value, fieldName, params, ...cfg } = objContext
+     * @param vm 
+     * @param objContext 
+     * @returns 
+     */
+    isMaxLength: (vm, objContext: object) => {
+        const { fieldName } = objContext
+        let result, defaulted = true
+        try { 
+            result = (vm?.v$?.[fieldName]?.[CV_TYPE_MAX_LENGTH]?.$response?.extraParams?.rule_result ?? defaulted)
+        }
+        catch(e) {
+            console.warn(e); 
+            return defaulted;
+        }
+        return result;
     },
     between: (vm, objContext ) => {
         debugger
@@ -349,7 +370,8 @@ export const cHelpers = {
      * @param fieldName 
      * @returns 
      */
-     isRequiredIf: (vm,fieldName: string) => {
+     isRequiredIf: (vm, objContext) => {
+        const { fieldNames: fieldName } = objContext
         let result, defaulted = false;
         try { 
             result = vm?.v$?.[fieldName]?.requiredIf?.$invalid ?? defaulted;
@@ -360,10 +382,10 @@ export const cHelpers = {
         }
         return result
     },
-    notRequiredIf: (vm,fieldName: string) => {
+    notRequiredIf:  (vm, objContext) => {
         let result, defaulted = true;
         try { 
-            result = !cHelpers.isRequiredIf(vm,fieldName)
+            result = !cHelpers.isRequiredIf(vm,objContext)
         }
         catch(e) {
             console.warn(e); 
@@ -379,7 +401,8 @@ export const cHelpers = {
      * @param fieldName 
      * @returns 
      */
-    isEmpty: (vm,fieldName: string) => {
+    isEmpty: (vm, objContext) => {
+        const { fieldNames: fieldName } = objContext
         let result, defaulted = true;
         try { 
             result = helpers.len( (vm?.v$?.[fieldName]?.$model ) ?? "" ) === 0;
@@ -390,12 +413,13 @@ export const cHelpers = {
         }
         return result
     },
-    someEmpty: (vm, arrFieldNames: string[]) => {
+    someEmpty: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = true;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
-                result = cHelpers.isEmpty(vm, fieldName)
+            _.forEach(fieldNames, function(fieldName) {
+                result = cHelpers.isEmpty(vm, { fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.some(arrResults, Boolean);
@@ -406,12 +430,13 @@ export const cHelpers = {
         }
         return result
     },
-    allEmpty: (vm, arrFieldNames: string[]) => {
+    allEmpty: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = true;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
-                result = cHelpers.isEmpty(vm, fieldName)
+            _.forEach(fieldNames, function(fieldName) {
+                result = cHelpers.isEmpty(vm, { fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.every(arrResults, Boolean);
@@ -422,10 +447,11 @@ export const cHelpers = {
         }
         return result
     },
-    notEmpty: (vm,fieldName: string) => {
+    notEmpty: (vm, objContext) => {
+        const { fieldNames: fieldName } = objContext
         let result, defaulted = false;
         try { 
-            result = !(cHelpers.isEmpty(vm, fieldName))
+            result = !(cHelpers.isEmpty(vm, { fieldNames: fieldName }))
         }
         catch(e) {
             console.warn(e); 
@@ -433,12 +459,13 @@ export const cHelpers = {
         }
         return result
     },
-    someNotEmpty: (vm, arrFieldNames: string[]) => {
+    someNotEmpty: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = false;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
-                result = !cHelpers.isEmpty(vm, fieldName)
+            _.forEach(fieldNames, function(fieldName) {
+                result = !cHelpers.isEmpty(vm, { fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.some(arrResults, Boolean);
@@ -449,12 +476,13 @@ export const cHelpers = {
         }
         return result
     },
-    noneEmpty: (vm, arrFieldNames: string[]) => {
+    noneEmpty: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = false;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
-                result = !cHelpers.isEmpty(vm, fieldName)
+            _.forEach(fieldNames, function(fieldName) {
+                result = !cHelpers.isEmpty(vm, { fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.every(arrResults, Boolean);
@@ -472,7 +500,8 @@ export const cHelpers = {
      * @param fieldName 
      * @returns 
      */
-    isValidSilent: (vm, fieldName: string) => {
+    isValidSilent: (vm, objContext) => {
+        const { fieldNames: fieldName } = objContext
         let result, defaulted = true;
         try {
             // Test if we can use vm to get to rules to get to a $validator on it to call it or re-use it is a wrapped function?
@@ -492,7 +521,8 @@ export const cHelpers = {
      * @param fieldName 
      * @returns 
      */
-    isValid: (vm,fieldName: string) => {
+    isValid: (vm, objContext) => {
+        const { fieldNames: fieldName } = objContext
         let result, defaulted = true;
         try { 
             result = !!!(vm?.v$?.[fieldName]?.[V_VALID]) 
@@ -509,7 +539,8 @@ export const cHelpers = {
      * @param fieldName 
      * @returns 
      */
-    isVisible: (vm, fieldName: string) => {
+    isVisible: (vm, objContext) => {
+        const { fieldNames: fieldName } = objContext
         let defaulted = true;
         let result, result_1, result_2;
         try {
@@ -533,11 +564,13 @@ export const cHelpers = {
      * @param fieldName 
      * @returns 
      */
-    isDisabled: (vm, fieldName: string) => {
+    isDisabled: (vm, objContext) => {
+        debugger;
+        const { fieldNames: fieldName } = objContext
         let result, defaulted = false;
         try {
-            result = !!(vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.extraParams?.rule_result)
-            //result = (vm?.v$?.[fieldName]?.[CV_TYPE_DISABLED_IF]?.$response?.extraParams?.rule_result ?? false)
+            //result = !!(vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.extraParams?.rule_result)
+            result =   (vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.extraParams?.rule_result ?? false)
         }
         catch(e) {
             console.warn(e);
@@ -545,10 +578,10 @@ export const cHelpers = {
         }
         return result
     },
-    isEnabled: (vm, fieldName: string) => {
+    isEnabled: (vm, objContext) => {
         let result, defaulted = true;
         try {
-            result = !cHelpers.isDisabled(vm,fieldName)
+            result = !cHelpers.isDisabled(vm,objContext)
         }
         catch(e) {
             console.warn(e);
@@ -556,11 +589,11 @@ export const cHelpers = {
         }
         return result
     },
-    isInvalid: (vm,fieldName: string) => {
+    isInvalid: (vm, objContext) => {
         let result, defaulted = false;
         try {
             // invert the result because we re-use isValid, we returns true if valid
-            result = !cHelpers.isValid(vm,fieldName)
+            result = !cHelpers.isValid(vm,objContext)
         }
         catch(e) {
             console.warn(e);
@@ -568,11 +601,22 @@ export const cHelpers = {
         }
         return result
     },
-    isInvalidSilent: (vm, fieldName: string) => {
+    getInvalidMessage: (vm, objContext) => {
+        debugger
+        const { fieldNames: fieldName } = objContext
+        let result
+        let probe = cHelpers.isInvalid(vm,objContext);
+        // Only get the message if invalid, since we do not want to have to detect if $response?.message belongs to an actual validator or etc etc
+        //if (cHelpers.isInvalid(vm,objContext)) {
+            result = vm?.v$?.[fieldName]?.$errors[0]?.$message || vm?.v$?.[fieldName]?.$errors[0]?.$response?.message || ""
+        //}
+        return result
+    },
+    isInvalidSilent: (vm, objContext) => {
         let result, defaulted = false;
         try {
             // inverts: (if lenght > 0) then there are errors. primary result = true. (!result => false) !!result=true !!!result=false 
-            result = !cHelpers.isValidSilent(vm,fieldName)
+            result = !cHelpers.isValidSilent(vm, objContext)
         }
         catch(e) {
             console.warn(e); 
@@ -580,10 +624,10 @@ export const cHelpers = {
         }
         return result
     },
-    isHidden: (vm,fieldName: string) => {
+    isHidden: (vm, objContext) => {
         let result, defaulted = false;
         try {
-            result = !cHelpers.isVisible(vm,fieldName)
+            result = !cHelpers.isVisible(vm,objContext)
         }
         catch(e) {
             console.warn(e);
@@ -591,12 +635,13 @@ export const cHelpers = {
         }
         return result
     },
-    someHidden: (vm, arrFieldNames: string[]) => {
+    someHidden: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = false;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
-                result = !cHelpers.isVisible(vm, fieldName)
+            _.forEach(fieldNames, function(fieldName) {
+                result = !cHelpers.isVisible(vm, { fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.some(arrResults, Boolean);
@@ -607,12 +652,13 @@ export const cHelpers = {
         }
         return result
     },
-    allHidden: (vm, arrFieldNames: string[]) => {
+    allHidden: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = false;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
-                result = !cHelpers.isVisible(vm,fieldName)
+            _.forEach(fieldNames, function(fieldName) {
+                result = !cHelpers.isVisible(vm,{ fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.every(arrResults, Boolean);
@@ -623,13 +669,14 @@ export const cHelpers = {
         }
         return result
     },
-    someValidSilent:  (vm, arrFieldNames: string[]) => {
+    someValidSilent: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = false;
         const arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
+            _.forEach(fieldNames, function(fieldName) {
                 // re-use isValidSilent
-                result =  cHelpers.isValidSilent(vm,fieldName)
+                result =  cHelpers.isValidSilent(vm,{ fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.some(arrResults, Boolean);
@@ -640,13 +687,14 @@ export const cHelpers = {
         }
         return result
     },
-    someInvalidSilent:  (vm, arrFieldNames: string[]) => {
+    someInvalidSilent: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = false;
         const arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
+            _.forEach(fieldNames, function(fieldName) {
                 // re-use isValidSilent
-                result = !cHelpers.isValidSilent(vm,fieldName)
+                result = !cHelpers.isValidSilent(vm,{ fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.some(arrResults, Boolean);
@@ -657,13 +705,14 @@ export const cHelpers = {
         }
         return result
     },
-    allValidSilent:  (vm, arrFieldNames: string[]) => {        
+    allValidSilent: (vm, objContext) => {
+        const { fieldNames } = objContext    
         let result, defaulted = true;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
+            _.forEach(fieldNames, function(fieldName) {
                 // re-use isValid
-                result = cHelpers.isValidSilent(vm,fieldName)
+                result = cHelpers.isValidSilent(vm,{ fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.every(arrResults, Boolean);
@@ -675,11 +724,10 @@ export const cHelpers = {
         }
         return result
     },
-    allInvalidSilent: (vm, arrFieldNames: string[]) => {
+    allInvalidSilent: (vm, objContext) => {
         let result, defaulted = false;
         try {
-            // re-use allValidSilent and negate it
-            result = !( cHelpers.allValidSilent(vm, arrFieldNames))
+            result = !( cHelpers.someValidSilent(vm, objContext))
         }
         catch(e) {
             console.warn(e);
@@ -687,16 +735,26 @@ export const cHelpers = {
         } 
         return result
     },
-    someValid: (vm, arrFieldNames: string[]) => {
+    /**
+     * TODO Optimize:
+     * either rewrite in terms of NOT allInvalid 
+     * leave early as soon as one if true
+     * @param vm 
+     * @param objContext 
+     * @returns 
+     */
+    someValid: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = true;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
-                // re-use isValid
-                result =  cHelpers.isValid(vm, fieldName)
-                arrResults.push(result)
-            })
-            result = _.some(arrResults, Boolean);
+            result = !( cHelpers.allInvalid(vm, objContext))
+            // _.forEach(fieldNames, function(fieldName) {
+            //     // re-use isValid
+            //     result =  cHelpers.isValid(vm, fieldName)
+            //     arrResults.push(result)
+            // })
+            // result = _.some(arrResults, Boolean);
         }
         catch(e) {
             console.warn(e);
@@ -704,13 +762,14 @@ export const cHelpers = {
         }
         return result
     },
-    allValid: (vm, arrFieldNames: string[]) => {
+    allValid: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = true;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
+            _.forEach(fieldNames, function(fieldName) {
                 // re-use isValid
-                result =  cHelpers.isValid(vm,fieldName)
+                result =  cHelpers.isValid(vm,{ fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.every(arrResults, Boolean);
@@ -721,13 +780,14 @@ export const cHelpers = {
         }
         return result
     },
-    allInvalid: (vm, arrFieldNames: string[]) => {
+    allInvalid: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = false;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
+            _.forEach(fieldNames, function(fieldName) {
                 // re-use isValid but inverted
-                result = !cHelpers.isValid(vm,fieldName)
+                result = !cHelpers.isValid(vm,{ fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.every(arrResults, Boolean);
@@ -740,16 +800,18 @@ export const cHelpers = {
         
         return result
     },
-    someInvalid:  (vm, arrFieldNames: string[]) => {
+    someInvalid: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = false;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
-                // re-use isValid
-                result = cHelpers.isValid(vm,fieldName)
-                arrResults.push(result)
-            })
-            result = arrResults.includes(false);
+            result = !( cHelpers.allValid(vm, objContext))
+            // _.forEach(fieldNames, function(fieldName) {
+            //     // re-use isValid
+            //     result = cHelpers.isValid(vm,{ fieldNames: fieldName })
+            //     arrResults.push(result)
+            // })
+            // result = arrResults.includes(false);
         }
         catch(e) {
             console.warn(e);
@@ -761,15 +823,15 @@ export const cHelpers = {
      * @param vm 
      * @param fieldName 
      * @returns 
-     * 
      */
-    someVisible: (vm, arrFieldNames: string[]) => {
+    someVisible: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = true;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
+            _.forEach(fieldNames, function(fieldName) {
                 // re-use isVisible
-                result =  cHelpers.isVisible(vm, fieldName)
+                result =  cHelpers.isVisible(vm, { fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.some(arrResults, Boolean);
@@ -780,13 +842,14 @@ export const cHelpers = {
         }  
         return result
     }, 
-    allVisible: (vm, arrFieldNames: string[]) => {
+    allVisible: (vm, objContext) => {
+        debugger;
+        const { fieldNames } = objContext
         let result, defaulted = true;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
-                result = cHelpers.isVisible(vm,fieldName)
-                
+            _.forEach(fieldNames, function(fieldName) {
+                result = cHelpers.isVisible(vm,{ fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.every(arrResults, Boolean);
@@ -797,12 +860,13 @@ export const cHelpers = {
         }  
         return result
     },
-    someDisabled: (vm, arrFieldNames: string[]) => {
+    someDisabled: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = false;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
-                result =  cHelpers.isDisabled(vm, fieldName)
+            _.forEach(fieldNames, function(fieldName) {
+                result =  cHelpers.isDisabled(vm, { fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.some(arrResults, Boolean);
@@ -813,12 +877,13 @@ export const cHelpers = {
         } 
         return result
     }, 
-    allDisabled: (vm, arrFieldNames: string[]) => {
+    allDisabled: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = false;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
-                result = cHelpers.isDisabled(vm,fieldName)
+            _.forEach(fieldNames, function(fieldName) {
+                result = cHelpers.isDisabled(vm,{ fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.every(arrResults, Boolean);
@@ -829,12 +894,13 @@ export const cHelpers = {
         } 
         return result
     },
-    someEnabled: (vm, arrFieldNames: string[]) => {
+    someEnabled: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = true;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
-                result = !cHelpers.isDisabled(vm, fieldName)
+            _.forEach(fieldNames, function(fieldName) {
+                result = !cHelpers.isDisabled(vm, { fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.some(arrResults, Boolean);
@@ -845,12 +911,13 @@ export const cHelpers = {
         } 
         return result
     }, 
-    allEnabled: (vm, arrFieldNames: string[]) => {
+    allEnabled: (vm, objContext) => {
+        const { fieldNames } = objContext
         let result, defaulted = true;
         let arrResults = [];
         try {
-            _.forEach(arrFieldNames, function(fieldName) {
-                result = !cHelpers.isDisabled(vm,fieldName)
+            _.forEach(fieldNames, function(fieldName) {
+                result = !cHelpers.isDisabled(vm,{ fieldNames: fieldName })
                 arrResults.push(result)
             })
             result = _.every(arrResults, Boolean);
@@ -1128,16 +1195,26 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn 
                 else if (arrSupported.includes(key)) {
                     let fn = key;
                     try {
-                        if (fn === "isMinLength"){
-                            // TODO: we should change the signature for all helpers below to pass in more than entryValue, like the complete context
-                            // IN ORDER for these rules to be able to OPTIONALLY RERUN OTHER RULES instead of MERELY retrieving the previous results...
-                            debugger
-                            const objParams = { fieldName: entryValue, value, fieldCfg, formData, formDefinition, params }
+                        // if (fn === "isMinLength"){
+                        //     // TODO: we should change the signature for all helpers below to pass in more than entryValue, like the complete context
+                        //     // IN ORDER for these rules to be able to OPTIONALLY RERUN OTHER RULES instead of MERELY retrieving the previous results...
+                        //     debugger
+                        //     const objParams = { fieldName: entryValue, value, fieldCfg, formData, formDefinition, params }
+                        //     tmp = cHelpers[fn]?.(vm, objParams)    
+                        // }
+                        // else if (fn === ALL_VISIBLE){
+                        //     // TODO: we should change the signature for all helpers below to pass in more than entryValue, like the complete context
+                        //     // IN ORDER for these rules to be able to OPTIONALLY RERUN OTHER RULES instead of MERELY retrieving the previous results...
+                        //     debugger
+                        //     const objParams = { fieldNames: entryValue, value, fieldCfg, formData, formDefinition, params }
+                        //     tmp = cHelpers[fn]?.(vm, objParams)    
+                        // }
+                        // else {
+                            if (fn === ALL_VISIBLE){debugger}
+                            const objParams = { fieldNames: entryValue, value, fieldCfg, formData, formDefinition, params }
                             tmp = cHelpers[fn]?.(vm, objParams)    
-                        }
-                        else {
-                            tmp = cHelpers[fn]?.(vm, entryValue)    
-                        }
+                            //tmp = cHelpers[fn]?.(vm, entryValue)    
+                        //}
                         //tmp = cHelpers[fn]?.(vm, entryValue)
                         countAsResult++
                         //arrPartials.push(tmp)
