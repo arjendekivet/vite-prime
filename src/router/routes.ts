@@ -53,33 +53,24 @@ const router = createRouter({
           component: Welcome
         },
         {
-          path: "table/:type/:layout",
+          path: "table/:type/:layout?/:formLayoutKey?",
           name: "table",
           component: Table,
           props: route => ({
             dataType: route.params.type,
             layoutKey: route.params.layout,
+            formLayoutKey: route.params.formLayoutKey
           })
         },
         {
-          path: "form/:type/:id/:layout?",
-          name: "formbyid",
+          path: "form/:type/:id?/:layout?",
+          name: "form",
           component: Form,
           props: route => ({
             dataType: route.params.type,
-            id: route.params.id,
+            id: route.params.id === '0' ? null : route.params.id,
             formLayoutKey: route.params.layout,
-            readOnly: route.query.readOnly === 'false' ? false : true
-          })
-        },
-        {
-          path: "form/:type",
-          name: "newform",
-          component: Form,
-          props: route => ({
-            dataType: route.params.type,
-            formLayoutKey: route.params.type === 'questions' ? 'question02' : 'layoutdefinition',
-            readOnly: false
+            readOnly: route.query.readOnly === 'false' || route.params.id === '0' || !route.params.id ? false : true
           })
         },
         {

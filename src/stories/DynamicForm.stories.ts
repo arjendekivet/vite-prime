@@ -130,12 +130,33 @@ const fields =
     }
   ]
 
-export const Primary = Template.bind({});
-Primary.args = {
+const formData: any = {
+  "_id": "6148453e3a86ae3466fa2759",
+  "title": "het pak",
+  "type": "open",
+  "answer": "der Anzug",
+  "created_at": "2021-09-20T08:24:30.618Z",
+  "updated_at": "2021-09-21T21:06:48.694Z",
+  "__v": 4,
+  "cat_1": "DE",
+  "cat_2": "Ch-5",
+  "cat_3": "G",
+  "description": "het pak"
+}
+
+export const ANewDocument = Template.bind({});
+ANewDocument.args = {
   config: fields,
   dataType: "questions",
-  columns: 2,
   title: "Question",
-  //id:"id"
   readOnly: false
+};
+
+export const BExistingDocument = Template.bind({});
+BExistingDocument.args = {
+  config: fields,
+  dataType: "questions",
+  title: "Question",
+  readOnly: false,
+  initialFormData: formData
 };

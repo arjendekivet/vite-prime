@@ -1,21 +1,16 @@
 <template>
   <div class="app">
-    <router-view />
+    <slot></slot>
   </div>
 </template>
 
 <script setup lang="ts">
 import { provide } from 'vue'
-import { RouteLocationRaw } from 'vue-router'
-import router from '@/router/routes'
-import { setUser } from '@/modules/globalState'
-import Utils from '@/modules/utils'
-import Constants from '@/modules/constants'
+import { action } from '@storybook/addon-actions';
 
-const lUser = Utils.getFromLocalStorage(Constants.LOCALSTORAGEUSERKEY)
-if (lUser) {
-  setUser(JSON.parse(lUser))
-}
+const router: any = {}
+router.push = (routerConfig: any) => action('router.push')(routerConfig)
+router.back = () => action('router.back')()
 
 provide('router', router)
 
@@ -26,7 +21,7 @@ html,
 body {
   margin: 0;
   height: 100%;
-  overflow: hidden;
+  // overflow: hidden;
 }
 
 .app {

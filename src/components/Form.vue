@@ -49,11 +49,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, readonly, computed, onBeforeUnmount , reactive } from 'vue'
+import { ref, provide, readonly, computed, onBeforeUnmount, inject } from 'vue'
 import FormDefinitionRecursor from '@/components/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
-import router from '@/router/routes';
 import Utils from '@/modules/utils'
 import EventService from '@/services/ApiService'
 import { messages, addSubmitMessage, addErrorMessage, addWarningMessage } from '@/modules/UseFormMessages'
@@ -73,7 +72,10 @@ type FormProp = {
   title?: string,
   readOnly?: boolean,
   formLayoutKey?: string,
+  initialFormData?: any
 }
+
+const router: any = inject('router')
 
 const props = withDefaults(defineProps<FormProp>(), {
   columns: 1,
@@ -99,7 +101,10 @@ const rules = ref({})
 
 // rules.value = setValidators(fields.value, undefined, fieldValues)
 
-if (props.formLayoutKey) {
+if (props.config) {
+  myConfig.value = props.config
+  getFormData()
+} else if (props.formLayoutKey) {
   EventService.getDataByFilter('layoutdefinition', props.formLayoutKey)
     .then((response: any) => {
       // find will return array, get the first in this case
@@ -107,13 +112,7 @@ if (props.formLayoutKey) {
       if (response.data.length > 0) {
         myConfig.value = response.data[0].config
       } else {
-        const defaultConfig = formConfigDefaults[props.dataType]
-        if (defaultConfig) {
-          myConfig.value = defaultConfig
-          addWarningMessage(`No layout config was found for key: ${props.formLayoutKey}. Loading default layout ...`)
-        } else {
-          addWarningMessage(`No layout config was found for entity: ${props.dataType}.`)
-        }
+        setDefaultLayout()
       }
       getFormData()
     })
@@ -123,7 +122,18 @@ if (props.formLayoutKey) {
       // myConfig.value = formConfigHardcoded
     })
 } else {
+  setDefaultLayout()
   getFormData()
+}
+
+function setDefaultLayout() {
+  const defaultConfig = formConfigDefaults[props.dataType]
+  if (defaultConfig) {
+    myConfig.value = defaultConfig
+    addWarningMessage(`No layout config was found for key: ${props.formLayoutKey}. Loading default layout ...`)
+  } else {
+    addWarningMessage(`No layout config was found for entity: ${props.dataType}.`)
+  }
 }
 
 function removeMessage(id: number) {
@@ -133,7 +143,9 @@ function removeMessage(id: number) {
 function getFormData() {
   fields.value = getFieldsFromConfig(compConfig.value, 'isField', true)
 
-  if (props.id) {
+  if (props.initialFormData) {
+    fieldValues.value = props.initialFormData
+  } else if (props.id) {
     EventService.getById(props.dataType, props.id)
       .then((response) => {
         const convertedResponseData = convertResponseData(response.data)
