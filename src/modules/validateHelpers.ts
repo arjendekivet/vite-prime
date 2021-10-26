@@ -35,8 +35,6 @@ import _ from 'lodash'
 // import { helpers } from '@vuelidate/validators'
 import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue , and } from '@vuelidate/validators'
 
-debugger;
-
 export const RULE_GENERATOR = "RULE_GENERATOR";
 export const VISIBILITY = 'displayIf';
 export const SILENTVALIDITY = '$silentErrors'
@@ -169,7 +167,6 @@ export const cHelpers = {
      * @param params 
      */
     minLength: (vm, objContext ) => {
-        debugger
         let defaulted = true; // ????????????????????? how would we know what to default to?
         let result
         let dummyValidator;
@@ -227,9 +224,6 @@ export const cHelpers = {
         const { fieldName } = objContext
         let result, defaulted = true
         try { 
-            if (!fieldName){
-                debugger;
-            }
             result = (vm?.v$?.[fieldName]?.[CV_TYPE_MIN_LENGTH]?.$response?.extraParams?.rule_result ?? defaulted)
         }
         catch(e) {
@@ -239,7 +233,6 @@ export const cHelpers = {
         return result;
     },
     maxLength: (vm, objContext ) => {
-        debugger
         let defaulted = true; // ????????????????????? how would we know what to default to?
         let result
         let dummyValidator;
@@ -304,7 +297,6 @@ export const cHelpers = {
         return result;
     },
     between: (vm, objContext ) => {
-        debugger
         let defaulted = true; // ????????????????????? how would we know what to default to?
         let result
         let dummyValidator;
@@ -565,7 +557,6 @@ export const cHelpers = {
      * @returns 
      */
     isDisabled: (vm, objContext) => {
-        debugger;
         const { fieldNames: fieldName } = objContext
         let result, defaulted = false;
         try {
@@ -602,7 +593,6 @@ export const cHelpers = {
         return result
     },
     getInvalidMessage: (vm, objContext) => {
-        debugger
         const { fieldNames: fieldName } = objContext
         let result
         let probe = cHelpers.isInvalid(vm,objContext);
@@ -843,7 +833,6 @@ export const cHelpers = {
         return result
     }, 
     allVisible: (vm, objContext) => {
-        debugger;
         const { fieldNames } = objContext
         let result, defaulted = true;
         let arrResults = [];
@@ -1145,7 +1134,6 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn 
             if (arrSupported.includes(startFn)) {
                 let fn = startFn;
                 try {
-                    debugger;
                     const objParams = { value, fieldCfg, formData, formDefinition, params }
                     tmp = cHelpers[fn]?.(vm, objParams)    
                     countAsResult++
@@ -1210,9 +1198,8 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn 
                         //     tmp = cHelpers[fn]?.(vm, objParams)    
                         // }
                         // else {
-                            if (fn === ALL_VISIBLE){debugger}
                             const objParams = { fieldNames: entryValue, value, fieldCfg, formData, formDefinition, params }
-                            tmp = cHelpers[fn]?.(vm, objParams)    
+                            tmp = cHelpers[fn]?.(vm, objParams)
                             //tmp = cHelpers[fn]?.(vm, entryValue)    
                         //}
                         //tmp = cHelpers[fn]?.(vm, entryValue)

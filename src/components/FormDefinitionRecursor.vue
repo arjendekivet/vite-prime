@@ -137,9 +137,6 @@ function doFieldMessage(config, pv$){
  * TODO: should this also take into account !!config.disabled? or !!!config.enabled === false???
  */
 function doDisable(config, pv$){
-    if (config.id==='title'){
-        debugger
-    }
     // we need to pass in a dummy object to hold v$ ... in order to comply to the signature of isDisabled, which expects vm as the first argument...
     let result = cHelpers.isDisabled({ v$: pv$ }, { fieldNames: config.id })
     return result

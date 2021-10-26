@@ -157,7 +157,6 @@ function getFormData() {
   }
 }
 
-debugger; //let above or const her? 
 const v$ = useValidation(rules, fieldValues, { $lazy: true }) // $lazy doet niks?
 
 const updateFieldValue = (fieldId: string, value: any) => {
