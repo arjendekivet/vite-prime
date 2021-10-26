@@ -102,13 +102,7 @@ if (props.formLayoutKey) {
       if (response.data.length > 0) {
         myConfig.value = response.data[0].config
       } else {
-        const defaultConfig = formConfigDefaults[props.dataType]
-        if (defaultConfig) {
-          myConfig.value = defaultConfig
-          addWarningMessage(`No layout config was found for key: ${props.formLayoutKey}. Loading default layout ...`)
-        } else {
-          addWarningMessage(`No layout config was found for entity: ${props.dataType}.`)
-        }
+        setDefaultLayout()
       }
       getFormData()
     })
@@ -118,7 +112,18 @@ if (props.formLayoutKey) {
       // myConfig.value = formConfigHardcoded
     })
 } else {
+  setDefaultLayout()
   getFormData()
+}
+
+function setDefaultLayout() {
+  const defaultConfig = formConfigDefaults[props.dataType]
+  if (defaultConfig) {
+    myConfig.value = defaultConfig
+    addWarningMessage(`No layout config was found for key: ${props.formLayoutKey}. Loading default layout ...`)
+  } else {
+    addWarningMessage(`No layout config was found for entity: ${props.dataType}.`)
+  }
 }
 
 function removeMessage(id: number) {

@@ -17,13 +17,13 @@ menuItems.value = [{
             key: '1_1',
             label: 'Questions',
             icon: 'pi pi-fw pi-list',
-            to: { name: 'table', params: { type: 'questions', layout: 'question-table' } }
+            to: { name: 'table', params: { type: 'questions', layout: 'question-table', formLayoutKey: 'question' } }
         },
         {
             key: '1_3',
             label: 'Layout Definition',
             icon: 'pi pi-fw pi-list',
-            to: { name: 'table', params: { type: 'layoutdefinition', layout: 'layoutdefinition-table' } }
+            to: { name: 'table', params: { type: 'layoutdefinition', layout: 'layoutdefinition-table', formLayoutKey: 'layoutdefinition' } }
         }
     ]
 },
