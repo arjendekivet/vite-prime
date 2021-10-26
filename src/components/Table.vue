@@ -11,11 +11,13 @@
         >{{ msg.content }}</Message>
     </transition-group>
     <DataTable
-        :value="compTableData"
+        :value="localTableData"
         v-model:selection="selected"
         data-key="_id"
         class="base-table"
         @row-click="openDocument"
+        :paginator="true"
+        :rows="10"
     >
         <template #header>
             <TableToolbar
@@ -79,18 +81,16 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const columns = ref<ColumnConfig[]>()
-const fetchedTableData = ref()
+const localTableData = ref()
 const searchValue = ref<string[]>()
 const configTitle = ref<string>()
 const formLayoutKey = ref<string>('dummy')
 const selected = ref<Object[]>()
+const searchedTableData = ref()
 
 const compTitle = computed(() => props.title ? props.title : configTitle.value)
-const compTableData = computed(() => searchedTableData.value ? searchedTableData.value :
-    props.tableData ? props.tableData :
-        fetchedTableData.value)
 
-const searchedTableData = ref()
+localTableData.value = props.tableData
 
 if (props.layoutKey) {
     EventService.getDataByFilter('layoutdefinition', props.layoutKey)
@@ -132,7 +132,7 @@ function getData() {
     if (!props.tableData) {
         EventService.getData(props.dataType, false, 0)
             .then((response) => {
-                fetchedTableData.value = response.data
+                localTableData.value = response.data
             })
             .catch((error) => {
                 addErrorMessage(error)
@@ -185,7 +185,7 @@ function searchUpdate(searchValue: string) {
         } else {
             EventService.getDataByFilter(props.dataType, searchValue, false, 0)
                 .then((response) => {
-                    fetchedTableData.value = response.data
+                    localTableData.value = response.data
                 })
                 .catch((error) => {
                     addErrorMessage(error)
