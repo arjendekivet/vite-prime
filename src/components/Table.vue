@@ -72,7 +72,8 @@ type Props = {
     selectionMode?: string,
     openDocumentRow?: boolean,
     title?: string,
-    tableData?: object
+    tableData?: object,
+    tableDefinition?: ColumnConfig[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -110,7 +111,11 @@ if (props.layoutKey) {
             addErrorMessage(error)
         })
 } else {
-    setDefaultLayout()
+    if (props.tableDefinition) {
+        columns.value = props.tableDefinition
+    } else {
+        setDefaultLayout()
+    }
     getData()
 }
 
