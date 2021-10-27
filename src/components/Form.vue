@@ -9,7 +9,7 @@
         @close="removeMessage(msg.id)"
       >{{ msg.content }}</Message>
       <Message
-        v-if="v$.$errors.length > 0"
+        v-if="v$?.$errors?.length > 0"
         key="invalid-fields"
         :sticky="true"
         :severity="'error'"
@@ -29,7 +29,7 @@
         </template>
         <template v-else>
           <Button
-            :disabled="v$.$invalid"
+            :disabled="v$?.$invalid"
             type="button"
             label="Submit"
             @click="submitForm(dataType)"
@@ -82,6 +82,7 @@ const props = withDefaults(defineProps<FormProp>(), {
   id: undefined,
   config: undefined,
 })
+
 const emit = defineEmits(['updateFieldValue'])
 const compConfig = computed(
   () => {
@@ -92,9 +93,13 @@ const compConfig = computed(
 const fieldValues: any = ref<object>({})
 const fields: any = ref<object>({})
 const myConfig: any = ref<object>({})
+
 // Use a simple ref for now as there is no combined logic for rules that need it to be computed
 // This way type casting stays in place
-const rules = ref()
+const rules = ref({})
+// define reactive for formData and then use a torefs on that to get a ref for each fieldValue, for usage in vuelidate dynamic parametrizations?????
+
+// rules.value = setValidators(fields.value, undefined, fieldValues)
 
 if (props.config) {
   myConfig.value = props.config
@@ -137,7 +142,6 @@ function removeMessage(id: number) {
 
 function getFormData() {
   fields.value = getFieldsFromConfig(compConfig.value, 'isField', true)
-  rules.value = setValidators(fields.value, undefined, fieldValues)
 
   if (props.initialFormData) {
     fieldValues.value = props.initialFormData
@@ -146,11 +150,9 @@ function getFormData() {
       .then((response: any) => {
         const convertedResponseData = convertResponseData(response.data)
         fieldValues.value = convertedResponseData
+        rules.value = setValidators(fields.value, undefined, fieldValues)
+        //v$ = useValidation(rules, fieldValues,)
 
-        _.forIn(fields.value, function (field, fieldId) {
-          const fieldValue = fieldValues.value[fieldId]
-          calculateDependantFieldState(field, fieldValue)
-        })
       })
       .catch((error: any) => {
         console.error('There was an error!', error);
@@ -160,17 +162,14 @@ function getFormData() {
       if (field && field.defaultValue) {
         fieldValues.value[field.id] = field.defaultValue
       }
-      calculateDependantFieldState(field, fieldValues.value[field.id])
+      rules.value = setValidators(fields.value, undefined, fieldValues)
+      //v$ = useValidation(rules, fieldValues,)
+
     })
   }
 }
 
-// TODO: we could have fully dynamical rules in the sense of: depending on form definition and form state, the rulesset could morph
-// const rules = computed(() => {
-//   return validatorRules
-// })
-
-const v$ = useValidation(rules, fieldValues,)
+const v$ = useValidation(rules, fieldValues, { $rewardEarly: false , $lazy: true , $autoDirty: false }) // global config doet niks? $lazy doet niks?, $rewardEarly doet niks? autoDirty?
 
 const updateFieldValue = (fieldId: string, value: any) => {
   fieldValues.value[fieldId] = value
@@ -247,6 +246,7 @@ function getFieldsFromConfig(arr: Fieldconfig[], key: string, value: string | bo
 }
 
 function calculateDependantFieldState(field: Fieldconfig, fieldValue: any) {
+  return;
   field.dependantFields?.forEach(function (fieldId: string) {
     const myField = fields.value[fieldId]
     if (myField) {
