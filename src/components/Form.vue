@@ -169,7 +169,7 @@ function getFormData() {
   }
 }
 
-const v$ = useValidation(rules, fieldValues, { $rewardEarly: false , $lazy: true , $autoDirty: false }) // global config doet niks? $lazy doet niks?, $rewardEarly doet niks? autoDirty?
+const v$: any = useValidation(rules, fieldValues, { $lazy: true, $autoDirty: false }) // global config doet niks? $lazy doet niks?, $rewardEarly doet niks? autoDirty?
 
 const updateFieldValue = (fieldId: string, value: any) => {
   fieldValues.value[fieldId] = value
@@ -232,7 +232,7 @@ function getFieldsFromConfig(arr: Fieldconfig[], key: string, value: string | bo
   let matches: any = {};
   if (!Array.isArray(arr)) return matches;
 
-  arr.forEach(function (fieldConfig) {
+  arr.forEach(function (fieldConfig: any) {
     if (fieldConfig[key] === value) {
       matches[fieldConfig.id] = fieldConfig
     } else {
