@@ -12,12 +12,17 @@ const apiClient = axios.create({
 })
 
 apiClient.interceptors.request.use((config) => {
-    // debugger
     return config;
 });
 
 type QuestionResponse = {
     data: Question[]
+}
+
+type DeleteResponse = {
+    data: {
+        deletedCount: number
+    }
 }
 
 export default {
@@ -30,7 +35,7 @@ export default {
     getById(type: string, id: string) {
         return apiClient.get('/' + type + '/' + id, { headers: authHeader() })
     },
-    deleteByIds(type: string, ids: string[]) {
+    deleteByIds(type: string, ids: string[]): Promise<DeleteResponse> {
         return apiClient.delete('/' + type + '/' + ids, { headers: authHeader() })
     },
     getData(type: string, perPage: boolean, page: number): Promise<QuestionResponse> {
@@ -38,5 +43,5 @@ export default {
     },
     getDataByFilter(type: string, filter: string | string[], perPage: boolean = false, page: number = 0) {
         return apiClient.get('/' + type + '/filter/' + filter + '?_limit=' + perPage + '&_page=' + page, { headers: authHeader() })
-    },
+    }
 }

@@ -54,11 +54,11 @@ import TableToolbar from '@/components/TableToolbar.vue'
 import _ from 'lodash';
 import Utils from '@/modules/utils'
 import ColumnConfig from "@/types/columnconfig"
-import EventService from '@/services/ApiService'
 import { messages, addSuccesMessage, addErrorMessage, addWarningMessage } from '@/modules/UseFormMessages'
 import TableLayoutDefaults from '@/data/TableLayoutDefaults'
 
 const router: any = inject('router')
+const EventService: any = inject('EventService')
 
 onBeforeUnmount(() => {
     // clear component based messages
@@ -136,12 +136,18 @@ function removeMessage(id: number) {
 function getData() {
     if (!props.tableData) {
         EventService.getData(props.dataType, false, 0)
-            .then((response) => {
+            .then((response: any) => {
                 localTableData.value = response.data
             })
-            .catch((error) => {
+            .catch((error: any) => {
                 addErrorMessage(error)
             })
+    }
+}
+
+type DeleteResponse = {
+    data: {
+        deletedCount: number
     }
 }
 
@@ -153,12 +159,12 @@ function deleteSelection() {
     }
 
     EventService.deleteByIds(props.dataType, selectedIds)
-        .then((response) => {
+        .then((response: DeleteResponse) => {
             addSuccesMessage(`${response.data && response.data.deletedCount | 0} document(s) were deleted.`)
             // but what if search filter is active ?! Keep track of filter value
             getData()
         })
-        .catch((error) => {
+        .catch((error: any) => {
             addErrorMessage(error)
         })
 }

@@ -54,7 +54,6 @@ import FormDefinitionRecursor from '@/components/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
 import Utils from '@/modules/utils'
-import EventService from '@/services/ApiService'
 import { messages, addSubmitMessage, addErrorMessage, addWarningMessage } from '@/modules/UseFormMessages'
 import { setValidators, useValidation } from '@/modules/validate'
 import formConfigDefaults from '@/data/FormLayoutDefaults'
@@ -76,6 +75,7 @@ type FormProp = {
 }
 
 const router: any = inject('router')
+const EventService: any = inject('EventService')
 
 const props = withDefaults(defineProps<FormProp>(), {
   columns: 1,
@@ -116,7 +116,7 @@ if (props.config) {
       }
       getFormData()
     })
-    .catch((error) => {
+    .catch((error: any) => {
       // isLoading.value = false
       console.error('Could not fetch layoutdefinition! Going to hardcoded backup option.', error)
       // myConfig.value = formConfigHardcoded
@@ -147,14 +147,14 @@ function getFormData() {
     fieldValues.value = props.initialFormData
   } else if (props.id) {
     EventService.getById(props.dataType, props.id)
-      .then((response) => {
+      .then((response: any) => {
         const convertedResponseData = convertResponseData(response.data)
         fieldValues.value = convertedResponseData
         rules.value = setValidators(fields.value, undefined, fieldValues)
         //v$ = useValidation(rules, fieldValues,)
 
       })
-      .catch((error) => {
+      .catch((error: any) => {
         console.error('There was an error!', error);
       })
   } else {
@@ -193,22 +193,22 @@ async function submitForm(dataType: string) {
 
   if (id) {
     EventService.putForm(dataType, id, submitValue)
-      .then((response) => {
+      .then((response: any) => {
         const convertedResponseData = convertResponseData(response.data)
         fieldValues.value = convertedResponseData
         addSubmitMessage()
       })
-      .catch((error) => {
+      .catch((error: any) => {
         addErrorMessage(error)
       })
   } else {
     EventService.postForm(dataType, submitValue)
-      .then((response) => {
+      .then((response: any) => {
         const convertedResponseData = convertResponseData(response.data)
         fieldValues.value = convertedResponseData
         addSubmitMessage()
       })
-      .catch((error) => {
+      .catch((error: any) => {
         addErrorMessage(error)
       })
   }

@@ -6,13 +6,15 @@
 
 <script setup lang="ts">
 import { provide } from 'vue'
-import { action } from '@storybook/addon-actions';
+import { action } from '@storybook/addon-actions'
+import EventService from '@/stories/EventServiceMocked'
 
 const router: any = {}
 router.push = (routerConfig: any) => action('router.push')(routerConfig)
 router.back = () => action('router.back')()
 
 provide('router', router)
+provide('EventService', EventService)
 
 </script>
 
