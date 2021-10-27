@@ -205,12 +205,33 @@ formConfig.value = [
                                     dependsOn: {
                                         and: { 
                                             // required: 'cat_1', // hoe kunnen we dynamisch allerlei bestaande validators koppelen ? Willen we dat??????? zoals requiredIf or between etc etc binnen andere rules!!!!
+                                            // TODO de volgorde van processing/evalueren van de rules maakt NIET uit voor de waarheidswaarde, uiteindeijk. 
+                                            // Alleen qua performance als je early exit gaat doen zodra dat kan.
+                                            // Dus refactoring met lagere prioriteit.
                                             [cvh.IS_VISIBLE]: ['cat_1'],
                                              or: {
+                                                 
                                                 [cvh.ALL_VISIBLE]: ['test0','title'], 
+                                                [cvh.ALL_ENABLED]: ['test0','title'], 
                                                  not: {
                                                         [cvh.IS_HIDDEN]: ['test1'],
-                                                    },
+
+                                                        // notice the difference between [cvh.IS_MIN_LENGTH] and [cvh.V_MINLENGTH]!!!!
+                                                        [cvh.IS_MIN_LENGTH]: ['test1'], // this will merely / passively retrieve the rule result of an assumed previous run on the minLength rule on field test1.
+                                                        //TODO 
+                                                        //cvh.V_MINLENGTH is a proper rule that will execute, so it needs proper parametrization, so it needs {params} 
+                                                        [cvh.V_MINLENGTH]: [
+                                                            { 
+                                                                min: { $model: '<getTheMinimumValueasParamFromField:BladieBla>' }, // means: find the value from $model:<bal> as the value for the param for [cvh.V_MINLENGTH]
+                                                                // if target is empty, it means run [cvh.V_MINLENGTH] on the requesting field, which is cat_2. 
+                                                                // But with a non-empty target, it would try to get the value from the targetField and pass that in as the comparisonValue.
+                                                                target: '<runTheMinLengthValidatorOnFieldX>', 
+                                                                // ??? a rule can not run properly/truely on behalf of some other field AND properly register the result?
+                                                                // so this asValidator property will be redundant for the end user and we MUST programmatically set asValidator to false?
+                                                                asValidator: false,
+                                                            } 
+                                                        ]
+                                                    }
                                             },
                                             not: {
                                                 [cvh.IS_INVALID]: ['title'],

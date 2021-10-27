@@ -116,6 +116,9 @@ export const NOT_REQUIRED_IF = "notRequiredIf"
 export const IS_MIN_LENGTH = "isMinLength";
 export const IS_MAX_LENGTH = "isMaxLength";
 
+/**
+ * Helpers which merely retrieve optional presumed previous rule results. The require only the vm and an array of fieldname(s) as parameters.
+ */
 const SUPPORTED_RETRIEVERS = [
     IS_VISIBLE, SOME_VISIBLE, ALL_VISIBLE, 
     IS_VALID, SOME_VALID, ALL_VALID, 
@@ -127,6 +130,15 @@ const SUPPORTED_RETRIEVERS = [
     // these search for the results for builtin vuelidate validators!!!! They do not -yet- rerun proper validators thmeselves.
     IS_REQUIRED_IF, NOT_REQUIRED_IF,
     IS_MIN_LENGTH, 
+    // V_MINLENGTH,
+    // V_MAXLENGTH,
+    // V_BETWEEN,
+]
+
+/**
+ * Helpers which are able to run an actual validator. These can take a proper rule execution configuration for dynamic parametrization AND dynamic targeting.
+ */
+const SUPPORTED_EXECUTIONERS = [
     V_MINLENGTH,
     V_MAXLENGTH,
     V_BETWEEN,
@@ -167,17 +179,22 @@ export const cHelpers = {
      * @param params 
      */
     minLength: (vm, objContext ) => {
+        debugger
+        // test if we have vm.fieldValues always or should we use params.formData ????
+        //destructure the params into some crucial variables
+        const { value , params, ...cfg } = objContext // contains the source field name, from where to grab the payload for the min argumen
+        let comparisonValue = value;
+        let minimum: number;
         let defaulted = true; // ????????????????????? how would we know what to default to?
         let result
         let dummyValidator;
-        let message: string
-        let minimum: number;
-        let sourceFieldName
+        let message: string;
+        let preMessage: string;
+        let partMessage: string;
+        
+        let sourceFieldName, targetFieldName, targetFieldLabel;
         let refName
         let probe
-        // test if we have vm.fieldValues always or should we use params.formData ????
-        //destructure the params into some crucial variables
-        const { value , params, ...cfg } = objContext // contains the source field name, from where to grab the payload for the min argument.
         
         try{
             //min = Number(vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName])
@@ -192,25 +209,45 @@ export const cHelpers = {
             if (sourceFieldName && typeof sourceFieldName === 'string'){
                 minimum = Number(vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName])
             }
-            refName = params?.min?.ref
-            if (refName && typeof refName === 'string'){
-                probe = vm?.$refs?.[refName]?.value
-                minimum = Number(probe)
+            else { 
+                refName = params?.min?.ref
+                if (refName && typeof refName === 'string'){
+                    probe = vm?.$refs?.[refName]?.value
+                    minimum = Number(probe)
+                }
             }
         }
         if ( !isNaN(minimum)){
             try { 
+                //check if we have to run on another target instead of on the requesting field!!!
+                targetFieldName = params?.targetField && params.targetField.name
+                if (targetFieldName && typeof targetFieldName === 'string'){
+                    comparisonValue = vm?.v$?.[targetFieldName]?.$model ?? vm?.fieldValues?.value?.[targetFieldName]
+                }
                 // Note: here we are re-using the builtin vuelidate minLength validator, without having to know exactly how it is implemented or generates it's message
                 dummyValidator = minLength(minimum); 
-                result = dummyValidator?.$validator(value);
-                //message = typeOf(dummyValidator?.$message) === "function" ? dummyValidator?.$message(dummyValidator.$params) : dummyValidator?.$message
-                message = dummyValidator?.$message?.({$params: dummyValidator.$params}) ?? dummyValidator?.$message
+                result = dummyValidator?.$validator(comparisonValue);
+                
+                // Only if failed, compose the message.
+                if (!result){ 
+                    preMessage = `(Rule '${V_MINLENGTH}')`
+                    //Only compose a hefty message if the execution was triggered indirectly
+                    if (typeof targetFieldName === 'string'){
+                        targetFieldLabel = params?.targetField?.label ?? targetFieldName
+                        debugger
+                        if (cfg?.fieldCfg?.label && targetFieldName.toLowerCase() !== cfg.fieldCfg.label.toLowerCase() ){
+                            preMessage = `(Field '${cfg.fieldCfg.label}' by rule '${cfg?.metaParams?.type ?? cfg?.metaParams?.params?.type}' indirectly tested field '${targetFieldLabel}' by rule '${V_MINLENGTH}')`;
+                        }
+                    }
+                    partMessage = dummyValidator?.$message?.({$params: dummyValidator.$params}) ?? dummyValidator?.$message
+                    message = `${partMessage}. ${preMessage??''}`;
+                }
             }
             catch(e) {
                 console.warn(e); 
             }
         }
-        return { result, message } ;
+        return result || { result, message } ; // only output the message when failed
     },
     /**
      * Retrieves the rule result from a supposed previous run of a rule of type CV_TYPE_MIN_LENGTH on field objparams.fieldName or such
@@ -561,7 +598,7 @@ export const cHelpers = {
         let result, defaulted = false;
         try {
             //result = !!(vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.extraParams?.rule_result)
-            result =   (vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.extraParams?.rule_result ?? false)
+            result = (vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.extraParams?.rule_result ?? false)
         }
         catch(e) {
             console.warn(e);
@@ -917,6 +954,13 @@ export const cHelpers = {
         } 
         return result
     },
+    getDisabledMessage: (vm, objContext) => {
+        debugger
+        const { fieldNames: fieldName } = objContext
+        let result = (vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.message ?? '')
+        debugger;
+        return `Disabled: ${result}`
+    },
 }
 
 /**
@@ -947,7 +991,7 @@ const hofRuleFnGenerator = ( ...args) => {
     let pretest 
     let hasStaticConfigProperty 
     try {
-        // 1. do we have a overruling static configuration property?
+        // 1. do we have an overruling static configuration property?
         hasStaticConfigProperty = staticConfigProperty && ((fieldCfg?.[staticConfigProperty] ?? false)  !== false )
         if ( hasStaticConfigProperty )
         {
@@ -1028,7 +1072,7 @@ export const displayerIf = (args) => {
     // const staticConfigProperty; // absent, we do support any static config property to set minlength statically to true / false. That would be incomprehensible.
     const doInvertRuleResult = false
     const asValidator = true; // !!!!!!!!!! Since this one is to replace the builtin vuelidate validator, it should act as a proper validator.
-    const startFn = V_MINLENGTH; //this config means that said method should be invoked from allways, before probing for dependencies, 
+    const startFn = V_MINLENGTH; //this config means that said method should be invoked FIRSTLY, from allways, before probing for dependencies, 
     let resultFunction
     try {
         resultFunction = hofRuleFnGenerator( args, { defaultRuleResult , doInvertRuleResult, startFn, asValidator } )
@@ -1092,7 +1136,10 @@ const probeCustomRuleFn = (arrCfg) => {
     return function ruleFn(value, vm){
         let rule_result = probeCustomRuleFnRecursor(value, vm, arrCfg[0], asLogical, startFn) ?? defaultRuleResult
         const valid = asValidator ? (rule_result?.result ?? rule_result) : true;
-        const message = rule_result?.message ?? `Rule of type ${params?.type} for field ${fieldCfg?.label} returned: ${rule_result}.` 
+        let message = `Rule of type ${params?.type} for field ${fieldCfg?.label} returned: ${rule_result.result ?? true}.` 
+        if (rule_result?.message){
+            message = `${rule_result?.message}` //${message} 
+        }
         // console.log(`running cynapps custom rule validator -type: ${params?.type} - from probeCustomRuleFn called via 2-st branch of hofRuleFnGenerator via ${params?.type?.indexOf('disable')>-1 ? 'disablerIf' : 'displayerIf' } for ${fieldCfg?.id} resulted: ${rule_result}`)
         return { 
             $valid: valid, 
@@ -1103,18 +1150,22 @@ const probeCustomRuleFn = (arrCfg) => {
 }
 
 /**
- * Inner recursor for the probeCustomRuleFn.
- * It should be able to recursively walk all nested conditions and return the correct Boolean evaluation result
- * resulting from calling and evalutaing all combined condtions in the entire set of dependsOn criteria.
- * @param value. Passed by vuelidate.
- * @param vm. Passed by vuelidate. The viewmodel/component instance, which brought vuelidate (v$) into scope.
- * @param cfg. The passed in rule evaluation params, including the dependsOn object tree.
- * @param asLogicalOperator. The and/or/not logical operator for the relevant dependsOn leaf conditions object
- * @returns rule_result Boolean.
+ * Method that attempts to find and run the configured rule executioner or rule helper function(s).
+ * If necessary it will act as the inner recursor for the probeCustomRuleFn.
+ * It is able to recursively walk all nested conditions and return the correct overall Boolean evaluation result.
+ * resulting from calling and evaluating all combined condtions in the entire set of dependsOn criteria.
+ * TODO: aborts if it will not qualify the logical norm.
+ * @param {any} value. Passed by vuelidate, the runtime value of the field that invoked the rule.
+ * @param {Component} vm. Passed by vuelidate. The viewmodel/component instance, on which vuelidate (v$) was brought into scope.
+ * @param { Object } cfg. The relevant rule params, including the dependsOn object tree, and context like formData, formdefinition, field definition.
+ * @param {Booelan} asLogicalOperator. The and/or/not logical operator for the relevant dependsOn leaf conditions object
+ * @param {String | null} startFn. Optional. The name of a supported executioner. This should be run before optionally iterating over (nested) conditions in dependsOn.
+ * @returns {Object | Boolean} rule_result. If the return value contains o message, will compose an object with the boolean result and the message, else just the booelan.
  */
 const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn = null) => {
     const { dependsOn, fieldCfg, formData, formDefinition, ...params } = objCfg
-    const arrSupported = SUPPORTED_RETRIEVERS;
+    const arrRetrievers = SUPPORTED_RETRIEVERS;
+    const arrExecutioners = SUPPORTED_EXECUTIONERS;
     const arrToRecurse = [AND, OR, NOT]
 
     let countAsResult = 0;
@@ -1126,12 +1177,12 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn 
     let doIterate = Object.keys(iterator).length > 0
     let breakout = false;
     let startFnUnqualified = false;
+    let isExecutioner = false;
+    let isRetriever = false;
     try{
-        //before probing the recursion for nested conditions, we should first check if there is an INDEPENDENT/AUTONOMOUS method to invoke!
-        //for example:  { "type": cvh.CV_TYPE_MIN_LENGTH, params: { min: 5 } },  or { "type": cvh.CV_TYPE_MIN_LENGTH, params: { min: { $model: 'title'} } }, 
-        //these should run unambiguously simply implementing the minLength ... since dependsOn is totally OPTIONAL!!! 
+        //before probing the recursion for nested conditions, we should first check if there is an INDEPENDENT/AUTONOMOUS rule executioner to invoke.
         if (startFn) {
-            if (arrSupported.includes(startFn)) {
+            if (arrExecutioners.includes(startFn)) {
                 let fn = startFn;
                 try {
                     const objParams = { value, fieldCfg, formData, formDefinition, params }
@@ -1153,7 +1204,7 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn 
             if (startFnUnqualified && asLogical === AND){
                 // when called as a logical AND operator, the end result at this level can never become true anymore, so bail out...
                 arrPartials.push(undefined)
-                arrMessages.push(`Flawed or errored startFn ${startFn} for conjunctive invovation. Aborted.`)
+                arrMessages.push(`Flawed or errored startFn ${startFn} for 'conjunctive' invocation. Aborted.`)
                 countAsResult++
                 if (asLogical === AND){
                     breakout = true;
@@ -1180,40 +1231,57 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn 
                         console.warn(e)
                     }
                 }
-                else if (arrSupported.includes(key)) {
-                    let fn = key;
-                    try {
-                        // if (fn === "isMinLength"){
-                        //     // TODO: we should change the signature for all helpers below to pass in more than entryValue, like the complete context
-                        //     // IN ORDER for these rules to be able to OPTIONALLY RERUN OTHER RULES instead of MERELY retrieving the previous results...
-                        //     debugger
-                        //     const objParams = { fieldName: entryValue, value, fieldCfg, formData, formDefinition, params }
-                        //     tmp = cHelpers[fn]?.(vm, objParams)    
-                        // }
-                        // else if (fn === ALL_VISIBLE){
-                        //     // TODO: we should change the signature for all helpers below to pass in more than entryValue, like the complete context
-                        //     // IN ORDER for these rules to be able to OPTIONALLY RERUN OTHER RULES instead of MERELY retrieving the previous results...
-                        //     debugger
-                        //     const objParams = { fieldNames: entryValue, value, fieldCfg, formData, formDefinition, params }
-                        //     tmp = cHelpers[fn]?.(vm, objParams)    
-                        // }
-                        // else {
-                            const objParams = { fieldNames: entryValue, value, fieldCfg, formData, formDefinition, params }
-                            tmp = cHelpers[fn]?.(vm, objParams)
-                            //tmp = cHelpers[fn]?.(vm, entryValue)    
-                        //}
-                        //tmp = cHelpers[fn]?.(vm, entryValue)
-                        countAsResult++
-                        //arrPartials.push(tmp)
-                        arrPartials.push(tmp?.result ?? tmp)
-                        if (tmp?.message){
-                            arrMessages.push(tmp.message)
+                else {
+                    isExecutioner = arrExecutioners.includes(key);
+                    isRetriever = arrRetrievers.includes(key);
+                    if ( isExecutioner || isRetriever ) {
+                        let fn = key;
+                        try {
+                            // if (fn === "isMinLength"){
+                            //     // TODO: we should change the signature for all helpers below to pass in more than entryValue, like the complete context
+                            //     // IN ORDER for these rules to be able to OPTIONALLY RERUN OTHER RULES instead of MERELY retrieving the previous results...
+                            //     debugger
+                            //     const objParams = { fieldName: entryValue, value, fieldCfg, formData, formDefinition, params }
+                            //     tmp = cHelpers[fn]?.(vm, objParams)    
+                            // }
+                            // else if (fn === ALL_VISIBLE){
+                            //     // TODO: we should change the signature for all helpers below to pass in more than entryValue, like the complete context
+                            //     // IN ORDER for these rules to be able to OPTIONALLY RERUN OTHER RULES instead of MERELY retrieving the previous results...
+                            //     debugger
+                            //     const objParams = { fieldNames: entryValue, value, fieldCfg, formData, formDefinition, params }
+                            //     tmp = cHelpers[fn]?.(vm, objParams)    
+                            // }
+                            // else {
+                                //TODO: if entryValues is string or array of strings, it represents fieldNames, else we should pass a proper config for params for a rule invocation?
+                                
+                                let objParams
+                                if (isRetriever){
+                                    //TODO is the name params over here still comprehensible and unambiguous? 
+                                    objParams = { fieldNames: entryValue, value, fieldCfg, formData, formDefinition, params }        
+                                }
+                                else
+                                {
+                                    debugger
+                                    // we should make entryValue the new params, since executioners may need complete parametrization instructions. 
+                                    // We must be cautious and introduce metaParams to make sure we do not overwrite stuff from entryValue with stuff from the previous params
+                                    objParams = { params: entryValue, value, fieldCfg, formData, formDefinition, metaParams: params }        
+                                }
+                                tmp = cHelpers[fn]?.(vm, objParams)
+                                //tmp = cHelpers[fn]?.(vm, entryValue)    
+                            //}
+                            //tmp = cHelpers[fn]?.(vm, entryValue)
+                            countAsResult++
+                            //arrPartials.push(tmp)
+                            arrPartials.push(tmp?.result ?? tmp)
+                            if (tmp?.message){
+                                arrMessages.push(tmp.message)
+                            }
                         }
-                    }
-                    catch(e) {
-                        console.warn(e)
-                    }
-                }  
+                        catch(e) {
+                            console.warn(e)
+                        }
+                    }  
+                }
             }
         }
     }

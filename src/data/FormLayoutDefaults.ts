@@ -70,7 +70,7 @@ const formConfig: FormConfig = {
             "type": "P_InputText",
             //"defaultValue": 5,
             //"placeholder": "setting0. Should implement a static 'between' validator with range 3-15.",
-            "placeholder": "setting0. Should implement a static MIN_LENGTH validator (2).",
+            //"placeholder": "setting0. Should implement a static MIN_LENGTH validator (2).",
             //"hidden": true,
             //"disabled": true,
             "validators": [
@@ -84,7 +84,7 @@ const formConfig: FormConfig = {
         {
             "id": "setting1",
             "isField": true,
-            "label": "Setting1",
+            "label": "Setting1 Man",
             "type": "P_InputText",
             //"defaultValue": 15,
             //"placeholder": "setting1. Should implement a static 'between' validator with range 16-30.",
@@ -92,7 +92,7 @@ const formConfig: FormConfig = {
             //"disabled": true,
             "validators": [
                 //{ "type": cvh.CV_TYPE_BETWEEN, params: { min: 16 , max: 30 } },
-                //{ "type": cvh.CV_TYPE_MIN_LENGTH, params: { min: { $model: 'title'} } }, 
+                { "type": cvh.CV_TYPE_MIN_LENGTH, params: { min: { $model: 'setting0'} } }, 
                 //{ "type": "between", "params": [{ "min": 10 }, { "max": 20 }] }
             ]
         },
@@ -116,13 +116,14 @@ const formConfig: FormConfig = {
             "isField": true,
             "label": "Title",
             "type": "P_InputText",
-            "placeholder": "TILE. Should also be disables when setting0 has minLength compliancy!!!", //Should implement a fully DYNAMIC 'between' validator with range 'min' from setting0 and 'max' from setting1.",
+            //"placeholder": "TITLE. Note: Should also be disables when setting0 has minLength compliancy!!!", //Should implement a fully DYNAMIC 'between' validator with range 'min' from setting0 and 'max' from setting1.",
             "validators": [
-                //{ "type": cvh.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
+                "required",
+                { "type": cvh.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
                 //{ "type": cvh.CV_TYPE_MIN_LENGTH, params: { min: { ref: 'setting0'} } }, 
                 //{ "type": cvh.CV_TYPE_MIN_LENGTH, params: { min: { $model: 'setting0'} } },
                 //{ "type": cvh.CV_TYPE_MAX_LENGTH, params: { max: { $model: 'setting1'} } },
-                { "type": cvh.CV_TYPE_BETWEEN, params: { min: { $model: 'setting0'} , max: { $model: 'setting1'} } },
+                //{ "type": cvh.CV_TYPE_BETWEEN, params: { min: { $model: 'setting0'} , max: { $model: 'setting1'} } },
                 // { 
                 //     type: cvh.CV_TYPE_DISABLE_IF,
                 //     params: { dependsOn: { not: { [cvh.IS_MIN_LENGTH]: ["setting0"] } } },
@@ -133,6 +134,12 @@ const formConfig: FormConfig = {
                     params: { 
                         dependsOn: {
                             [cvh.ALL_VISIBLE]: ['setting1','setting2'],
+                            not: {[cvh.V_MINLENGTH]: { 
+                                    min: { $model: 'setting0' }, // means: find the value for min from $model:<setting0> as the param for the invocation.
+                                    // if target is empty, it means run [cvh.V_MINLENGTH] on the requesting field, which is cat_2. 
+                                    // But with a non-empty target, it would TEST targetField instead of the invocing field!!! So it will try to get the value from the targetField and pass that in as the comparisonValue!
+                                    targetField: { name:'setting1', label:'Setting1 Man' }, // optional!
+                                }}
                         },
                     }, 
                 },
