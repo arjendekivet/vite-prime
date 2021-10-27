@@ -169,7 +169,7 @@ function getFormData() {
   }
 }
 
-const v$ = useValidation(rules, fieldValues, { $lazy: true }) // $lazy doet niks?
+const v$ = useValidation(rules, fieldValues, { $rewardEarly: false , $lazy: true , $autoDirty: false }) // global config doet niks? $lazy doet niks?, $rewardEarly doet niks? autoDirty?
 
 const updateFieldValue = (fieldId: string, value: any) => {
   fieldValues.value[fieldId] = value

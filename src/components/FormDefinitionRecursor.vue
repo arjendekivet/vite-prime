@@ -40,6 +40,7 @@
                 </template>
                 <template v-else>
                     <i v-if="getIconName(config)" :class="`pi ${getIconName(config)}`" />
+                    <!-- @change="onChange(config, v$)" -->
                     <component
                         ref="config.id"
                         v-bind="config"
@@ -47,7 +48,7 @@
                         :modelValue="fieldValues[config.id]"
                         @update:modelValue="updateFieldValue(config, $event)"
                         :disabled="getDisabled(config, v$)"
-                        @change="onChange(config, v$)"
+                        @blur="onBlur(config, v$)"
                         :class="v$[config.id]?.$error ? 'p-invalid' : ''"
                         :aria-describedby="`${config.id}-help`"
                         :rows="config.type === 'P_Textarea' ? 5 : undefined"
@@ -105,19 +106,51 @@ const calculateDependantFieldState: any = inject('calculateDependantFieldState')
  * If any of the criteria is false, we should hide the calling element.
  * TODO: moet config.hidden of config.systemHidden hier meespelen of moet dat in 
  */
-function showField(config, pv$){   
+function showField(config, pv$){
     return cHelpers.isVisible({ v$: pv$ }, { fieldNames: config.id })
 }
 
+async function wrapValidate(config, pv$, caller){
+    let result
+    try {
+        //console.log('Running wrapValidate called by: ', caller);
+        await pv$?.[config?.id]?.$validate?.()
+            .then((value) => { 
+                debugger;
+                //console.log('the $validate promise resolved & will return: ', value);
+                result = value;
+                return value;
+                })
+            .catch((error) => {
+                console.error(error);
+            })    
+    } catch(e){
+        console.warn(e)
+    }
+    finally {
+        return result
+    }
+}
+
+async function onBlur(config, pv$){
+    await pv$?.[config?.id]?.$validate?.()
+}
+
 /**
- * TODO: should we do onChange or onBlur
+ * TODO: Is it even necessary using v-model plus having vuelidate monitoring the field state regarding validity, display, enabling, and ... ? 
+ * TODO: Should be debounced?
  * TODO: should we get rid of the passed pV$? If it is a global we might as well simply decide in the doBlur itself to use v$.value.
  * Why should the invoker of doBlur have to know we are using vuelidate for rules execution? 
  */
-function onChange(config, pv$){   
-    //let ns = pv$ || v$.value
-    pv$?.[config?.id]?.$validate?.()
+async function handleOnChange(config, pv$){   
+    console.log('running handleOnChange');
+    let result = await wrapValidate(config,pv$,'onChange');
+    console.log('handleOnChange returns: ', result);
 }
+/**
+ * Is only called after the onBlur and after leaving a field? Redundant then compared to onBlur?
+ */
+const onChange = _.debounce(async (config, pv$) => { handleOnChange(config,pv$)}, 500);
 
 function showInvalidMsg(config, pv$){
     return cHelpers.isInvalid({ v$: pv$  }, { fieldNames: config.id }) 

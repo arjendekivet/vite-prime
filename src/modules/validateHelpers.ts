@@ -234,7 +234,6 @@ export const cHelpers = {
                     //Only compose a hefty message if the execution was triggered indirectly
                     if (typeof targetFieldName === 'string'){
                         targetFieldLabel = params?.targetField?.label ?? targetFieldName
-                        debugger
                         if (cfg?.fieldCfg?.label && targetFieldName.toLowerCase() !== cfg.fieldCfg.label.toLowerCase() ){
                             preMessage = `(Field '${cfg.fieldCfg.label}' by rule '${cfg?.metaParams?.type ?? cfg?.metaParams?.params?.type}' indirectly tested field '${targetFieldLabel}' by rule '${V_MINLENGTH}')`;
                         }
@@ -955,10 +954,8 @@ export const cHelpers = {
         return result
     },
     getDisabledMessage: (vm, objContext) => {
-        debugger
         const { fieldNames: fieldName } = objContext
         let result = (vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.message ?? '')
-        debugger;
         return `Disabled: ${result}`
     },
 }
@@ -1237,41 +1234,19 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn 
                     if ( isExecutioner || isRetriever ) {
                         let fn = key;
                         try {
-                            // if (fn === "isMinLength"){
-                            //     // TODO: we should change the signature for all helpers below to pass in more than entryValue, like the complete context
-                            //     // IN ORDER for these rules to be able to OPTIONALLY RERUN OTHER RULES instead of MERELY retrieving the previous results...
-                            //     debugger
-                            //     const objParams = { fieldName: entryValue, value, fieldCfg, formData, formDefinition, params }
-                            //     tmp = cHelpers[fn]?.(vm, objParams)    
-                            // }
-                            // else if (fn === ALL_VISIBLE){
-                            //     // TODO: we should change the signature for all helpers below to pass in more than entryValue, like the complete context
-                            //     // IN ORDER for these rules to be able to OPTIONALLY RERUN OTHER RULES instead of MERELY retrieving the previous results...
-                            //     debugger
-                            //     const objParams = { fieldNames: entryValue, value, fieldCfg, formData, formDefinition, params }
-                            //     tmp = cHelpers[fn]?.(vm, objParams)    
-                            // }
-                            // else {
-                                //TODO: if entryValues is string or array of strings, it represents fieldNames, else we should pass a proper config for params for a rule invocation?
-                                
-                                let objParams
-                                if (isRetriever){
-                                    //TODO is the name params over here still comprehensible and unambiguous? 
-                                    objParams = { fieldNames: entryValue, value, fieldCfg, formData, formDefinition, params }        
-                                }
-                                else
-                                {
-                                    debugger
-                                    // we should make entryValue the new params, since executioners may need complete parametrization instructions. 
-                                    // We must be cautious and introduce metaParams to make sure we do not overwrite stuff from entryValue with stuff from the previous params
-                                    objParams = { params: entryValue, value, fieldCfg, formData, formDefinition, metaParams: params }        
-                                }
-                                tmp = cHelpers[fn]?.(vm, objParams)
-                                //tmp = cHelpers[fn]?.(vm, entryValue)    
-                            //}
-                            //tmp = cHelpers[fn]?.(vm, entryValue)
+                            let objParams
+                            if (isRetriever){
+                                //TODO is the name params over here still comprehensible and unambiguous? 
+                                objParams = { fieldNames: entryValue, value, fieldCfg, formData, formDefinition, params }        
+                            }
+                            else
+                            {
+                                // we should make entryValue the new params, since executioners may need complete parametrization instructions. 
+                                // We must be cautious and introduce metaParams to make sure we do not overwrite stuff from entryValue with stuff from the previous params
+                                objParams = { params: entryValue, value, fieldCfg, formData, formDefinition, metaParams: params }        
+                            }
+                            tmp = cHelpers[fn]?.(vm, objParams)
                             countAsResult++
-                            //arrPartials.push(tmp)
                             arrPartials.push(tmp?.result ?? tmp)
                             if (tmp?.message){
                                 arrMessages.push(tmp.message)
