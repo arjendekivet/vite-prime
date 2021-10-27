@@ -188,7 +188,7 @@ export const cHelpers = {
         let defaulted = true; // ????????????????????? how would we know what to default to?
         let result
         let dummyValidator;
-        let message: string;
+        let message="";
         let preMessage: string;
         let partMessage: string;
         
