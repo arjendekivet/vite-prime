@@ -110,14 +110,11 @@ function showField(config, pv$){
     return cHelpers.isVisible({ v$: pv$ }, { fieldNames: config.id })
 }
 
-async function wrapValidate(config, pv$, caller){
+async function wrappedValidate(config, pv$, caller){
     let result
     try {
-        //console.log('Running wrapValidate called by: ', caller);
         await pv$?.[config?.id]?.$validate?.()
             .then((value) => { 
-                debugger;
-                //console.log('the $validate promise resolved & will return: ', value);
                 result = value;
                 return value;
                 })
@@ -143,9 +140,7 @@ async function onBlur(config, pv$){
  * Why should the invoker of doBlur have to know we are using vuelidate for rules execution? 
  */
 async function handleOnChange(config, pv$){   
-    console.log('running handleOnChange');
-    let result = await wrapValidate(config,pv$,'onChange');
-    console.log('handleOnChange returns: ', result);
+    await wrappedValidate(config,pv$,'onChange');
 }
 /**
  * Is only called after the onBlur and after leaving a field? Redundant then compared to onBlur?
