@@ -34,8 +34,6 @@ export default {
     },
     async getById(type: string, id: string) {
         let response =  await apiClient.get('/' + type + '/' + id, { headers: authHeader() })
-        response.data.setting0 = 2
-        response.data.setting1 = 1
         return response
     },
     async deleteByIds(type: string, ids: string[]): Promise<DeleteResponse> {

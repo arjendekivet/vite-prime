@@ -133,7 +133,7 @@ let fields =
     }
   ]
 
-const formData: any = {
+let formData: any = {
   "_id": "6148453e3a86ae3466fa2759",
   "title": "het pak",
   "type": "open",
@@ -171,13 +171,6 @@ BExistingDocument.args = {
  
 fields = [
   {
-    id: 'setting0',
-    isField: true,
-    label: 'Setting0',
-    type: 'P_InputText',
-    icon: { type: 'right', name: 'pi-lock' }
-  },
-  {
     id: '_id',
     isField: true,
     label: 'Id',
@@ -186,13 +179,53 @@ fields = [
     icon: { type: 'right', name: 'pi-lock' }
   },
   {
+    id: 'setting0',
+    isField: true,
+    label: 'Setting0',
+    type: 'P_InputText',
+    icon: { type: 'right', name: 'pi-lock' },
+    validators: [
+      "required",
+      { type: cvh.CV_TYPE_MIN_LENGTH, params: { min: 2 } }, 
+    ]
+  },
+  {
+    id: 'setting1',
+    isField: true,
+    label: 'Setting 1',
+    type: 'P_InputText',
+    icon: { type: 'right', name: 'pi-lock' },
+    validators: [
+      "required",
+      { type: cvh.CV_TYPE_MIN_LENGTH, params: { min: { $model: 'setting0'} } }, 
+    ]
+  },
+  {
     id: 'title',
     isField: true,
     label: 'Title',
     type: 'P_InputText',
     placeholder: 'Title',
-    validators: ['required'],
-    icon: { type: 'right', name: 'pi-bookmark' }
+    icon: { type: 'right', name: 'pi-bookmark' },
+    validators: [
+      "required",
+      { type: cvh.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
+      { 
+        type: cvh.CV_TYPE_DISABLE_IF,
+        params: { 
+            dependsOn: {
+                [cvh.ALL_VISIBLE]: ['setting1','setting2'],
+                not: { 
+                  [cvh.V_MINLENGTH]: { 
+                      min: { $model: 'setting0' }, // means: find the value for min from $model:<setting0> as the param for the invocation.
+                      // if target is empty, it means run [cvh.V_MINLENGTH] on the requesting field, which is cat_2. 
+                      // But with a non-empty target, it would TEST targetField instead of the invocing field!!! So it will try to get the value from the targetField and pass that in as the comparisonValue!
+                      targetField: { name:'setting1', label:'Setting1 Man' }, // optional!
+                    }}
+            }
+        } 
+      },
+    ],
   },
   {
     id: 'type',
@@ -264,6 +297,23 @@ fields = [
   }
 ]
 
+
+formData = {
+  "_id": "6148453e3a86ae3466fa2759",
+  "setting0": 3,
+  "setting1": 2,
+  "title": "het pak",
+  "type": "open",
+  "answer": "der Anzug",
+  "created_at": "2021-09-20T08:24:30.618Z",
+  "updated_at": "2021-09-21T21:06:48.694Z",
+  "__v": 4,
+  "cat_1": "DE",
+  "cat_2": "Ch-5",
+  "cat_3": "G",
+  "description": "het pak"
+}
+
  export const CNewDocument = Template.bind({});
  CNewDocument.args = {
    config: fields,
@@ -271,3 +321,13 @@ fields = [
    title: "Question",
    readOnly: false,
  };
+
+ export const DExistingDocument = Template.bind({});
+ DExistingDocument.args = {
+  config: fields,
+  dataType: "questions",
+  title: "Question",
+  readOnly: false,
+  initialFormData: formData
+ };
+
