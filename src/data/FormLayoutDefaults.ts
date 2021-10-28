@@ -68,7 +68,7 @@ const formConfig: FormConfig = {
             "isField": true,
             "label": "Setting0",
             "type": "P_InputText",
-            //"defaultValue": 5,
+            "defaultValue": 5,
             //"placeholder": "setting0. Should implement a static 'between' validator with range 3-15.",
             //"placeholder": "setting0. Should implement a static MIN_LENGTH validator (2).",
             //"hidden": true,

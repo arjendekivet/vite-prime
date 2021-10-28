@@ -97,33 +97,43 @@ const myConfig: any = ref<object>({})
 // Use a simple ref for now as there is no combined logic for rules that need it to be computed
 // This way type casting stays in place
 const rules = ref({})
-// define reactive for formData and then use a torefs on that to get a ref for each fieldValue, for usage in vuelidate dynamic parametrizations?????
 
-// rules.value = setValidators(fields.value, undefined, fieldValues)
-
-if (props.config) {
-  myConfig.value = props.config
-  getFormData()
-} else if (props.formLayoutKey) {
-  EventService.getDataByFilter('layoutdefinition', props.formLayoutKey)
-    .then((response: any) => {
-      // find will return array, get the first in this case
-      // isLoading.value = false
-      if (response.data.length > 0) {
-        myConfig.value = response.data[0].config
-      } else {
-        setDefaultLayout()
-      }
-      getFormData()
-    })
-    .catch((error: any) => {
-      // isLoading.value = false
-      console.error('Could not fetch layoutdefinition! Going to hardcoded backup option.', error)
-      // myConfig.value = formConfigHardcoded
-    })
-} else {
-  setDefaultLayout()
-  getFormData()
+if (props){
+  console.log('running code within if(props)');
+  if (props.config) {
+    console.log('running code within if(props.config)');
+    myConfig.value = props.config
+    getFormData()
+  } else if (props.formLayoutKey) {
+      console.log('running code within if(props.formLayoutKey)');
+      // if we await this one, stuff will break. But why? 
+      // const response = await EventService.getDataByFilter('layoutdefinition', props.formLayoutKey)
+      // if (response.data.length > 0) {
+      //   myConfig.value = response.data[0].config
+      // } else {
+      //   setDefaultLayout()
+      // }
+      // getFormData()
+      EventService.getDataByFilter('layoutdefinition', props.formLayoutKey)
+        .then((response: any) => {
+          // find will return array, get the first in this case
+          // isLoading.value = false
+          if (response.data.length > 0) {
+            myConfig.value = response.data[0].config
+          } else {
+            setDefaultLayout()
+          }
+          getFormData()
+        })
+        .catch((error: any) => {
+          // isLoading.value = false
+          console.error('Could not fetch layoutdefinition! Going to hardcoded backup option.', error)
+          // myConfig.value = formConfigHardcoded
+        })
+  } else {
+    setDefaultLayout()
+    getFormData()
+  }
 }
 
 function setDefaultLayout() {
@@ -140,36 +150,30 @@ function removeMessage(id: number) {
   Utils.removeMessage(messages, id)
 }
 
-function getFormData() {
+async function getFormData() {
+  console.log('RUNNING getFormData')
   fields.value = getFieldsFromConfig(compConfig.value, 'isField', true)
+  rules.value = setValidators(fields.value, undefined, fieldValues)
 
   if (props.initialFormData) {
     fieldValues.value = props.initialFormData
   } else if (props.id) {
-    EventService.getById(props.dataType, props.id)
-      .then((response: any) => {
-        const convertedResponseData = convertResponseData(response.data)
-        fieldValues.value = convertedResponseData
-        rules.value = setValidators(fields.value, undefined, fieldValues)
-        //v$ = useValidation(rules, fieldValues,)
-
-      })
-      .catch((error: any) => {
-        console.error('There was an error!', error);
-      })
+      let response = await EventService.getById(props.dataType, props.id)
+      const convertedResponseData = convertResponseData(response.data)
+      fieldValues.value = convertedResponseData
   } else {
     _.forIn(fields.value, function (field, fieldId) {
       if (field && field.defaultValue) {
         fieldValues.value[field.id] = field.defaultValue
       }
-      rules.value = setValidators(fields.value, undefined, fieldValues)
-      //v$ = useValidation(rules, fieldValues,)
-
     })
   }
+  console.log('terminating getFormData')
+  v$?.value?.$reset()
 }
 
-const v$ = useValidation(rules, fieldValues, { $rewardEarly: false , $lazy: true , $autoDirty: false }) // global config doet niks? $lazy doet niks?, $rewardEarly doet niks? autoDirty?
+const v$ = useValidation(rules, fieldValues, { $lazy: false, $autoDirty: true } ) //  $rewardEarly nog net supported? $commit() dan ook nog net.
+console.log('after having called v$ = useValidation...')
 
 const updateFieldValue = (fieldId: string, value: any) => {
   fieldValues.value[fieldId] = value
@@ -225,6 +229,7 @@ function convertResponseData(responseData: object): object {
       converted[key] = fieldValue
     }
   });
+  debugger;
   return converted
 }
 
@@ -245,27 +250,9 @@ function getFieldsFromConfig(arr: Fieldconfig[], key: string, value: string | bo
   return matches;
 }
 
-function calculateDependantFieldState(field: Fieldconfig, fieldValue: any) {
-  return;
-  field.dependantFields?.forEach(function (fieldId: string) {
-    const myField = fields.value[fieldId]
-    if (myField) {
-      myField.hidden = fieldValue ? false : true
-
-      if (!fieldValue) {
-        fieldValues.value[fieldId] = null
-
-        // current field could have dependantFields which have to be hidden now, so call recursively ...
-        calculateDependantFieldState(myField, null)
-      }
-    }
-  })
-}
-
 provide('fieldValues', readonly(fieldValues))
 provide('fields', readonly(fields))
 provide('updateFieldValue', updateFieldValue)
-provide('calculateDependantFieldState', calculateDependantFieldState)
 provide('v$', v$)
 </script>
 

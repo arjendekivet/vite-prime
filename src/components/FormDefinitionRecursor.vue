@@ -104,7 +104,24 @@ const calculateDependantFieldState: any = inject('calculateDependantFieldState')
 
 /**
  * If any of the criteria is false, we should hide the calling element.
- * TODO: moet config.hidden of config.systemHidden hier meespelen of moet dat in 
+ * TODO: moet config.hidden of config.systemHidden hier meespelen of moet dat alleen in de rule executioner. 
+ * 
+ * De volgende overweging zou kunnen gelden: 
+ * 1. De rule-engine is de single source of truth mbt rules, wanneer die gerund hebben OF een standaard default, als ze NIET gerund hebben. 
+ * 2. Zolang de rules niet gerund worden, krijg je alleen de standaard default terug. Meer weet de rules engine niet.
+ * 3. De UI van het form moet eerder iets weten van alleen bepaalde features, zoals visibility en disabling, 
+ * maar niet van alle form validatie, en vraagt dat daarom expliciet NOG NIET aan de rules engine: je wil niet initieel alle velden markeren.
+ * 
+ * 4. De UI van het form kan daarom het beste zelf in de showField of de getDisabled uitrekenen wat er moet gebeuren:
+ * OFWEL op basis van overruling door statische metadata, zoals fieldCfg.hidden of fieldCfg.disabled, ofwel op basis van een rule result set.
+ * 
+ * 5. Maar een beter alternatief is wellicht om in de onMounted eenmaal alle rules te runnen (v$.$validate()) en daara een $reset te vragen.
+ * Alle validaties worden dan weer gedemarkeerd MAAR alle custom visibility & disabling rules behouden hun $response data, 
+ * want die gelden NOOIT als validatie rules en zijn dus sowieso nooit false voor validatie calls...
+ * 
+ * export const CFG_PROP_ENTITY_DISPLAY = 'hidden'; // indicates in fieldCfg the optional property 'hidden' decides the field display
+export const CFG_PROP_ENTITY_DISPLAY_INVERT = true; // indicates a display rule will have to negate the config prop
+
  */
 function showField(config, pv$){
     return cHelpers.isVisible({ v$: pv$ }, { fieldNames: config.id })

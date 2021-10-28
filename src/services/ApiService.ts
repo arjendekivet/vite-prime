@@ -26,22 +26,33 @@ type DeleteResponse = {
 }
 
 export default {
-    postForm(type: string, submitValues: object) {
+    async postForm(type: string, submitValues: object) {
         return apiClient.post('/' + type, submitValues, { headers: authHeader() })
     },
-    putForm(type: string, id: string, submitValues: object) {
+    async putForm(type: string, id: string, submitValues: object) {
         return apiClient.put('/' + type + '/' + id, submitValues, { headers: authHeader() })
     },
-    getById(type: string, id: string) {
-        return apiClient.get('/' + type + '/' + id, { headers: authHeader() })
+    async getById(type: string, id: string) {
+        console.log('service.getDataById, before awaited')
+        const response = await apiClient.get('/' + type + '/' + id, { headers: authHeader() })
+        console.log('service.getDataById, after awaited')
+        //hard coded fake some data ...
+        response.data.setting0 = 2;
+        response.data.setting1 = 1;
+        debugger
+        return response
     },
-    deleteByIds(type: string, ids: string[]): Promise<DeleteResponse> {
+    async deleteByIds(type: string, ids: string[]): Promise<DeleteResponse> {
         return apiClient.delete('/' + type + '/' + ids, { headers: authHeader() })
     },
-    getData(type: string, perPage: boolean, page: number): Promise<QuestionResponse> {
+    async getData(type: string, perPage: boolean, page: number): Promise<QuestionResponse> {
         return apiClient.get('/' + type + '?_limit=' + perPage + '&_page=' + page, { headers: authHeader() })
     },
-    getDataByFilter(type: string, filter: string | string[], perPage: boolean = false, page: number = 0) {
-        return apiClient.get('/' + type + '/filter/' + filter + '?_limit=' + perPage + '&_page=' + page, { headers: authHeader() })
+    async getDataByFilter(type: string, filter: string | string[], perPage: boolean = false, page: number = 0) {
+        console.log('service.getDataByFilter, before awaited')
+        let response = await apiClient.get('/' + type + '/filter/' + filter + '?_limit=' + perPage + '&_page=' + page, { headers: authHeader() })
+        console.log('service.getDataByFilter, after awaited')
+        debugger
+        return response
     }
 }

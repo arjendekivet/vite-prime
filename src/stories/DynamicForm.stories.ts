@@ -1,6 +1,9 @@
 import DynamicForm from '@/components/Form.vue';
 import OptionType from '@/types/Option'
 import QuestionType from '@/enums/questionTypes'
+import cvh from '@/modules/validateHelpers' //custom vuelidate helpers...
+
+debugger;
 
 export default {
   title: 'Cynapps/DynamicForm',
@@ -41,7 +44,7 @@ const catThree: OptionType[] = [
   { label: 'G', value: 'G' },
 ];
 
-const fields =
+let fields =
   [
     {
       id: '_id',
@@ -160,3 +163,111 @@ BExistingDocument.args = {
   readOnly: false,
   initialFormData: formData
 };
+
+/**
+ * Story that demonstrates complex validators configurations
+ */
+//reset fields
+ 
+fields = [
+  {
+    id: 'setting0',
+    isField: true,
+    label: 'Setting0',
+    type: 'P_InputText',
+    icon: { type: 'right', name: 'pi-lock' }
+  },
+  {
+    id: '_id',
+    isField: true,
+    label: 'Id',
+    type: 'P_InputText',
+    disabled: true,
+    icon: { type: 'right', name: 'pi-lock' }
+  },
+  {
+    id: 'title',
+    isField: true,
+    label: 'Title',
+    type: 'P_InputText',
+    placeholder: 'Title',
+    validators: ['required'],
+    icon: { type: 'right', name: 'pi-bookmark' }
+  },
+  {
+    id: 'type',
+    isField: true,
+    label: 'Question type',
+    type: 'P_Dropdown',
+    options: QuestionType,
+    optionLabel: "label",
+    optionValue: "value",
+    validators: ['required'],
+    icon: { type: 'left', name: 'pi-bookmark' },
+    defaultValue: 'open'
+  },
+  {
+    id: 'cat_1',
+    isField: true,
+    label: 'Category 1',
+    type: 'P_Dropdown',
+    options: catOne,
+    optionLabel: "label",
+    optionValue: "value",
+    editable: true,
+    validators: ['required'],
+    dependantFields: ['cat_2'],
+  },
+  {
+    id: 'cat_2',
+    isField: true,
+    label: 'Category 2',
+    type: 'P_Dropdown',
+    options: catTwo,
+    optionLabel: "label",
+    optionValue: "value",
+    editable: true,
+    dependantFields: ['cat_3'],
+  },
+  {
+    id: 'cat_3',
+    isField: true,
+    label: 'Category 3',
+    type: 'P_Dropdown',
+    options: catThree,
+    optionLabel: "label",
+    optionValue: "value",
+    editable: true,
+  },
+  {
+    id: 'due',
+    isField: true,
+    label: 'Due on',
+    type: 'Calendar',
+    showIcon: true,
+  },
+  {
+    id: 'description',
+    isField: true,
+    label: 'Description',
+    type: 'P_Textarea',
+    placeholder: 'Description',
+    maxColumns: 1
+  },
+  {
+    id: 'answer',
+    isField: true,
+    label: 'Answer',
+    type: 'P_Textarea',
+    placeholder: 'Answer',
+    maxColumns: 1
+  }
+]
+
+ export const CNewDocument = Template.bind({});
+ CNewDocument.args = {
+   config: fields,
+   dataType: "questions",
+   title: "Question",
+   readOnly: false,
+ };
