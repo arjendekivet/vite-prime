@@ -99,13 +99,10 @@ const myConfig: any = ref<object>({})
 const rules = ref({})
 
 if (props){
-  console.log('running code within if(props)');
   if (props.config) {
-    console.log('running code within if(props.config)');
     myConfig.value = props.config
     getFormData()
   } else if (props.formLayoutKey) {
-      console.log('running code within if(props.formLayoutKey)');
       // if we await this one, stuff will break. But why? 
       // const response = await EventService.getDataByFilter('layoutdefinition', props.formLayoutKey)
       // if (response.data.length > 0) {
@@ -151,7 +148,6 @@ function removeMessage(id: number) {
 }
 
 async function getFormData() {
-  console.log('RUNNING getFormData')
   fields.value = getFieldsFromConfig(compConfig.value, 'isField', true)
   rules.value = setValidators(fields.value, undefined, fieldValues)
 
@@ -168,12 +164,10 @@ async function getFormData() {
       }
     })
   }
-  console.log('terminating getFormData')
   v$?.value?.$reset()
 }
 
 const v$ = useValidation(rules, fieldValues, { $lazy: false, $autoDirty: true } ) //  $rewardEarly nog net supported? $commit() dan ook nog net.
-console.log('after having called v$ = useValidation...')
 
 const updateFieldValue = (fieldId: string, value: any) => {
   fieldValues.value[fieldId] = value
