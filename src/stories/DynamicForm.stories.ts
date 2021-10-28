@@ -201,6 +201,13 @@ fields = [
     ]
   },
   {
+    id: 'setting2',
+    isField: true,
+    label: 'Setting 2',
+    type: 'P_InputText',
+    icon: { type: 'right', name: 'pi-lock' },
+  },
+  {
     id: 'title',
     isField: true,
     label: 'Title',
@@ -217,10 +224,8 @@ fields = [
                 [cvh.ALL_VISIBLE]: ['setting1','setting2'],
                 not: { 
                   [cvh.V_MINLENGTH]: { 
-                      min: { $model: 'setting0' }, // means: find the value for min from $model:<setting0> as the param for the invocation.
-                      // if target is empty, it means run [cvh.V_MINLENGTH] on the requesting field, which is cat_2. 
-                      // But with a non-empty target, it would TEST targetField instead of the invocing field!!! So it will try to get the value from the targetField and pass that in as the comparisonValue!
-                      targetField: { name:'setting1', label:'Setting1 Man' }, // optional!
+                      min: { $model: 'setting0' },
+                      targetField: { name:'setting1', label:'Setting1 Man' },
                     }}
             }
         } 
