@@ -40,7 +40,6 @@
                 </template>
                 <template v-else>
                     <i v-if="getIconName(config)" :class="`pi ${getIconName(config)}`" />
-                    <!-- @change="onChange(config, v$)" -->
                     <component
                         ref="config.id"
                         v-bind="config"
@@ -127,42 +126,9 @@ function showField(config, pv$){
     return cHelpers.isVisible({ v$: pv$ }, { fieldNames: config.id })
 }
 
-async function wrappedValidate(config, pv$, caller){
-    let result
-    try {
-        await pv$?.[config?.id]?.$validate?.()
-            .then((value) => { 
-                result = value;
-                return value;
-                })
-            .catch((error) => {
-                console.error(error);
-            })    
-    } catch(e){
-        console.warn(e)
-    }
-    finally {
-        return result
-    }
-}
-
 async function onBlur(config, pv$){
-    await pv$?.[config?.id]?.$validate?.()
+    return await pv$?.[config?.id]?.$validate?.()
 }
-
-/**
- * TODO: Is it even necessary using v-model plus having vuelidate monitoring the field state regarding validity, display, enabling, and ... ? 
- * TODO: Should be debounced?
- * TODO: should we get rid of the passed pV$? If it is a global we might as well simply decide in the doBlur itself to use v$.value.
- * Why should the invoker of doBlur have to know we are using vuelidate for rules execution? 
- */
-async function handleOnChange(config, pv$){   
-    await wrappedValidate(config,pv$,'onChange');
-}
-/**
- * Is only called after the onBlur and after leaving a field? Redundant then compared to onBlur?
- */
-const onChange = _.debounce(async (config, pv$) => { handleOnChange(config,pv$)}, 500);
 
 function showInvalidMsg(config, pv$){
     return cHelpers.isInvalid({ v$: pv$  }, { fieldNames: config.id }) 

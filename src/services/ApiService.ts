@@ -33,7 +33,10 @@ export default {
         return await apiClient.put('/' + type + '/' + id, submitValues, { headers: authHeader() })
     },
     async getById(type: string, id: string) {
-        return await apiClient.get('/' + type + '/' + id, { headers: authHeader() })
+        let response =  await apiClient.get('/' + type + '/' + id, { headers: authHeader() })
+        response.data.setting0 = 2
+        response.data.setting1 = 1
+        return response
     },
     async deleteByIds(type: string, ids: string[]): Promise<DeleteResponse> {
         return await apiClient.delete('/' + type + '/' + ids, { headers: authHeader() })

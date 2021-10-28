@@ -223,7 +223,6 @@ function convertResponseData(responseData: object): object {
       converted[key] = fieldValue
     }
   });
-  debugger;
   return converted
 }
 
