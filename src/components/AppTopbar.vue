@@ -9,8 +9,22 @@
             Cynapps
             <div style="font-size: 0.75rem;">{{ user?.username }}</div>
         </div>
-
         <div class="right">
+            <Avatar
+                :image-url="logo"
+                image-size="cover"
+                color="#007bff"
+                width="36px"
+                label=" "
+                font-size=".75em"
+                font-color="white"
+                radius="20%"
+                border-color="#007bff"
+                border-width="0px"
+                :inline="true"
+                @click="log(user?.username)"
+                v-tooltip="user?.username"
+            ></Avatar>
             <Button type="button" icon="pi pi-sliders-h" @click="router.push({ name: 'admin' })" />
             <Button type="button" icon="pi pi-home" @click="router.push({ name: 'home' })" />
             <Button type="button" icon="pi pi-cog" />
@@ -25,11 +39,18 @@ import { getUser } from '@/modules/globalState'
 import { computed } from 'vue';
 import { indexOf } from 'lodash';
 
+import Avatar from '@/components/Avatar.vue';
+import logo from '@/assets/harry.jpeg'
+
 const user = computed(() => getUser())
 
 const emit = defineEmits<{
     (event: 'menuToggle'): void
 }>()
+
+function log(value: any) {
+    console.log(value)
+}
 
 const items = [
     {
