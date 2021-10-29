@@ -1,8 +1,8 @@
-import SVGAvatar from '@/components/SVGAvatar.vue';
+import AvatarSVG from '@/components/AvatarSVG.vue';
 
 export default {
-  title: 'Cynapps/SVGAvatar',
-  component: SVGAvatar,
+  title: 'Cynapps/Avatar/AvatarSVG',
+  component: AvatarSVG,
   argTypes: {
     color: { control: 'color' },
     fontSize: { control: 'text' },
@@ -11,12 +11,12 @@ export default {
 }
 
 const Template: any = (args: any) => ({
-  components: { SVGAvatar },
+  components: { AvatarSVG },
   setup() {
     return { args };
   },
   // And then the `args` are bound to your component with `v-bind="args"`
-  template: '<SVGAvatar v-bind="args" />',
+  template: '<AvatarSVG v-bind="args" />',
 })
 
 export const Primary = Template.bind({});
