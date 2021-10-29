@@ -1,4 +1,4 @@
-import AvatarCSS from '@/components/AvatarCSS.vue';
+import AvatarCSS from '@/components/Avatar.vue';
 
 export default {
   title: 'Cynapps/Avatar/AvatarCSS',
