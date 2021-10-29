@@ -23,9 +23,18 @@ const Template: any = (args: any) => ({
   template: '<AvatarCSS v-bind="args" />',
 })
 
+const InlineTemplate: any = (args: any) => ({
+  components: { AvatarCSS },
+  setup() {
+    return { args };
+  },
+  // And then the `args` are bound to your component with `v-bind="args"`
+  template: '<AvatarCSS v-bind="args" /><AvatarCSS v-bind="args" /><AvatarCSS v-bind="args" />',
+})
+
 export const Primary = Template.bind({});
 Primary.args = {
-  imageUrl: 'https://i.pinimg.com/474x/7e/79/1d/7e791da660ab1d2c7b2f5c4039d4d54c.jpg',
+  imageUrl: '/harry.jpeg',
   imageSize: 'cover',
   color: 'blue',
   maxWidth: '20em',
@@ -37,7 +46,7 @@ Primary.args = {
 
 export const Secundary = Template.bind({});
 Secundary.args = {
-  imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Vue.js_Logo_2.svg/512px-Vue.js_Logo_2.svg.png',
+  imageUrl: '/logo.png',
   imageSize: '70%',
   color: 'blue',
   maxWidth: '30em',
@@ -47,4 +56,16 @@ Secundary.args = {
   radius: '20%',
   borderColor: 'gray',
   borderWidth: '1em',
+}
+
+export const Inline = InlineTemplate.bind({});
+Inline.args = {
+  inline: true,
+  imageUrl: '/harry.jpeg',
+  imageSize: 'cover',
+  color: 'blue',
+  width: '80px',
+  fontSize: '1em',
+  fontColor: 'blue',
+  borderWidth: '0em',
 }
