@@ -15,10 +15,12 @@ type Props = {
     borderWidth?: string,
     color?: string,
     width?: string,
+    maxWidth?: string,
     label?: string,
     fontSize?: string,
     fontColor?: string,
     radius?: string,
+    inline?: boolean,
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -56,7 +58,14 @@ const compCircleStyle = computed(() => {
 const compWrapperStyle = computed(() => {
     const arrStyle = []
     if (props.width) {
-        arrStyle.push(`max-width: ${props.width}`)
+        arrStyle.push(`width: ${props.width}`)
+    }
+    if (props.maxWidth) {
+        arrStyle.push(`max-width: ${props.maxWidth}`)
+    }
+    if (props.inline) {
+        arrStyle.push('display: inline-flex')
+        arrStyle.push('vertical-align: bottom')
     }
     return arrStyle.join('; ')
 })
@@ -85,6 +94,7 @@ const compTextStyle = computed(() => {
 }
 .wrapper {
     position: relative;
+    text-align: center;
 }
 
 .center {

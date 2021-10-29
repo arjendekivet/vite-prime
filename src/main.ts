@@ -37,6 +37,7 @@ import Password from 'primevue/password';
 import MultiSelect from 'primevue/multiselect';
 import Checkbox from 'primevue/checkbox';
 import SplitButton from 'primevue/splitbutton'
+import Tooltip from 'primevue/tooltip'
 
 // Override logic to add close emit
 Message.mounted = function () {
@@ -52,6 +53,8 @@ const app = createApp(App);
 
 app.use(router)
 app.use(PrimeVue);
+
+app.directive('tooltip', Tooltip)
 
 app.component('Button', Button);
 app.component('DataTable', DataTable);
