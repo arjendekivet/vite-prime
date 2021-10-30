@@ -170,7 +170,9 @@ const SUPPORTED_EXECUTIONERS = [
 export const cHelpers = {
     /**
      * 
-     * TODO: ???either import all vuelidate validators or get them from a dummy field that is populated with all the supported helpers ...
+     * How should we indicate minLength acts as an executable rule? as opossed to a retrieval rule?   
+     * Perhaps we should store the executioners on a separate object, like cExecs or such?
+     * 
      * 
      * @param value Wrapper for the builtin vuelidate wrapper for the minLength validator.
      * We need this wrapper to be able to call the paraetrization in runtime based on a static configuration, without passing in function form the static configuration.
@@ -225,8 +227,8 @@ export const cHelpers = {
                 }
                 // Note: here we are re-using the builtin vuelidate minLength validator, without having to know exactly how it is implemented or generates it's message
                 dummyValidator = minLength(minimum); 
-                result = dummyValidator?.$validator(comparisonValue);
-                
+                result = dummyValidator?.$validator(comparisonValue); // Note: if comparisonValue is empty, it will pass the builtin minlength...
+                debugger;
                 // Only if failed, compose the message.
                 if (!result){ 
                     preMessage = `(Rule '${V_MINLENGTH}')`
@@ -627,17 +629,10 @@ export const cHelpers = {
      */
     isDisabled: (vm, objContext) => {
         const { fieldNames: fieldName } = objContext
-        let result, defaulted = false;
+        const defaulted = false
+        let result
         try {
-            try {
-                if (fieldName === 'setting1'){
-                    let chk = vm?.v$ ?? 'wtf'
-                    debugger;
-                }
-            } catch(e){debugger}
-
-            //result = !!(vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.extraParams?.rule_result)
-            result = (vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.extraParams?.rule_result ?? false)
+            result = (vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.extraParams?.rule_result ?? defaulted)
         }
         catch(e) {
             console.warn(e);
@@ -1172,16 +1167,16 @@ const probeCustomRuleFn = (arrCfg) => {
     const { defaultRuleResult, staticConfigProperty , doInvertRuleResult , asValidator = false , startFn } = arrCfg[1]
     return function ruleFn(value, vm){
         if (fieldCfg.id==='title'){debugger}
-        let rule_result = probeCustomRuleFnRecursor(value, vm, arrCfg[0], asLogical, startFn) ?? defaultRuleResult
-        const valid = asValidator ? (rule_result?.result ?? rule_result) : true;
-        let message = `Rule of type ${params?.type} for field ${fieldCfg?.label} returned: ${rule_result.result ?? true}.` 
+        const rule_result = probeCustomRuleFnRecursor(value, vm, arrCfg[0], asLogical, startFn) ?? defaultRuleResult
+        const boolRuleResult = rule_result?.result ?? rule_result
+        const valid = asValidator ? boolRuleResult : true;
+        let message = `Rule of type ${params?.type} for field ${fieldCfg?.label} returned: ${boolRuleResult}.` 
         if (rule_result?.message){
             message = rule_result?.message ?? message //${message} 
         }
-        // console.log(`running cynapps custom rule validator -type: ${params?.type} - from probeCustomRuleFn called via 2-st branch of hofRuleFnGenerator via ${params?.type?.indexOf('disable')>-1 ? 'disablerIf' : 'displayerIf' } for ${fieldCfg?.id} resulted: ${rule_result}`)
         return { 
             $valid: valid, 
-            extraParams: { rule_result , fieldCfg }, 
+            extraParams: { rule_result: boolRuleResult, fieldCfg }, 
             message: message
         }
     }

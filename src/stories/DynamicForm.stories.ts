@@ -227,10 +227,10 @@ fields = [
             dependsOn: {
               //[cvh.IS_HIDDEN]: ['setting0'],  
               [cvh.IS_DISABLED]: ['setting1'],  
-              // [cvh.V_MINLENGTH]: { 
-              //     min: 1,
-              //     targetField: { name:'setting2', label:'Setting2' },
-              //   },
+              [cvh.V_MINLENGTH]: { 
+                  min: 3,
+                  targetField: { name:'setting2', label:'Setting2' },
+                },
             }
         } 
       },

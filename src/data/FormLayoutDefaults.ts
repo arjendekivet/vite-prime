@@ -31,7 +31,7 @@ let fields = [
       type: 'P_InputText',
       icon: { type: 'right', name: 'pi-lock' },
       defaultValue: 3,
-      hidden: true,
+      hhhhidden: true,
     },
     {
       id: 'setting1',
@@ -70,10 +70,14 @@ let fields = [
               dependsOn: {
                 //[cvh.IS_HIDDEN]: ['setting0'],  
                 [cvh.IS_DISABLED]: ['setting1'],  
-                // [cvh.V_MINLENGTH]: { 
-                //     min: 1,
-                //     targetField: { name:'setting2', label:'Setting2' },
-                //   },
+                [cvh.V_MINLENGTH]: { 
+                    min: 3,
+                    targetField: { name:'setting2', label:'Setting2' },
+                  },
+                  [cvh.V_MAXLENGTH]: { 
+                    max: 3,
+                    targetField: { name:'setting0', label:'Setting0' },
+                  },  
               }
           } 
         },
