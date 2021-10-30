@@ -179,7 +179,6 @@ export const cHelpers = {
      * @param params 
      */
     minLength: (vm, objContext ) => {
-        debugger
         // test if we have vm.fieldValues always or should we use params.formData ????
         //destructure the params into some crucial variables
         const { value , params, ...cfg } = objContext // contains the source field name, from where to grab the payload for the min argumen
@@ -192,7 +191,7 @@ export const cHelpers = {
         let preMessage: string;
         let partMessage: string;
         
-        let sourceFieldName, targetFieldName, targetFieldLabel;
+        let sourceFieldName, targetFieldName, targetFieldLabel, metaType;
         let refName
         let probe
         
@@ -235,7 +234,9 @@ export const cHelpers = {
                     if (typeof targetFieldName === 'string'){
                         targetFieldLabel = params?.targetField?.label ?? targetFieldName
                         if (cfg?.fieldCfg?.label && targetFieldName.toLowerCase() !== cfg.fieldCfg.label.toLowerCase() ){
-                            preMessage = `(Field '${cfg.fieldCfg.label}' by rule '${cfg?.metaParams?.type ?? cfg?.metaParams?.params?.type}' indirectly tested field '${targetFieldLabel}' by rule '${V_MINLENGTH}')`;
+                            metaType = cfg?.metaParams?.type ?? cfg?.metaParams?.params?.type
+                            metaType = metaType ?? cfg?.metaParams?.params?.params?.type
+                            preMessage = `(Field '${cfg.fieldCfg.label}' by rule '${metaType}' indirectly tested field '${targetFieldLabel}' with value '${comparisonValue}' against rule '${V_MINLENGTH}(${minimum})')`;
                         }
                     }
                     partMessage = dummyValidator?.$message?.({$params: dummyValidator.$params}) ?? dummyValidator?.$message
@@ -268,21 +269,32 @@ export const cHelpers = {
         }
         return result;
     },
+    /**
+     * Retrieves the rule result from a supposed previous run of a rule of type CV_TYPE_MAX_LENGTH on field objparams.fieldName or such
+     * The passed in const { value, fieldName, params, ...cfg } = objContext is augmented to support rerunning of the rule.
+     * For now we only retrieve info but we could opt to rerun rules. Note: if 1 call is async we should make the entire chain async.
+     * @param vm 
+     * @param objParams 
+     * @returns 
+     */
     maxLength: (vm, objContext ) => {
+        // test if we have vm.fieldValues always or should we use params.formData ????
+        //destructure the params into some crucial variables
+        const { value , params, ...cfg } = objContext // contains the source field name, from where to grab the payload for the max argumen
+        let comparisonValue = value;
+        let maximum: number;
         let defaulted = true; // ????????????????????? how would we know what to default to?
         let result
         let dummyValidator;
-        let message: string
-        let maximum: number;
-        let sourceFieldName
+        let message="";
+        let preMessage: string;
+        let partMessage: string;
+        
+        let sourceFieldName, targetFieldName, targetFieldLabel, metaType;
         let refName
         let probe
-        // test if we have vm.fieldValues always or should we use params.formData ????
-        //destructure the params into some crucial variables
-        const { value , params, ...cfg } = objContext // contains the source field name, from where to grab the payload for the min argument.
         
         try{
-            //min = Number(vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName])
             maximum = Number(params?.max)
         }
         catch(e){
@@ -290,29 +302,50 @@ export const cHelpers = {
         }
         // if we did not receive a number straight away, we should have received a $model to retrieve it from or some other method to invoke...
         if ( isNaN(maximum) ){
-            sourceFieldName = params?.max?.$model //typeOf(min) === 'object' && min?.$model
+            sourceFieldName = params?.max?.$model
             if (sourceFieldName && typeof sourceFieldName === 'string'){
                 maximum = Number(vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName])
             }
-            refName = params?.max?.ref
-            if (refName && typeof refName === 'string'){
-                probe = vm?.$refs?.[refName]?.value
-                maximum = Number(probe)
+            else { 
+                refName = params?.max?.ref
+                if (refName && typeof refName === 'string'){
+                    probe = vm?.$refs?.[refName]?.value
+                    maximum = Number(probe)
+                }
             }
         }
         if ( !isNaN(maximum)){
             try { 
-                // Note: here we are re-using the builtin vuelidate maxLength validator, without having to know exactly how it is implemented or how it generates it's message
+                //check if we have to run on another target instead of on the requesting field!!!
+                targetFieldName = params?.targetField && params.targetField.name
+                if (targetFieldName && typeof targetFieldName === 'string'){
+                    comparisonValue = vm?.v$?.[targetFieldName]?.$model ?? vm?.fieldValues?.value?.[targetFieldName]
+                }
+                // Note: here we are re-using the builtin vuelidate maxLength validator, without having to know exactly how it is implemented or generates it's message
                 dummyValidator = maxLength(maximum); 
-                result = dummyValidator?.$validator(value);
-                //message = typeOf(dummyValidator?.$message) === "function" ? dummyValidator?.$message(dummyValidator.$params) : dummyValidator?.$message
-                message = dummyValidator?.$message?.({$params: dummyValidator.$params}) ?? dummyValidator?.$message
+                result = dummyValidator?.$validator(comparisonValue);
+                
+                // Only if failed, compose the message.
+                if (!result){ 
+                    preMessage = `(Rule '${V_MAXLENGTH}')`
+                    //Only compose a hefty message if the execution was triggered indirectly
+                    if (typeof targetFieldName === 'string'){
+                        targetFieldLabel = params?.targetField?.label ?? targetFieldName
+                        if (cfg?.fieldCfg?.label && targetFieldName.toLowerCase() !== cfg.fieldCfg.label.toLowerCase() ){
+                            metaType = cfg?.metaParams?.type ?? cfg?.metaParams?.params?.type
+                            metaType = metaType ?? cfg?.metaParams?.params?.params?.type
+                            preMessage = `(Field '${cfg.fieldCfg.label}' by rule '${metaType}' indirectly tested field '${targetFieldLabel}' with value ${comparisonValue} against rule '${V_MAXLENGTH}(${maximum})')`;
+                        }
+                    }
+                    partMessage = dummyValidator?.$message?.({$params: dummyValidator.$params}) ?? dummyValidator?.$message
+                    message = `${partMessage}. ${preMessage??''}`;
+                }
             }
             catch(e) {
                 console.warn(e); 
             }
         }
-        return { result, message } ;
+        return result || { result, message } ; // only output the message when failed
     },
     /**
      * Receives //const { value, fieldName, params, ...cfg } = objContext
@@ -587,7 +620,7 @@ export const cHelpers = {
         return result
     },
     /**
-     * Checks if a field is ruled to be disabled.
+     * Checks for a RESULT for field rule to be disabled. Note: does not EXECUTE a rule.
      * @param vm 
      * @param fieldName 
      * @returns 
@@ -596,6 +629,13 @@ export const cHelpers = {
         const { fieldNames: fieldName } = objContext
         let result, defaulted = false;
         try {
+            try {
+                if (fieldName === 'setting1'){
+                    let chk = vm?.v$ ?? 'wtf'
+                    debugger;
+                }
+            } catch(e){debugger}
+
             //result = !!(vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.extraParams?.rule_result)
             result = (vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.extraParams?.rule_result ?? false)
         }
@@ -1131,11 +1171,12 @@ const probeCustomRuleFn = (arrCfg) => {
     const { dependsOn, asLogical, fieldCfg, formData, formDefinition, ...params } = arrCfg[0]
     const { defaultRuleResult, staticConfigProperty , doInvertRuleResult , asValidator = false , startFn } = arrCfg[1]
     return function ruleFn(value, vm){
+        if (fieldCfg.id==='title'){debugger}
         let rule_result = probeCustomRuleFnRecursor(value, vm, arrCfg[0], asLogical, startFn) ?? defaultRuleResult
         const valid = asValidator ? (rule_result?.result ?? rule_result) : true;
         let message = `Rule of type ${params?.type} for field ${fieldCfg?.label} returned: ${rule_result.result ?? true}.` 
         if (rule_result?.message){
-            message = `${rule_result?.message}` //${message} 
+            message = rule_result?.message ?? message //${message} 
         }
         // console.log(`running cynapps custom rule validator -type: ${params?.type} - from probeCustomRuleFn called via 2-st branch of hofRuleFnGenerator via ${params?.type?.indexOf('disable')>-1 ? 'disablerIf' : 'displayerIf' } for ${fieldCfg?.id} resulted: ${rule_result}`)
         return { 
@@ -1269,7 +1310,7 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn 
         rule_result = asLogical === AND ? _.every(arrPartials,Boolean) : asLogical === OR ? _.some(arrPartials,Boolean) : !(_.some(arrPartials,Boolean))
     }
     if (arrMessages.length>0){
-        return { result: rule_result, message: arrMessages.join("\n") }
+        return { result: rule_result, message: arrMessages.join("; ") }
     }
     else {
         return rule_result

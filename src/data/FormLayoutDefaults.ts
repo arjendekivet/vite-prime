@@ -6,6 +6,81 @@ type FormConfig = {
     questions: Fieldconfig[]
 }
 
+/**
+ *  "_id": "6148453e3a86ae3466fa2759",
+  "setting0": 3,
+  "setting1": 2,
+  "setting2": 0,
+  "title": "het pak",
+ */
+// use the same fields as in storybook for a test ..
+let fields = [
+    {
+      id: '_id',
+      isField: true,
+      label: 'Id',
+      type: 'P_InputText',
+      defaultValue: "6666666666666",
+      disabled: true,
+      icon: { type: 'right', name: 'pi-lock' }
+    },
+    {
+      id: 'setting0',
+      isField: true,
+      label: 'Setting0. Structurally hidden.',
+      type: 'P_InputText',
+      icon: { type: 'right', name: 'pi-lock' },
+      defaultValue: 3,
+      hidden: true,
+    },
+    {
+      id: 'setting1',
+      isField: true,
+      label: 'Setting1. Structurally disabled.',
+      type: 'P_InputText',
+      icon: { type: 'right', name: 'pi-lock' },
+      defaultValue: 2,
+      disabled: true,
+    },
+    {
+      id: 'setting2',
+      isField: true,
+      label: 'Setting2. Required & minLength 5.',
+      type: 'P_InputText',
+      icon: { type: 'right', name: 'pi-lock' },
+      defaultValue: 0,
+      validators: [
+        'required', 
+        { type: cvh.CV_TYPE_MIN_LENGTH, params: { min: 5 } }, 
+      ]
+    },
+    {
+      id: 'title',
+      isField: true,
+      label: 'Title',
+      type: 'P_InputText',
+      placeholder: 'Title',
+      icon: { type: 'right', name: 'pi-bookmark' },
+      validators: [
+        "required",
+        { type: cvh.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
+        { 
+          type: cvh.CV_TYPE_DISABLE_IF,
+          params: { 
+              dependsOn: {
+                //[cvh.IS_HIDDEN]: ['setting0'],  
+                [cvh.IS_DISABLED]: ['setting1'],  
+                // [cvh.V_MINLENGTH]: { 
+                //     min: 1,
+                //     targetField: { name:'setting2', label:'Setting2' },
+                //   },
+              }
+          } 
+        },
+      ],
+    },
+  ];
+
 const formConfig: FormConfig = {
     layoutdefinition: [
         {
@@ -62,11 +137,19 @@ const formConfig: FormConfig = {
             type: 'JsonEditor',
         }
     ],
-    questions: [
+    questions: fields,
+    qqqqquestions: [
+        {
+            "id": "setting00",
+            "isField": true,
+            "label": "Setting00 Man",
+            "type": "P_InputText",
+            "hidden": true
+        },
         {
             "id": "setting0",
             "isField": true,
-            "label": "Setting0",
+            "label": "Setting0 (Note: Zou moeten disablen omdat setting00 'hidden' is)",
             "type": "P_InputText",
             "defaultValue": 5,
             //"placeholder": "setting0. Should implement a static 'between' validator with range 3-15.",
@@ -74,11 +157,30 @@ const formConfig: FormConfig = {
             //"hidden": true,
             //"disabled": true,
             "validators": [
-                //"required",
+                "required",
                 //{ "type": cvh.CV_TYPE_BETWEEN, params: { min: 3 , max: 15 } },
                 { "type": cvh.CV_TYPE_MIN_LENGTH, params: { min: 2 } }, 
                 //{ "type": "between", "params": [{ "min": 10 }, { "max": 20 }] }
-                
+                { 
+                    type: cvh.CV_TYPE_DISABLE_IF,
+                    params: { 
+                        dependsOn: 
+                        { 
+                          not: { 
+                            [cvh.ALL_VISIBLE]: ['setting00'], 
+                            // [cvh.V_MINLENGTH]: { 
+                            //       min: { $model: 'setting0' },
+                            //       targetField: { name:'setting1', label:'Setting1' },
+                            //     },
+                            // [cvh.V_MAXLENGTH]: { 
+                            //       max: { $model: 'setting1' },
+                            //       targetField: { name:'setting2', label:'Setting2' },
+                            //     },  
+                            // }
+                        }
+                      }
+                  },
+                }
             ]
         },
         {
@@ -93,7 +195,7 @@ const formConfig: FormConfig = {
             "validators": [
                 //{ "type": cvh.CV_TYPE_BETWEEN, params: { min: 16 , max: 30 } },
                 { "type": cvh.CV_TYPE_MIN_LENGTH, params: { min: { $model: 'setting0'} } }, 
-                //{ "type": "between", "params": [{ "min": 10 }, { "max": 20 }] }
+                //{ "type": "between", "params": [{ "min": 10 }, { "max": 20 }] },
             ]
         },
         {
@@ -107,14 +209,14 @@ const formConfig: FormConfig = {
             //"disabled": true,
             "validators": [
                 //{ "type": cvh.CV_TYPE_BETWEEN, params: { min: 16 , max: 30 } },
-                //{ "type": cvh.CV_TYPE_MIN_LENGTH, params: { min: { $model: 'title'} } }, 
+                //{ "type": cvh.CV_TYPE_MAX_LENGTH, params: { max: { $model: 'setting1'} } }, 
                 //{ "type": "between", "params": [{ "min": 10 }, { "max": 20 }] }
             ]
         },
         {
             "id": "title",
             "isField": true,
-            "label": "Title",
+            "label": "Title (Zou disabled moeten zijn obv setting0)",
             "type": "P_InputText",
             //"placeholder": "TITLE. Note: Should also be disables when setting0 has minLength compliancy!!!", //Should implement a fully DYNAMIC 'between' validator with range 'min' from setting0 and 'max' from setting1.",
             "validators": [
@@ -133,13 +235,24 @@ const formConfig: FormConfig = {
                     //params: { dependsOn: { [cvh.ALL_VISIBLE]: ['cat_1'] , [cvh.ALL_VALID]: ['cat_1'] } }, // equivalent would be SOME_<> or IS_ when there is only 1 dependecy mentioned
                     params: { 
                         dependsOn: {
-                            [cvh.ALL_VISIBLE]: ['setting1','setting2'],
-                            not: {[cvh.V_MINLENGTH]: { 
-                                    min: { $model: 'setting0' }, // means: find the value for min from $model:<setting0> as the param for the invocation.
-                                    // if target is empty, it means run [cvh.V_MINLENGTH] on the requesting field, which is cat_2. 
-                                    // But with a non-empty target, it would TEST targetField instead of the invocing field!!! So it will try to get the value from the targetField and pass that in as the comparisonValue!
-                                    targetField: { name:'setting1', label:'Setting1 Man' }, // optional!
-                                }}
+                            and: { 
+                                [cvh.IS_DISABLED]: ['setting0'],
+                                [cvh.ALL_VISIBLE]: ['setting1','setting2'],
+                                not: {
+                                    [cvh.V_MINLENGTH]: { 
+                                        min: { $model: 'setting0' }, // means: find the value for min from $model:<setting0> as the param for the invocation.
+                                        // if target is empty, it means run [cvh.V_MINLENGTH] on the requesting field, which is cat_2. 
+                                        // But with a non-empty target, it would TEST targetField instead of the invocing field!!! So it will try to get the value from the targetField and pass that in as the comparisonValue!
+                                        targetField: { name:'setting1', label:'Setting 1' }, // optional!
+                                    },
+                                    [cvh.V_MAXLENGTH]: { 
+                                        max: { $model: 'setting1' }, // means: find the value for min from $model:<setting0> as the param for the invocation.
+                                        // if target is empty, it means run [cvh.V_MINLENGTH] on the requesting field, which is cat_2. 
+                                        // But with a non-empty target, it would TEST targetField instead of the invocing field!!! So it will try to get the value from the targetField and pass that in as the comparisonValue!
+                                        targetField: { name:'setting2', label:'Setting 2' }, // optional!
+                                    }
+                                }
+                            }
                         },
                     }, 
                 },

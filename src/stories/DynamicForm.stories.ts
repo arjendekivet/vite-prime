@@ -44,6 +44,10 @@ const catThree: OptionType[] = [
   { label: 'G', value: 'G' },
 ];
 
+let fields;
+let formData;
+
+/**
 let fields =
   [
     {
@@ -147,22 +151,24 @@ let formData: any = {
   "description": "het pak"
 }
 
-export const ANewDocument = Template.bind({});
-ANewDocument.args = {
-  config: fields,
-  dataType: "questions",
-  title: "Question",
-  readOnly: false
-};
+*/
 
-export const BExistingDocument = Template.bind({});
-BExistingDocument.args = {
-  config: fields,
-  dataType: "questions",
-  title: "Question",
-  readOnly: false,
-  initialFormData: formData
-};
+// export const ANewDocument = Template.bind({});
+// ANewDocument.args = {
+//   config: fields,
+//   dataType: "questions",
+//   title: "Question",
+//   readOnly: false
+// };
+
+// export const BExistingDocument = Template.bind({});
+// BExistingDocument.args = {
+//   config: fields,
+//   dataType: "questions",
+//   title: "Question",
+//   readOnly: false,
+//   initialFormData: formData
+// };
 
 /**
  * Story that demonstrates complex validators configurations
@@ -181,31 +187,29 @@ fields = [
   {
     id: 'setting0',
     isField: true,
-    label: 'Setting0',
+    label: 'Setting0. Structurally hidden.',
     type: 'P_InputText',
     icon: { type: 'right', name: 'pi-lock' },
-    validators: [
-      "required",
-      { type: cvh.CV_TYPE_MIN_LENGTH, params: { min: 2 } }, 
-    ]
+    hidden: true,
   },
   {
     id: 'setting1',
     isField: true,
-    label: 'Setting 1',
+    label: 'Setting1. Structurally disabled.',
     type: 'P_InputText',
     icon: { type: 'right', name: 'pi-lock' },
-    validators: [
-      "required",
-      { type: cvh.CV_TYPE_MIN_LENGTH, params: { min: { $model: 'setting0'} } }, 
-    ]
+    disabled: true,
   },
   {
     id: 'setting2',
     isField: true,
-    label: 'Setting 2',
+    label: 'Setting2. Required & minLength 5.',
     type: 'P_InputText',
     icon: { type: 'right', name: 'pi-lock' },
+    validators: [
+      'required', 
+      { type: cvh.CV_TYPE_MIN_LENGTH, params: { min: 5 } }, 
+    ]
   },
   {
     id: 'title',
@@ -221,117 +225,55 @@ fields = [
         type: cvh.CV_TYPE_DISABLE_IF,
         params: { 
             dependsOn: {
-                [cvh.ALL_VISIBLE]: ['setting1','setting2'],
-                not: { 
-                  [cvh.V_MINLENGTH]: { 
-                      min: { $model: 'setting0' },
-                      targetField: { name:'setting1', label:'Setting1 Man' },
-                    }}
+              //[cvh.IS_HIDDEN]: ['setting0'],  
+              [cvh.IS_DISABLED]: ['setting1'],  
+              // [cvh.V_MINLENGTH]: { 
+              //     min: 1,
+              //     targetField: { name:'setting2', label:'Setting2' },
+              //   },
             }
         } 
       },
     ],
   },
-  {
-    id: 'type',
-    isField: true,
-    label: 'Question type',
-    type: 'P_Dropdown',
-    options: QuestionType,
-    optionLabel: "label",
-    optionValue: "value",
-    validators: ['required'],
-    icon: { type: 'left', name: 'pi-bookmark' },
-    defaultValue: 'open'
-  },
-  {
-    id: 'cat_1',
-    isField: true,
-    label: 'Category 1',
-    type: 'P_Dropdown',
-    options: catOne,
-    optionLabel: "label",
-    optionValue: "value",
-    editable: true,
-    validators: ['required'],
-    dependantFields: ['cat_2'],
-  },
-  {
-    id: 'cat_2',
-    isField: true,
-    label: 'Category 2',
-    type: 'P_Dropdown',
-    options: catTwo,
-    optionLabel: "label",
-    optionValue: "value",
-    editable: true,
-    dependantFields: ['cat_3'],
-  },
-  {
-    id: 'cat_3',
-    isField: true,
-    label: 'Category 3',
-    type: 'P_Dropdown',
-    options: catThree,
-    optionLabel: "label",
-    optionValue: "value",
-    editable: true,
-  },
-  {
-    id: 'due',
-    isField: true,
-    label: 'Due on',
-    type: 'Calendar',
-    showIcon: true,
-  },
-  {
-    id: 'description',
-    isField: true,
-    label: 'Description',
-    type: 'P_Textarea',
-    placeholder: 'Description',
-    maxColumns: 1
-  },
-  {
-    id: 'answer',
-    isField: true,
-    label: 'Answer',
-    type: 'P_Textarea',
-    placeholder: 'Answer',
-    maxColumns: 1
-  }
 ]
-
+/**
+ *  [cvh.V_MAXLENGTH]: { 
+                      max: { $model: 'setting1' },
+                      targetField: { name:'setting2', label:'Setting2' },
+                    },  
+ */
 
 formData = {
   "_id": "6148453e3a86ae3466fa2759",
   "setting0": 3,
   "setting1": 2,
+  "setting2": 0,
   "title": "het pak",
-  "type": "open",
-  "answer": "der Anzug",
-  "created_at": "2021-09-20T08:24:30.618Z",
-  "updated_at": "2021-09-21T21:06:48.694Z",
-  "__v": 4,
-  "cat_1": "DE",
-  "cat_2": "Ch-5",
-  "cat_3": "G",
-  "description": "het pak"
+  // "type": "open",
+  // "answer": "der Anzug",
+  // "created_at": "2021-09-20T08:24:30.618Z",
+  // "updated_at": "2021-09-21T21:06:48.694Z",
+  // "__v": 4,
+  // "cat_1": "DE",
+  // "cat_2": "Ch-5",
+  // "cat_3": "G",
+  // "description": "het pak"
 }
 
- export const CNewDocument = Template.bind({});
- CNewDocument.args = {
-   config: fields,
-   dataType: "questions",
-   title: "Question",
-   readOnly: false,
- };
+//  export const CNewDocument = Template.bind({});
+//  CNewDocument.args = {
+//    config: fields,
+//    dataType: "questions",
+//    title: "Question",
+//    readOnly: false,
+//  };
 
  export const DExistingDocument = Template.bind({});
  DExistingDocument.args = {
   config: fields,
   dataType: "questions",
-  title: "Question",
+  title: "Question: Field setting0 is structurally hidden. Fields id & setting1 structurally disabled. Field ",
   readOnly: false,
   initialFormData: formData
  };

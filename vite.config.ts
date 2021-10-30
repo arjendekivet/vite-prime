@@ -22,7 +22,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['slash', 'lodash/startCase']
+    include: ['slash', 'lodash/startCase', 'path']
   },
   build: {
     // needed for StoryBook Build --> large vendor chunks ...

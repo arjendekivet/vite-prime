@@ -60,7 +60,7 @@
                     >{{ getInvalidMsg(config, v$) }}
                     </small>
                     <div v-show="showDisabledMsg(config, v$)">
-                        <small 
+                        <small
                             :id="`${config.id}-disabled-msg`"
                             class="p-info"
                         >{{ getDisabledMsg(config, v$) }}
@@ -99,7 +99,7 @@ const emit = defineEmits(['updateFieldValue'])
 const v$: any = inject('v$')
 const fieldValues: any = inject('fieldValues')
 const updateFormFieldValue: any = inject('updateFieldValue')
-const calculateDependantFieldState: any = inject('calculateDependantFieldState')
+//const calculateDependantFieldState: any = inject('calculateDependantFieldState')
 
 /**
  * If any of the criteria is false, we should hide the calling element.
@@ -143,7 +143,7 @@ function showDisabledMsg(config, pv$){
 }
 
 function getDisabledMsg(config, pv$){
-    return cHelpers.getDisabledMessage({ v$: pv$ }, { fieldNames: config.id })    
+    return cHelpers.getDisabledMessage({ v$: pv$ }, { fieldNames: config.id })
 }
 
 /**
@@ -170,7 +170,7 @@ function getIconName(field: Fieldconfig) {
 function updateFieldValue(field: any, value: any) {
     // injected method on parent
     updateFormFieldValue(field.id, value)
-    calculateDependantFieldState(field, value)
+    //calculateDependantFieldState(field, value)
 }
 </script>
 

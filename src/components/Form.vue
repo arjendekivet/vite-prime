@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, readonly, computed, onBeforeUnmount, inject } from 'vue'
+import { ref, provide, readonly, computed, onBeforeMount, onBeforeUnmount, inject } from 'vue'
 import FormDefinitionRecursor from '@/components/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
@@ -57,11 +57,7 @@ import Utils from '@/modules/utils'
 import { messages, addSubmitMessage, addErrorMessage, addWarningMessage } from '@/modules/UseFormMessages'
 import { setValidators, useValidation } from '@/modules/validate'
 import formConfigDefaults from '@/data/FormLayoutDefaults'
-
-onBeforeUnmount(() => {
-  // clear component based messages
-  messages.value = []
-})
+import { resolve } from 'path/posix'
 
 type FormProp = {
   config?: Fieldconfig[],
@@ -98,39 +94,30 @@ const myConfig: any = ref<object>({})
 // This way type casting stays in place
 const rules = ref({})
 
-if (props){
-  if (props.config) {
-    myConfig.value = props.config
-    getFormData()
-  } else if (props.formLayoutKey) {
-      // if we await this one, stuff will break. But why? 
-      // const response = await EventService.getDataByFilter('layoutdefinition', props.formLayoutKey)
-      // if (response.data.length > 0) {
-      //   myConfig.value = response.data[0].config
-      // } else {
-      //   setDefaultLayout()
-      // }
-      // getFormData()
-      EventService.getDataByFilter('layoutdefinition', props.formLayoutKey)
-        .then((response: any) => {
-          // find will return array, get the first in this case
-          // isLoading.value = false
-          if (response.data.length > 0) {
-            myConfig.value = response.data[0].config
-          } else {
-            setDefaultLayout()
+const v$ = useValidation(rules, fieldValues, { $lazy: false, $autoDirty: true } ) //  $rewardEarly nog net supported? $commit() dan ook nog net.
+
+const getFormData = async function() {
+    try {
+      fields.value = getFieldsFromConfig(compConfig.value, 'isField', true)
+      rules.value = setValidators(fields.value, undefined, fieldValues)
+
+      if (props.initialFormData) {
+        fieldValues.value = props.initialFormData
+      } else if (props.id) {
+          let response = await EventService.getById(props.dataType, props.id)
+          fieldValues.value = convertResponseData(response?.data)
+      } else {
+        _.forIn(fields.value, function (field, fieldId) {
+          if (field && field.defaultValue) {
+            fieldValues.value[field.id] = field.defaultValue
           }
-          getFormData()
         })
-        .catch((error: any) => {
-          // isLoading.value = false
-          console.error('Could not fetch layoutdefinition! Going to hardcoded backup option.', error)
-          // myConfig.value = formConfigHardcoded
-        })
-  } else {
-    setDefaultLayout()
-    getFormData()
-  }
+      }
+    } 
+    catch(e){console.error(e)}
+    finally {
+      return await Promise.resolve("trivially resolving getFormData");
+    }
 }
 
 function setDefaultLayout() {
@@ -146,28 +133,6 @@ function setDefaultLayout() {
 function removeMessage(id: number) {
   Utils.removeMessage(messages, id)
 }
-
-async function getFormData() {
-  fields.value = getFieldsFromConfig(compConfig.value, 'isField', true)
-  rules.value = setValidators(fields.value, undefined, fieldValues)
-
-  if (props.initialFormData) {
-    fieldValues.value = props.initialFormData
-  } else if (props.id) {
-      let response = await EventService.getById(props.dataType, props.id)
-      const convertedResponseData = convertResponseData(response.data)
-      fieldValues.value = convertedResponseData
-  } else {
-    _.forIn(fields.value, function (field, fieldId) {
-      if (field && field.defaultValue) {
-        fieldValues.value[field.id] = field.defaultValue
-      }
-    })
-  }
-  v$?.value?.$reset()
-}
-
-const v$ = useValidation(rules, fieldValues, { $lazy: false, $autoDirty: true } ) //  $rewardEarly nog net supported? $commit() dan ook nog net.
 
 const updateFieldValue = (fieldId: string, value: any) => {
   fieldValues.value[fieldId] = value
@@ -247,6 +212,36 @@ provide('fieldValues', readonly(fieldValues))
 provide('fields', readonly(fields))
 provide('updateFieldValue', updateFieldValue)
 provide('v$', v$)
+
+onBeforeMount( async() => {
+  try{
+    if (props.config) {
+      myConfig.value = props.config
+    } else if (props.formLayoutKey) {
+        const response = await EventService.getDataByFilter('layoutdefinition', props.formLayoutKey)
+        if (response.data.length > 0) {
+          myConfig.value = response.data[0].config
+        } else {
+          setDefaultLayout()
+        }
+    } else {
+      setDefaultLayout()
+    }
+  }
+  catch(e) { console.error(e) }
+  finally {
+    await getFormData()
+    //Note: if we use $lazy: false AND $autoDirty: true as the global vuelidate config, then we do not have to call $validate explicitely over here, only $reset
+    v$?.value?.$reset()  ////decoupled v$?.value?.$reset() from getFormData!
+    return await Promise.resolve('trivially resolving async onBeforeMount handler')
+    }
+  })
+
+onBeforeUnmount(() => {
+  // clear component based messages
+  messages.value = []
+})
+
 </script>
 
 <style lang="scss">
