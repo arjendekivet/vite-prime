@@ -94,7 +94,7 @@ const myConfig: any = ref<object>({})
 // This way type casting stays in place
 const rules = ref({})
 
-const v$ = useValidation(rules, fieldValues, { $lazy: false, $autoDirty: true } ) //  $rewardEarly nog net supported? $commit() dan ook nog net.
+const v$ = useValidation(rules, fieldValues, { $lazy: false, $autoDirty: true } ) //  $rewardEarly nog niet supported? $commit() dan ook nog niet.
 
 const getFormData = async function() {
     try {
@@ -115,9 +115,6 @@ const getFormData = async function() {
       }
     } 
     catch(e){console.error(e)}
-    finally {
-      return await Promise.resolve("trivially resolving getFormData");
-    }
 }
 
 function setDefaultLayout() {
@@ -232,10 +229,9 @@ onBeforeMount( async() => {
   finally {
     await getFormData()
     //Note: if we use $lazy: false AND $autoDirty: true as the global vuelidate config, then we do not have to call $validate explicitely over here, only $reset
-    v$?.value?.$reset()  ////decoupled v$?.value?.$reset() from getFormData!
-    return await Promise.resolve('trivially resolving async onBeforeMount handler')
-    }
-  })
+    v$?.value?.$reset()
+  }
+})
 
 onBeforeUnmount(() => {
   // clear component based messages
