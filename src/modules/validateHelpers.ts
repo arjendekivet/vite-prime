@@ -225,10 +225,11 @@ export const cHelpers = {
                 if (targetFieldName && typeof targetFieldName === 'string'){
                     comparisonValue = vm?.v$?.[targetFieldName]?.$model ?? vm?.fieldValues?.value?.[targetFieldName]
                 }
+
                 // Note: here we are re-using the builtin vuelidate minLength validator, without having to know exactly how it is implemented or generates it's message
                 dummyValidator = minLength(minimum); 
-                result = dummyValidator?.$validator(comparisonValue); // Note: if comparisonValue is empty, it will pass the builtin minlength...
-                debugger;
+                result = dummyValidator?.$validator(comparisonValue); // Note: when comparisonValue is empty/undefined,{},[]  it will PASS / QUALIFY
+                
                 // Only if failed, compose the message.
                 if (!result){ 
                     preMessage = `(Rule '${V_MINLENGTH}')`
