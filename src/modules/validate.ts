@@ -3,7 +3,7 @@ import Validator from '@/types/validator'
 import Fieldconfig from '@/types/fieldconfig'
 import { useVuelidate, ValidationRule, ValidationRuleWithParams, ValidatorFn } from '@vuelidate/core'
 import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue } from '@vuelidate/validators'
-import cvh from '@/modules/validateHelpers' //custom vuelidate helpers...
+import cvh from '@/modules/validateHelpers' // imports the default export as namespace cvh...
 
 // create an alias for cvh.helpers?
 let v_h_ = cvh.cHelpers;
@@ -26,6 +26,7 @@ export const mapValidators = {
     [cvh.CV_TYPE_MIN_LENGTH]: cvh._minLength,
     [cvh.CV_TYPE_MAX_LENGTH]: cvh._maxLength,
     [cvh.CV_TYPE_BETWEEN]: cvh._between,
+    ['__cv__fetchedResultContainsPipo']: cvh._fetchedResultContainsPipo
 }
 
 /**
@@ -39,7 +40,20 @@ export const useValidation = useVuelidate
 function addParamsTovalidator(addedParams = {}, validator: ValidationRuleWithParams | ValidationRuleWithParams | ValidatorFn): ValidationRule {
     return helpers.withParams(addedParams, validator)
 }
-
+/**
+ * 1. If async needed, calls the helper, and 
+ * 2. adds the params
+ * @param addedParams
+ * @param validator 
+ * @returns 
+ */
+function augmentValidator(addedParams = {}, validator: ValidationRuleWithParams | ValidationRuleWithParams | ValidatorFn): ValidationRule {
+    const isAsync = cvh.isAsyncFn(validator ?? "")
+    if (isAsync){
+        return helpers.withParams(addedParams, helpers.withAsync(validator))
+    }
+    return helpers.withParams(addedParams, validator)
+}
 const visibility = (params: object, validatorFn: any, fieldCfg, formDefinition, formData) => {
     const mergedParams = Object.assign({},{ type: 'displayIf' } , params, { fieldCfg: fieldCfg}, { formDefinition: formDefinition} , {formData: formData} )
     return helpers.withParams(
@@ -106,10 +120,14 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
         let objValidator = validatorRules?.[fieldName] || {} // Get previous to augment/overwrite or start freshly.
         let augmentedValidator // to hold the fieldLabel as an extra param, imerged into the original validator
         let hasCustomPrefix = false
-        let addDisplayRule = true
-        let addDisableRule = true
+        // setting to programmatically generate rules for displayIf and disableIf when no such validators are configured in the field configuration...
+        // this setting also makes each field available in the v$ map... so other rules can 'read/retrieve/query' all kinds of validator results..
+        const autoMonitorDisplay_Disable = true 
+        let addDisplayRule = autoMonitorDisplay_Disable
+        let addDisableRule = autoMonitorDisplay_Disable
         let objParams = {}
         let tag: string
+        let isAsync = false
         
         // 1. After walking the PRE-CONFIGURED field.validators to implement them, we should decide if we should programmatically ADD certain validators.
         // For example, we may want for EACH field to map it's visibility and it's mode via a rule to vuelidate ...
@@ -141,11 +159,23 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
                     objParams = Object.assign({}, cfgValidator.params, { type: tag, fieldCfg: field, formDefinition, formData, fieldLabel } )
                     
                     // we must map AND INVOKE a dedicated HOF from our mapValidators. So ...DO NOT invoke the legacy RULE_GENERATOR, which is meant only for rules based on passed fn: function!!! IN the JSON instead of in the source code, which will be rarely supported, we guess for now.
-                    mappedValidator = mapValidators[tag](objParams)
+                    //mappedValidator = mapValidators[tag](objParams)
+                    
                     // and apparently we MUST pass it at least ONCE across vuelidate helpers.withParams to format it for vuelidate as an executable validator (normalized validator???)
-                    augmentedValidator = addParamsTovalidator(objParams, mappedValidator) 
-                    // TODO: can we do the above in one step? mappedValidator & augmented in one step?
-                    objValidator[tag] = augmentedValidator
+                    // Omdat we de reguliere vuelidate validators wrappen in een custom HOF om dynamische parametrisering te verkrijgen, moeten we voor async validators "withAsync" gebruiken uit de helper api.
+                    debugger; // should we probe mappedValidator or the mappedValidator.$validate fn? Or should we do that inside addParamsTovalidator
+                    // isAsync = cvh.isAsyncFn(mappedValidator ?? "")
+                    // if (isAsync){
+                    //     augmentedValidator = addParamsTovalidator(objParams, helpers.withAsync(mappedValidator)) 
+                    // }
+                    // else {
+                    //     augmentedValidator = addParamsTovalidator(objParams, mappedValidator) 
+                    // }
+                    //augmentedValidator = augmentValidator(objParams, mappedValidator)
+                    //objValidator[tag] = augmentedValidator
+
+                    // do the above steps in one step...
+                    objValidator[tag] = augmentValidator(objParams, mapValidators[tag](objParams))
                 }
                 else {
                     console.warn('unmapped custom precoded validator: ', tag)
@@ -294,6 +324,7 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
         // B. If we still have to add a disablerIf Rule, do so.
         if (addDisableRule){
             try{
+                debugger
                 tag = cvh.CV_TYPE_DISABLE_IF
                 if ( mapValidators[tag] && cvh.isCustomValidatorType(tag)){
                     objParams = Object.assign({}, { type: tag, fieldCfg: field, formDefinition, formData, fieldLabel } )

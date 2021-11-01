@@ -31,6 +31,7 @@ Perhaps even run rules against dynamical TARGETS.
 // TODO: if all methods used can come from Array instead of Lodash, drop Lodash dependency
 // like myArray =[] myArray.every instead of _.every( myArray, <bla>) etc 
 
+
 import _ from 'lodash'
 // import { helpers } from '@vuelidate/validators'
 import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue , and } from '@vuelidate/validators'
@@ -142,48 +143,48 @@ const SUPPORTED_EXECUTIONERS = [
     V_MINLENGTH,
     V_MAXLENGTH,
     V_BETWEEN,
+    "fetchedResultContainsPipo"
 ]
-/**
- * define helper functions like isValid, isVisible, isDisabled, that take a fieldname and return a boolean if the retrieved info qualifies.
- * // TODO: if these helpers all work robustly, rewrite them to the shortest possible format? Voorbeeld
- * isEnabled: (vm, fieldName: string) => {
-        let result, defaulted = true;
+
+import EventService from '@/services/ApiService'
+
+export const isAsyncFn = (fn: Function) => {
+    const fnConstructorName = fn.constructor?.name ?? ""
+    const isAsync = fnConstructorName.includes('AsyncFunction')
+    return isAsync
+} 
+
+export const cHelpers = {
+
+    //define some test call to our service to use a real async call and test something random on the content
+    fetchedResultContainsPipo: async (vm, objContext) => {
+        let response, result
+        const { value , params, ...cfg } = objContext
         try {
-            result = !cHelpers.isDisabled(vm,fieldName)
+            ///api/questions/614205906985e00ec0cdb9c7
+            response = await EventService.getById( params?.dataType ?? 'questions', params?.id ?? '614205906985e00ec0cdb9c7')
+            //response = await EventService.getById( 'questions', '614205906985e00ec0cdb9c7')
+            result = response?.data?.cat_1?.includes(params?.comparisonValue || 'pipo') 
+        } catch(e) {
+            console.warn(e)
         }
-        catch(e) {
-            console.warn(e);
-            result = defaulted;
-        }
+        //return setTimeout((result) => {return result}, 5000)
         return result
     },
-    * kunnen we -wat- korter schrijven als:
-    isEnabled: (vm, fieldName: string) => {
-        try {
-            return !cHelpers.isDisabled(vm,fieldName)
-        }
-        catch(e) { 
-            return true 
-        }
-    },
- */
-export const cHelpers = {
     /**
      * 
-     * How should we indicate minLength acts as an executable rule? as opossed to a retrieval rule?   
+     * How should we indicate minLength acts as an executable rule? as opposed to a retrieval rule?   
      * Perhaps we should store the executioners on a separate object, like cExecs or such?
-     * 
-     * 
      * @param value Wrapper for the builtin vuelidate wrapper for the minLength validator.
      * We need this wrapper to be able to call the paraetrization in runtime based on a static configuration, without passing in function form the static configuration.
      * Since we do not want to morph entire rulessets we need this to give rules dynamical invocation behavior. 
      * @param vm 
      * @param params 
      */
-    minLength: (vm, objContext ) => {
+    minLength: async (vm: any, objContext: object) => {
         // test if we have vm.fieldValues always or should we use params.formData ????
         //destructure the params into some crucial variables
-        const { value , params, ...cfg } = objContext // contains the source field name, from where to grab the payload for the min argumen
+        const { value , params , ...cfg } = objContext // contains the source field name, from where to grab the payload for the min argumen
         let comparisonValue = value;
         let minimum: number;
         let defaulted = true; // ????????????????????? how would we know what to default to?
@@ -250,7 +251,12 @@ export const cHelpers = {
                 console.warn(e); 
             }
         }
-        return result || { result, message } ; // only output the message when failed
+        // only output the message when failed
+        // return result || { result, message }
+        // Trivially use Promise.resolve, to support it being async, to test out the whole async rules chaining principle...
+        debugger
+        return Promise.resolve(result || { result, message }) 
+         
     },
     /**
      * Retrieves the rule result from a supposed previous run of a rule of type CV_TYPE_MIN_LENGTH on field objparams.fieldName or such
@@ -280,7 +286,7 @@ export const cHelpers = {
      * @param objParams 
      * @returns 
      */
-    maxLength: (vm, objContext ) => {
+    maxLength: async (vm, objContext ) => {
         // test if we have vm.fieldValues always or should we use params.formData ????
         //destructure the params into some crucial variables
         const { value , params, ...cfg } = objContext // contains the source field name, from where to grab the payload for the max argumen
@@ -348,7 +354,9 @@ export const cHelpers = {
                 console.warn(e); 
             }
         }
-        return result || { result, message } ; // only output the message when failed
+        // return result || { result, message } ; // only output the message when failed
+        debugger
+        return Promise.resolve(result || { result, message }) 
     },
     /**
      * Receives //const { value, fieldName, params, ...cfg } = objContext
@@ -1013,7 +1021,9 @@ const hofRuleFnGenerator = ( ...args) => {
     const { dependsOn, fieldCfg, formData, formDefinition, ...params } = args[0]
     const { defaultRuleResult, staticConfigProperty , doInvertRuleResult , asValidator = false } = args[1]
     const ruleType = params.type
+    let hasStaticConfigProperty 
     let resultFunction
+    // also a simple synchronous Fn...
     let fallBackFunction = function ruleFn(value, vm){
         return { 
             $valid: true, // We should never "fail" based on a total dummy function, regardless "asValidator" ???
@@ -1021,10 +1031,8 @@ const hofRuleFnGenerator = ( ...args) => {
             message: `Fallback or try-catch rule. Either an error occurred or neither static config property nor any configured rule of type ${ruleType} for ${fieldCfg.label}` 
         }
     }
-    let pretest 
-    let hasStaticConfigProperty 
     try {
-        // 1. do we have an overruling static configuration property?
+        // 1. if we have an overruling static configuration property, use a simple & synchronous ruleFn
         hasStaticConfigProperty = staticConfigProperty && ((fieldCfg?.[staticConfigProperty] ?? false)  !== false )
         if ( hasStaticConfigProperty )
         {
@@ -1033,21 +1041,20 @@ const hofRuleFnGenerator = ( ...args) => {
                 return { 
                     $valid: asValidator ? rule_result : true, // when run as Validator, it should flag/register errors accordingly!
                     extraParams: { rule_result , fieldCfg }, 
-                    message: `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticConfigProperty} on ${fieldCfg.label}` }
+                    message: `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticConfigProperty} on ${fieldCfg.label}` 
+                }
             }
         }
         // 2. probe for a supported custom rule function
         else if (!resultFunction){
             resultFunction = probeCustomRuleFn(args)
         }
-        // 3. make sure that if we did not have any function yet, we should return a liberal/neutral fallback function 
-        if (!resultFunction){
-            resultFunction = fallBackFunction
-        }
-
     } catch (error) {
         console.warn(error);
-        resultFunction = fallBackFunction;
+    }
+    // 3. make sure that if we did not have any function yet, we should return a liberal/neutral fallback function 
+    if (!resultFunction || typeof resultFunction !== 'function'){
+        resultFunction = fallBackFunction
     }
     return resultFunction
 }
@@ -1157,6 +1164,28 @@ export const displayerIf = (args) => {
     }
     return resultFunction
 }
+
+/**
+ * Generates a maxLength validator for vuelidate.
+ * Supports refering to (other) field(s) regarding their visibility-state and/or disabled-state and/or validity-state or their value ...
+ * Configures a part of the arguments to call a Higher Order Function for that.
+ * @param args 
+ * @returns 
+ */
+ export const _fetchedResultContainsPipo = (args) => {
+    const defaultRuleResult = false;
+    const doInvertRuleResult = false
+    const asValidator = true; // !!!!!!!!!! true to be able to run it as a proper validator, so that failing will flag the field etc, apart from also running it as a helper/executor
+    const startFn = 'fetchedResultContainsPipo'; //this config means that said method should be invoked FIRST 
+    let resultFunction
+    try {
+        resultFunction = hofRuleFnGenerator( args, { defaultRuleResult , doInvertRuleResult, startFn, asValidator } )
+    } catch (error) {
+        console.warn(error)
+    }
+    return resultFunction
+}
+
 /**
  * Returns a vuelidate rule function, which returns a response object needed for custom vuelidate validators/rules.
  * Calls a recursive funciton.
@@ -1166,20 +1195,20 @@ export const displayerIf = (args) => {
 const probeCustomRuleFn = (arrCfg) => {
     const { dependsOn, asLogical, fieldCfg, formData, formDefinition, ...params } = arrCfg[0]
     const { defaultRuleResult, staticConfigProperty , doInvertRuleResult , asValidator = false , startFn } = arrCfg[1]
-    return function ruleFn(value, vm){
-        if (fieldCfg.id==='title'){debugger}
-        const rule_result = probeCustomRuleFnRecursor(value, vm, arrCfg[0], asLogical, startFn) ?? defaultRuleResult
+    return async function ruleFn(value, vm){
+        let rule_result = await probeCustomRuleFnRecursor(value, vm, arrCfg[0], asLogical, startFn) // ??  defaultRuleResult
+        rule_result = rule_result ?? defaultRuleResult
         const boolRuleResult = rule_result?.result ?? rule_result
         const valid = asValidator ? boolRuleResult : true;
         let message = `Rule of type ${params?.type} for field ${fieldCfg?.label} returned: ${boolRuleResult}.` 
         if (rule_result?.message){
             message = rule_result?.message ?? message //${message} 
         }
-        return { 
+        return Promise.resolve({ 
             $valid: valid, 
             extraParams: { rule_result: boolRuleResult, fieldCfg }, 
             message: message
-        }
+        })
     }
 }
 
@@ -1196,7 +1225,7 @@ const probeCustomRuleFn = (arrCfg) => {
  * @param {String | null} startFn. Optional. The name of a supported executioner. This should be run before optionally iterating over (nested) conditions in dependsOn.
  * @returns {Object | Boolean} rule_result. If the return value contains o message, will compose an object with the boolean result and the message, else just the booelan.
  */
-const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn = null) => {
+const probeCustomRuleFnRecursor = async ( value, vm, objCfg, asLogical = AND, startFn = null) => {
     const { dependsOn, fieldCfg, formData, formDefinition, ...params } = objCfg
     const arrRetrievers = SUPPORTED_RETRIEVERS;
     const arrExecutioners = SUPPORTED_EXECUTIONERS;
@@ -1213,6 +1242,8 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn 
     let startFnUnqualified = false;
     let isExecutioner = false;
     let isRetriever = false;
+    let fnConstructorName = "";
+    let isAsync = false;
     try{
         //before probing the recursion for nested conditions, we should first check if there is an INDEPENDENT/AUTONOMOUS rule executioner to invoke.
         if (startFn) {
@@ -1220,7 +1251,10 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn 
                 let fn = startFn;
                 try {
                     const objParams = { value, fieldCfg, formData, formDefinition, params }
-                    tmp = cHelpers[fn]?.(vm, objParams)    
+                    debugger
+                    // check for async and if so await it...
+                    isAsync = isAsyncFn(cHelpers[fn] ?? "")
+                    tmp = isAsync ? await cHelpers[fn]?.(vm, objParams) : cHelpers[fn]?.(vm, objParams)
                     countAsResult++
                     arrPartials.push(tmp?.result ?? tmp) // if we have tmp.result grab that, else grab tmp
                     if (tmp?.message){
@@ -1228,6 +1262,7 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn 
                     }
                 }
                 catch(e) {
+                    debugger
                     startFnUnqualified = true
                     console.warn(e)
                 }
@@ -1253,7 +1288,7 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn 
                     // to correctly recur downwards set the new dependsOn property to the relevant subset!!!!
                     let objCfg2 = { "dependsOn": entryValue, fieldCfg, formData, formDefinition, params }
                     try { 
-                        tmp = probeCustomRuleFnRecursor(value, vm, objCfg2, key) 
+                        tmp = await probeCustomRuleFnRecursor(value, vm, objCfg2, key) //always await?????
                         //arrPartials.push(tmp)
                         arrPartials.push(tmp?.result ?? tmp)
                         if (tmp?.message){
@@ -1273,7 +1308,7 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn 
                         try {
                             let objParams
                             if (isRetriever){
-                                //TODO is the name params over here still comprehensible and unambiguous? 
+                                // TODO is the name params over here still comprehensible and unambiguous? 
                                 objParams = { fieldNames: entryValue, value, fieldCfg, formData, formDefinition, params }        
                             }
                             else
@@ -1282,7 +1317,10 @@ const probeCustomRuleFnRecursor = ( value, vm, objCfg, asLogical = AND, startFn 
                                 // We must be cautious and introduce metaParams to make sure we do not overwrite stuff from entryValue with stuff from the previous params
                                 objParams = { params: entryValue, value, fieldCfg, formData, formDefinition, metaParams: params }        
                             }
-                            tmp = cHelpers[fn]?.(vm, objParams)
+                            // check for async and if so await it...
+                            isAsync = isAsyncFn(cHelpers[fn] ?? "")
+                            tmp = isAsync ? await cHelpers[fn]?.(vm, objParams) : cHelpers[fn]?.(vm, objParams)
+                            //tmp = cHelpers[fn]?.(vm, objParams)
                             countAsResult++
                             arrPartials.push(tmp?.result ?? tmp)
                             if (tmp?.message){
@@ -1327,7 +1365,9 @@ export default {
     _minLength,
     _maxLength,
     _between,
+    _fetchedResultContainsPipo,
     isCustomValidatorType, 
+    isAsyncFn,
     V_CUSTOM_PREFIX,
     RULE_GENERATOR,
     VISIBILITY,

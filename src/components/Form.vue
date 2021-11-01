@@ -131,14 +131,6 @@ function removeMessage(id: number) {
   Utils.removeMessage(messages, id)
 }
 
-const updateFieldValue = (fieldId: string, value: any) => {
-  fieldValues.value[fieldId] = value
-
-  if (v$.value[fieldId]) {
-    v$.value[fieldId].$validate()
-  }
-}
-
 async function submitForm(dataType: string) {
   await v$.value.$validate()
   if (v$.value.$invalid) {
@@ -205,10 +197,29 @@ function getFieldsFromConfig(arr: Fieldconfig[], key: string, value: string | bo
   return matches;
 }
 
-provide('fieldValues', readonly(fieldValues))
-provide('fields', readonly(fields))
-provide('updateFieldValue', updateFieldValue)
-provide('v$', v$)
+const updateFieldValue = (fieldId: string, value: any) => {
+  fieldValues.value[fieldId] = value
+
+  debugger
+  // ??????????????????
+  // als we async validators in andere rules hebben, die als dependency zijn genoemd, 
+  // gaan die niet af als niet heel v$.$validate() wordt gecalled????????????????????
+  // dat lijkt op zich logisch, als we in veld 1 iets wijzigen en veld 3 gebruikt indirect een validator against veld 1, 
+  // hoe kan vuelidate dan weten dat ie ook de rule vanveld 3 moet aftrappen.
+  // Maar als alles sync is, dan gaan die rules wel af????????????????????????
+  // Vergelijk dat nogmaals eenduidig, exact dezelfde rules in de andere branch, sync en async
+  // want dat zou betekenen dat struturele async rules een veel verdergaande calling vereisen....
+  // Ergens in de vuelidate github staat dat alle rules async zijn by default, klopt dat ook? Dat lijkt inconsistent.
+
+  //v$?.value?.$validate()
+  v$?.value?.$touch() //is genoeg om indirecte / async validators te triggeren ...
+  v$?.value?.$reset()
+
+  if (v$.value[fieldId]) {
+    // validate the field explicitely... or validate the entire rule set since we can have dependencies????
+    v$.value[fieldId].$validate()
+  }
+}
 
 onBeforeMount( async() => {
   try{
@@ -228,7 +239,13 @@ onBeforeMount( async() => {
   catch(e) { console.error(e) }
   finally {
     await getFormData()
-    //Note: if we use $lazy: false AND $autoDirty: true as the global vuelidate config, then we do not have to call $validate explicitely over here, only $reset
+    // Note: if we use sync validators
+    // plus $lazy: false AND $autoDirty: true as the global vuelidate config, 
+    // then we do not have to call $validate explicitely over here, only $reset
+    // but with explicit async validators we apparently need to call $validate?
+    // plus we also need to call in updateFieldValue the overall $validate again?
+    v$?.value?.$validate()
+    //v$?.value?.$touch() //is dit genoeg om indirecte / async validators te triggeren? Kennelijk niet.
     v$?.value?.$reset()
   }
 })
@@ -237,6 +254,11 @@ onBeforeUnmount(() => {
   // clear component based messages
   messages.value = []
 })
+
+provide('fieldValues', readonly(fieldValues))
+provide('fields', readonly(fields))
+provide('updateFieldValue', updateFieldValue)
+provide('v$', v$)
 
 </script>
 
