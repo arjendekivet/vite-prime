@@ -118,7 +118,9 @@ if (props.config) {
     })
     .catch((error: any) => {
       // isLoading.value = false
-      console.error('Could not fetch layoutdefinition! Going to hardcoded backup option.', error)
+      // console.error('Could not fetch layoutdefinition! Going to hardcoded backup option.', error)
+      addErrorMessage(error)
+      setDefaultLayout()
       // myConfig.value = formConfigHardcoded
     })
 } else {
@@ -155,7 +157,7 @@ function getFormData() {
 
       })
       .catch((error: any) => {
-        console.error('There was an error!', error);
+        addErrorMessage(error)
       })
   } else {
     _.forIn(fields.value, function (field, fieldId) {
