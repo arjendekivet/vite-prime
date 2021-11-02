@@ -45,6 +45,15 @@
         />
       </template>
     </Toolbar>
+    <div class="locale-changer">
+      <select v-model="locale">
+        <option
+          v-for="locale in ['en', 'ne']"
+          :key="`locale-${locale}`"
+          :value="locale"
+        >{{ locale }}</option>
+      </select>
+    </div>
   </div>
 </template>
 
@@ -75,9 +84,10 @@ type FormProp = {
   initialFormData?: any
 }
 
-const { locale, t } = useI18n({
-  inheritLocale: true
+const { locale, t, isGlobal, availableLocales, messages: iMessages } = useI18n({
+  inheritLocale: true, useScope: 'global'
 })
+
 const router: any = inject('router')
 const EventService: any = inject('EventService')
 
