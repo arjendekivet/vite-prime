@@ -26,6 +26,9 @@ type DeleteResponse = {
 }
 
 export default {
+    getSchema(type: string) {
+        return apiClient.get('schema/' + type, { headers: authHeader() })
+    },
     postForm(type: string, submitValues: object) {
         return apiClient.post('/' + type, submitValues, { headers: authHeader() })
     },

@@ -92,6 +92,7 @@ const compConfig = computed(
 
 const fieldValues: any = ref<object>({})
 const fields: any = ref<object>({})
+const schema: any = ref<object>({})
 const myConfig: any = ref<object>({})
 
 // Use a simple ref for now as there is no combined logic for rules that need it to be computed
@@ -100,6 +101,14 @@ const rules = ref({})
 // define reactive for formData and then use a torefs on that to get a ref for each fieldValue, for usage in vuelidate dynamic parametrizations?????
 
 // rules.value = setValidators(fields.value, undefined, fieldValues)
+
+EventService.getSchema(props.dataType)
+  .then((response: any) => {
+    schema.value = response.data
+  })
+  .catch((error: any) => {
+    addErrorMessage(error)
+  })
 
 if (props.config) {
   myConfig.value = props.config
