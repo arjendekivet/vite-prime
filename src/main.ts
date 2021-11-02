@@ -4,7 +4,9 @@ import { createI18n } from 'vue-i18n'
  * All i18n resources specified in the plugin `include` option can be loaded
  * at once using the import syntax
  */
-import messages from '@intlify/vite-plugin-vue-i18n/messages'
+// import messages from '@intlify/vite-plugin-vue-i18n/messages'
+import en from "@/locales/en.json";
+import ne from "@/locales/ne.json";
 import router from '@/router/routes'
 import App from '@/App.vue'
 import PrimeVue from 'primevue/config'
@@ -59,7 +61,9 @@ Message.mounted = function () {
 const i18n = createI18n({
     legacy: false, // you must set `false`, to use Composition API
     locale: 'en',
-    messages
+    messages: {
+        en, ne
+    }
 })
 const app = createApp(App);
 
