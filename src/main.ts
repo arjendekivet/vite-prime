@@ -1,7 +1,13 @@
-import { createApp } from 'vue';
+import { createApp } from 'vue'
+import { createI18n } from 'vue-i18n'
+/*
+ * All i18n resources specified in the plugin `include` option can be loaded
+ * at once using the import syntax
+ */
+import messages from '@intlify/vite-plugin-vue-i18n/messages'
 import router from '@/router/routes'
-import App from '@/App.vue';
-import PrimeVue from 'primevue/config';
+import App from '@/App.vue'
+import PrimeVue from 'primevue/config'
 
 // import 'primevue/resources/themes/bootstrap4-light-blue/theme.css' //theme
 // import '@/themes/nova-vue/theme.css' // local theme 01
@@ -49,10 +55,15 @@ Message.mounted = function () {
     }
 }
 
+const i18n = createI18n({
+    locale: 'en',
+    messages
+})
 const app = createApp(App);
 
 app.use(router)
-app.use(PrimeVue);
+app.use(i18n)
+app.use(PrimeVue)
 
 app.directive('tooltip', Tooltip)
 
