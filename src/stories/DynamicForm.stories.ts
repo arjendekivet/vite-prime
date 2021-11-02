@@ -243,12 +243,88 @@ fields = [
                       targetField: { name:'setting2', label:'Setting2' },
                     },  
  */
+fields = [
+  {
+    id: '_id',
+    isField: true,
+    label: 'Id',
+    type: 'P_InputText',
+    dddefaultValue: "6666666666666",
+    disabled: true,
+    icon: { type: 'right', name: 'pi-lock' }
+  },
+  {
+    id: 'setting0',
+    isField: true,
+    label: 'Setting0. Structurally hidden.',
+    type: 'P_InputText',
+    icon: { type: 'right', name: 'pi-lock' },
+    defaultValue: 3,
+    hidden: true,
+  },
+  {
+    id: 'setting1',
+    isField: true,
+    label: 'Setting1. Calls a dummy async validator',
+    type: 'P_InputText',
+    icon: { type: 'right', name: 'pi-lock' },
+    defaultValue: 2,
+    ddddisabled: true,
+    vvalidators: [
+      'required',
+      { type: '__cv__fetchedResultContainsPipo' , params: { dataType: 'questions' , id: '614205906985e00ec0cdb9c7' , comparisonValue: 'pipo'} }
+    ]
+  },
+  {
+    id: 'setting2',
+    isField: true,
+    label: 'Setting2. Required & minLength 5 & maxLength 10, both async.',
+    type: 'P_InputText',
+    icon: { type: 'right', name: 'pi-lock' },
+    defaultValue: 10,
+    vvalidators: [
+      'required', 
+      { type: cvh.CV_TYPE_MIN_LENGTH, params: { min: 5 } }, 
+      { type: cvh.CV_TYPE_MAX_LENGTH, params: { min: 10 } }, 
+    ]
+  },
+  {
+    id: 'title',
+    isField: true,
+    label: 'Title, disableIf rule with complex indirect async executioners...',
+    type: 'P_InputText',
+    placeholder: 'Title',
+    icon: { type: 'right', name: 'pi-bookmark' },
+    validators: [
+      //"required",
+      //{ type: cvh.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
+      { 
+        type: cvh.CV_TYPE_DISABLE_IF,
+        params: { 
+            dependsOn: {
+              // [cvh.IS_HIDDEN]: ['setting0'],  
+              // [cvh.IS_DISABLED]: ['setting1'], 
+              'fetchedResultContainsPipo': { dataType: 'questions' , id: '614205906985e00ec0cdb9c7' , comparisonValue: 'pipo' },
+              [cvh.V_MAXLENGTH]: { 
+                  max: 5,
+                  targetField: { name:'setting1', label:'Setting1' },
+              },   
+              [cvh.V_MINLENGTH]: { 
+                  min: 3,
+                  targetField: { name:'setting2', label:'Setting2' },
+                },
+            }
+        } 
+      },
+    ],
+  },
+];
 
 formData = {
   "_id": "6148453e3a86ae3466fa2759",
   "setting0": 3,
-  "setting1": 2,
-  "setting2": 0,
+  "setting1": 12345,
+  "setting2": 123,
   "title": "het pak",
   // "type": "open",
   // "answer": "der Anzug",

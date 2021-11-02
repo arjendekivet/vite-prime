@@ -47,6 +47,7 @@ export const V_DISABLEIF = 'disableIf'; //sort of legacy, for rules that bring f
 export const V_MINLENGTH = 'minLength'; //now it holds the name of the method to invoke on cHelpers for wrapped builtin vuelidate validators ...
 export const V_MAXLENGTH = 'maxLength';
 export const V_BETWEEN = 'between';
+export const V_SET_EXTERNAL_RESULTS = "setExternalResults" 
 
 // Introduce constants for the validator names/types in order NOT to clash with built-in and other imported working vuelidate validators
 export const V_CUSTOM_PREFIX = '__cv__';
@@ -54,7 +55,8 @@ export const CV_TYPE_DISABLE_IF = `${V_CUSTOM_PREFIX}${V_DISABLEIF}`;
 export const CV_TYPE_DISPLAY_IF = `${V_CUSTOM_PREFIX}${V_DISPLAYIF}`;
 export const CV_TYPE_MIN_LENGTH = `${V_CUSTOM_PREFIX}${V_MINLENGTH}`;
 export const CV_TYPE_MAX_LENGTH = `${V_CUSTOM_PREFIX}${V_MAXLENGTH}`;
-export const CV_TYPE_BETWEEN = `${V_CUSTOM_PREFIX}${V_BETWEEN}`;
+export const CV_TYPE_BETWEEN    = `${V_CUSTOM_PREFIX}${V_BETWEEN}`;
+export const CV_TYPE_SET_EXTERNAL_RESULTS = `${V_CUSTOM_PREFIX}${V_SET_EXTERNAL_RESULTS}`;
 
 export const AND = "and";
 export const OR = "or";
@@ -131,7 +133,7 @@ const SUPPORTED_RETRIEVERS = [
     // these search for the results for builtin vuelidate validators!!!! They do not -yet- rerun proper validators thmeselves.
     IS_REQUIRED_IF, NOT_REQUIRED_IF,
     IS_MIN_LENGTH, 
-    // V_MINLENGTH,
+    // V_MINLENGTH, //moved to executioner
     // V_MAXLENGTH,
     // V_BETWEEN,
 ]
@@ -143,7 +145,8 @@ const SUPPORTED_EXECUTIONERS = [
     V_MINLENGTH,
     V_MAXLENGTH,
     V_BETWEEN,
-    "fetchedResultContainsPipo"
+    "fetchedResultContainsPipo",
+    V_SET_EXTERNAL_RESULTS,
 ]
 
 import EventService from '@/services/ApiService'
@@ -156,38 +159,101 @@ export const isAsyncFn = (fn: Function) => {
 
 export const cHelpers = {
 
-    //define some test call to our service to use a real async call and test something random on the content
+    //define some dummy remote test call to our service to use a real async call and see if that can be used in validator helpers executors etc
     fetchedResultContainsPipo: async (vm, objContext) => {
         let response, result
-        const { value , params, ...cfg } = objContext
+        const { value , params, fieldName, ...cfg } = objContext
+        // voorbeeldje?
+                   // params: { 
+            //     protocol: 'https', 
+            //     host: 'jsonplaceholder.typicode.com', 
+            //     api: "/:entities/:id", 
+            //     vars: { id: 1, entities: "todos" }
+            //     querystring: {/** TODO */}, 
+            // }, 
+
         try {
+            debugger;
             ///api/questions/614205906985e00ec0cdb9c7
-            response = await EventService.getById( params?.dataType ?? 'questions', params?.id ?? '614205906985e00ec0cdb9c7')
+            let response0 = await EventService.getById('questions', '614205906985e00ec0cdb9c7')
             //response = await EventService.getById( 'questions', '614205906985e00ec0cdb9c7')
-            result = response?.data?.cat_1?.includes(params?.comparisonValue || 'pipo') 
+            //TODO: find a robust & elegant method that takes the querystring params and safely encodes and appends it to the url...
+            //TODO: we should loop through the vars and mutate pathName 
+            let pathName = `${params?.api?.replace?.(':entities',params.vars.entities)}`
+            pathName = `${pathName.replace?.(':id',params.vars.id)}`
+            const url = new URL(`${params.protocol}://${params.host}${params.port? ':'+params.port :''}${pathName}/`);
+
+            //TODO: register the results in a designated $externalResults map ....
+            let response_ = await fetch(url.href)
+            let response = await response_.json?.()
+
+            // register / write to some placeholder
+            let arrResults = []
+            // arrResults.push(JSON.stringify(response))
+            arrResults.push(response)
+            vm.v$[cfg.fieldCfg.id].$externalResults.value = arrResults
+            debugger
+            
+            //let response_3 = await fetch(url)
+            //let response_4 = await fetch(url).json?.()
+
+            result = response?.title?.includes(params?.comparisonValue || 'pipo') 
+            result = true;
         } catch(e) {
             console.warn(e)
+            result = true;
         }
         //return setTimeout((result) => {return result}, 5000)
+        //return result
+        debugger
+        console.log('fetchedResultContainsPipo wil return:', result )
+        return result
+    },
+    setExternalResults: async (vm, objContext) => {
+        let response, result
+        const { value , params, fieldName, ...cfg } = objContext
+        try {
+            debugger;
+            //TODO: find a robust & elegant method that takes the querystring params and safely encodes and appends it to the url...
+            //TODO: we should loop through the vars and mutate pathName 
+            let pathName = `${params?.api?.replace?.(':entities',params.vars.entities)}`
+            pathName = `${pathName.replace?.(':id',params.vars.id)}`
+            const url = new URL(`${params.protocol}://${params.host}${params.port? ':'+params.port :''}${pathName}/`);
+
+            //TODO: register the results in a designated $externalResults map ....
+            let rawResponse = await fetch(url.href)
+            let response = await rawResponse.json?.()
+            let arrResults = []
+            arrResults.push(response) //no need to JSON.stringify(response)), although we could do so
+            // set the ref value
+            vm.v$[cfg.fieldCfg.id].$externalResults.value = arrResults
+
+            result = rawResponse?.ok
+            debugger
+        } catch(e) {
+            console.warn(e)
+            result = false;
+        }
+        debugger
+        console.log('setExternalResults wil return:', result )
         return result
     },
     /**
      * 
      * How should we indicate minLength acts as an executable rule? as opposed to a retrieval rule?   
      * Perhaps we should store the executioners on a separate object, like cExecs or such?
+     * 
      * @param value Wrapper for the builtin vuelidate wrapper for the minLength validator.
-     * We need this wrapper to be able to call the paraetrization in runtime based on a static configuration, without passing in function form the static configuration.
+     * We need this wrapper to be able to call the paraetrization in runtime based on a static configuration, without passing in a Fn function from the static configuration.
      * Since we do not want to morph entire rulessets we need this to give rules dynamical invocation behavior. 
      * @param vm 
      * @param params 
      */
     minLength: async (vm: any, objContext: object) => {
-        // test if we have vm.fieldValues always or should we use params.formData ????
-        //destructure the params into some crucial variables
-        const { value , params , ...cfg } = objContext // contains the source field name, from where to grab the payload for the min argumen
+        const { value , params , ...cfg } = objContext
         let comparisonValue = value;
         let minimum: number;
-        let defaulted = true; // ????????????????????? how would we know what to default to?
+        let defaulted = true;
         let result
         let dummyValidator;
         let message="";
@@ -254,7 +320,6 @@ export const cHelpers = {
         // only output the message when failed
         // return result || { result, message }
         // Trivially use Promise.resolve, to support it being async, to test out the whole async rules chaining principle...
-        debugger
         return Promise.resolve(result || { result, message }) 
          
     },
@@ -337,13 +402,14 @@ export const cHelpers = {
                 // Only if failed, compose the message.
                 if (!result){ 
                     preMessage = `(Rule '${V_MAXLENGTH}')`
-                    //Only compose a hefty message if the execution was triggered indirectly
+                    //Only compose a full fledged message if the execution was triggered indirectly
+                    //TODO; translate i18n ...
                     if (typeof targetFieldName === 'string'){
                         targetFieldLabel = params?.targetField?.label ?? targetFieldName
                         if (cfg?.fieldCfg?.label && targetFieldName.toLowerCase() !== cfg.fieldCfg.label.toLowerCase() ){
                             metaType = cfg?.metaParams?.type ?? cfg?.metaParams?.params?.type
                             metaType = metaType ?? cfg?.metaParams?.params?.params?.type
-                            preMessage = `(Field '${cfg.fieldCfg.label}' by rule '${metaType}' indirectly tested field '${targetFieldLabel}' with value ${comparisonValue} against rule '${V_MAXLENGTH}(${maximum})')`;
+                            preMessage = `(Field '${cfg.fieldCfg.label}' by rule '${metaType}' indirectly 'tested' field '${targetFieldLabel}' with value ${comparisonValue} in rule '${V_MAXLENGTH}(${maximum})')`;
                         }
                     }
                     partMessage = dummyValidator?.$message?.({$params: dummyValidator.$params}) ?? dummyValidator?.$message
@@ -355,7 +421,6 @@ export const cHelpers = {
             }
         }
         // return result || { result, message } ; // only output the message when failed
-        debugger
         return Promise.resolve(result || { result, message }) 
     },
     /**
@@ -1186,6 +1251,20 @@ export const displayerIf = (args) => {
     return resultFunction
 }
 
+//setExternalResults
+export const _setExternalResults = (args) => {
+    const defaultRuleResult = false;
+    const doInvertRuleResult = false
+    const asValidator = true; // !!!!!!!!!! true to be able to run it as a proper validator, so that failing will flag the field etc, apart from also running it as a helper/executor
+    const startFn = SET_EXTERNAL_RESULTS; //this config means that said method should be invoked FIRST 
+    let resultFunction
+    try {
+        resultFunction = hofRuleFnGenerator( args, { defaultRuleResult , doInvertRuleResult, startFn, asValidator } )
+    } catch (error) {
+        console.warn(error)
+    }
+    return resultFunction
+}
 /**
  * Returns a vuelidate rule function, which returns a response object needed for custom vuelidate validators/rules.
  * Calls a recursive funciton.
@@ -1251,7 +1330,6 @@ const probeCustomRuleFnRecursor = async ( value, vm, objCfg, asLogical = AND, st
                 let fn = startFn;
                 try {
                     const objParams = { value, fieldCfg, formData, formDefinition, params }
-                    debugger
                     // check for async and if so await it...
                     isAsync = isAsyncFn(cHelpers[fn] ?? "")
                     tmp = isAsync ? await cHelpers[fn]?.(vm, objParams) : cHelpers[fn]?.(vm, objParams)
@@ -1262,7 +1340,6 @@ const probeCustomRuleFnRecursor = async ( value, vm, objCfg, asLogical = AND, st
                     }
                 }
                 catch(e) {
-                    debugger
                     startFnUnqualified = true
                     console.warn(e)
                 }
@@ -1366,6 +1443,7 @@ export default {
     _maxLength,
     _between,
     _fetchedResultContainsPipo,
+    _setExternalResults,
     isCustomValidatorType, 
     isAsyncFn,
     V_CUSTOM_PREFIX,
@@ -1379,12 +1457,14 @@ export default {
     V_MINLENGTH,
     V_MAXLENGTH,
     V_BETWEEN,
+    V_SET_EXTERNAL_RESULTS,
     // custom validators that support dynamical parametrizations
     CV_TYPE_DISABLE_IF, 
     CV_TYPE_DISPLAY_IF,
     CV_TYPE_MIN_LENGTH,
     CV_TYPE_MAX_LENGTH,
     CV_TYPE_BETWEEN,
+    CV_TYPE_SET_EXTERNAL_RESULTS,
     // Helpers that merely "read" rule results, as opposed to "execute" other rules:
     IS_VISIBLE,SOME_VISIBLE,ALL_VISIBLE,
     IS_HIDDEN,SOME_HIDDEN,ALL_HIDDEN,

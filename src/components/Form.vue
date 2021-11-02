@@ -49,15 +49,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, readonly, computed, onBeforeMount, onBeforeUnmount, inject } from 'vue'
+import { ref, provide, readonly, computed, onBeforeMount, onBeforeUnmount, inject, reactive } from 'vue'
 import FormDefinitionRecursor from '@/components/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
 import Utils from '@/modules/utils'
 import { messages, addSubmitMessage, addErrorMessage, addWarningMessage } from '@/modules/UseFormMessages'
-import { setValidators, useValidation } from '@/modules/validate'
+import { setValidators, useValidation } from '@/modules/rules/validate'
 import formConfigDefaults from '@/data/FormLayoutDefaults'
-import { resolve } from 'path/posix'
 
 type FormProp = {
   config?: Fieldconfig[],
@@ -89,12 +88,13 @@ const compConfig = computed(
 const fieldValues: any = ref<object>({})
 const fields: any = ref<object>({})
 const myConfig: any = ref<object>({})
+const $externalResults = reactive({})
 
 // Use a simple ref for now as there is no combined logic for rules that need it to be computed
 // This way type casting stays in place
 const rules = ref({})
 
-const v$ = useValidation(rules, fieldValues, { $lazy: false, $autoDirty: true } ) //  $rewardEarly nog niet supported? $commit() dan ook nog niet.
+const v$ = useValidation(rules, fieldValues, { $lazy: false, $autoDirty: true, $externalResults } ) //  $rewardEarly nog niet supported? $commit() dan ook nog niet.
 
 const getFormData = async function() {
     try {

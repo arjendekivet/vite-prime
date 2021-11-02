@@ -1,5 +1,5 @@
 import Fieldconfig from '@/types/fieldconfig'
-import cvh from '@/modules/validateHelpers' //custom vuelidate helpers...
+import cvh from '@/modules/rules/validateHelpers' //custom vuelidate helpers...
 
 type FormConfig = {
     [layoutdefinition: string]: Fieldconfig[]
@@ -43,7 +43,17 @@ let fields = [
       ddddisabled: true,
       vvalidators: [
         'required',
-        { type: '__cv__fetchedResultContainsPipo' , params: { dataType: 'questions' , id: '614205906985e00ec0cdb9c7' , comparisonValue: 'pipo'} }
+        { 
+            type: '__cv__fetchedResultContainsPipo' , 
+            params: { 
+                protocol: 'https', 
+                host: 'jsonplaceholder.typicode.com', 
+                port: '80',
+                api: "/:entities/:id", 
+                vars: { id: 1, entities: "todos" },
+                querystring: {/** TODO */}, 
+            }, 
+            comparisonValue: { $model: 'setting0', fallback:'pipo' }  }
      ]
     },
     {
@@ -75,7 +85,28 @@ let fields = [
               dependsOn: {
                 // [cvh.IS_HIDDEN]: ['setting0'],  
                 // [cvh.IS_DISABLED]: ['setting1'], 
-                not: {'fetchedResultContainsPipo': { dataType: 'questions' , id: '614205906985e00ec0cdb9c7' , comparisonValue: 'pipo' }} ,
+                'fetchedResultContainsPipo': { 
+                    protocol: 'https', 
+                    host: 'jsonplaceholder.typicode.com', 
+                    port: '',
+                    api: "/:entities/:id", 
+                    // TODO TODO
+                    vars: { 
+                        id: 1,          //{ $model: 'setting0', fallback:'pipo' } //id should be dynamiclly invocable too etc etc 
+                        entities: "albums" ,
+                    } , // { $model: 'setting0', fallback:'pipo' } //entities should be dynamiclly invocable too etc etc
+                },
+                [cvh.V_SET_EXTERNAL_RESULTS]: { 
+                    protocol: 'https', 
+                    host: 'jsonplaceholder.typicode.com', 
+                    port: '',
+                    api: "/:entities/:id", 
+                    vars: { id: 1, entities: "todos" },
+                    querystring: "", // {/** TODO */}, 
+                    comparisonValue: { externalProperty: '<meaning a property or path on the fetched data...>' , fallback:'pipo' }, // means if we wanted to compare something from somewhere with something else
+                    normValue: { useRunTimeValue: true }, //means use the passed in value, passed in by vuelidate when the rule is being invoked 
+                        //* $model: {} or a static value: value /*
+                },
                 [cvh.V_MAXLENGTH]: { 
                     max: 5,
                     targetField: { name:'setting1', label:'Setting1' },

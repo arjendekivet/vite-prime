@@ -76,8 +76,7 @@
 import { inject } from 'vue'
 import Fieldconfig from '@/types/fieldconfig'
 
-import { validate } from '@/modules/validate'
-import { cHelpers } from '@/modules/validateHelpers'
+import { cHelpers } from '@/modules/rules/validateHelpers'
 
 import _ from 'lodash'
 
