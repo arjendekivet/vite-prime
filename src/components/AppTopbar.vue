@@ -10,6 +10,7 @@
             <div style="font-size: 0.75rem;">{{ user?.username }}</div>
         </div>
         <div class="right">
+            <SelectButton v-model="locale" :options="availableLocales" />
             <Avatar
                 :image-url="logo"
                 image-size="cover"
@@ -34,6 +35,7 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import router from '@/router/routes';
 import { getUser } from '@/modules/globalState'
 import { computed } from 'vue';
@@ -41,6 +43,10 @@ import { indexOf } from 'lodash';
 
 import Avatar from '@/components/Avatar.vue';
 import logo from '@/assets/harry.jpeg'
+
+const { locale, t, availableLocales } = useI18n({
+    inheritLocale: true, useScope: 'global'
+})
 
 const user = computed(() => getUser())
 
@@ -100,15 +106,20 @@ const items = [
         margin: 0;
     }
 
+    .p-selectbutton {
+        display: inline-flex;
+    }
+
     .left {
-        .p-button {
+        .p-button,
+        > div {
             margin-right: 0.5em;
         }
     }
 
     .right {
         > .p-button,
-        .p-splitbutton {
+        > div {
             margin-left: 0.5em;
         }
     }

@@ -44,6 +44,7 @@ import MultiSelect from 'primevue/multiselect';
 import Checkbox from 'primevue/checkbox';
 import SplitButton from 'primevue/splitbutton'
 import Tooltip from 'primevue/tooltip'
+import SelectButton from 'primevue/selectbutton'
 
 // Override logic to add close emit
 Message.mounted = function () {
@@ -95,5 +96,6 @@ app.component('Password', Password);
 app.component('MultiSelect', MultiSelect);
 app.component('Checkbox', Checkbox);
 app.component('SplitButton', SplitButton);
+app.component('SelectButton', SelectButton);
 
 app.mount('#app')
