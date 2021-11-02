@@ -38,7 +38,7 @@
         </template>
         <Button
           type="button"
-          label="Close"
+          :label="t('close')"
           @click="router.back"
           icon="pi pi-times"
           class="p-button-secondary"
@@ -50,6 +50,7 @@
 
 <script setup lang="ts">
 import { ref, provide, readonly, computed, onBeforeUnmount, inject } from 'vue'
+import { useI18n } from 'vue-i18n'
 import FormDefinitionRecursor from '@/components/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
@@ -74,6 +75,9 @@ type FormProp = {
   initialFormData?: any
 }
 
+const { locale, t } = useI18n({
+  inheritLocale: true
+})
 const router: any = inject('router')
 const EventService: any = inject('EventService')
 
