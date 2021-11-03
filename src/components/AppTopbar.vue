@@ -44,7 +44,7 @@ import { indexOf } from 'lodash';
 import Avatar from '@/components/Avatar.vue';
 import logo from '@/assets/harry.jpeg'
 
-const { locale, t, availableLocales } = useI18n({
+const { locale, availableLocales } = useI18n({
     inheritLocale: true, useScope: 'global'
 })
 
