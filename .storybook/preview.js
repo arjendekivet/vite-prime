@@ -4,9 +4,23 @@ import "primeflex/primeflex.css";
 import "primeicons/primeicons.css"; //icons
 
 import { app } from "@storybook/vue3";
+import { createI18n } from "vue-i18n";
 import PrimeVue from "primevue/config";
 import StoryBookApp from "@/stories/StorybookApp.vue";
 
+import en from "@/locales/en.json";
+import ne from "@/locales/ne.json";
+
+const i18n = createI18n({
+  legacy: false, // you must set `false`, to use Composition API
+  locale: "en",
+  messages: {
+    en,
+    ne,
+  },
+});
+
+app.use(i18n);
 app.use(PrimeVue);
 
 import InputText from "primevue/inputtext";

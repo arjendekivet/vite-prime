@@ -31,14 +31,14 @@
           <Button
             :disabled="v$?.$invalid"
             type="button"
-            label="Submit"
+            :label="t('Submit')"
             @click="submitForm(dataType)"
             icon="pi pi-check"
           />
         </template>
         <Button
           type="button"
-          label="Close"
+          :label="t('Close')"
           @click="router.back"
           icon="pi pi-times"
           class="p-button-secondary"
@@ -50,6 +50,7 @@
 
 <script setup lang="ts">
 import { ref, provide, readonly, computed, onBeforeUnmount, inject } from 'vue'
+import { useI18n } from 'vue-i18n'
 import FormDefinitionRecursor from '@/components/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
@@ -73,6 +74,10 @@ type FormProp = {
   formLayoutKey?: string,
   initialFormData?: any
 }
+
+const { t } = useI18n({
+  inheritLocale: true, useScope: 'global'
+})
 
 const router: any = inject('router')
 const EventService: any = inject('EventService')
