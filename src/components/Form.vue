@@ -31,14 +31,14 @@
           <Button
             :disabled="v$?.$invalid"
             type="button"
-            label="Submit"
+            :label="t('Submit')"
             @click="submitForm(dataType)"
             icon="pi pi-check"
           />
         </template>
         <Button
           type="button"
-          :label="t('close')"
+          :label="t('Close')"
           @click="router.back"
           icon="pi pi-times"
           class="p-button-secondary"

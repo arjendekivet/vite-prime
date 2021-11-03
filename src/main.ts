@@ -1,10 +1,5 @@
 import { createApp } from 'vue'
 import { createI18n } from 'vue-i18n'
-/*
- * All i18n resources specified in the plugin `include` option can be loaded
- * at once using the import syntax
- */
-// import messages from '@intlify/vite-plugin-vue-i18n/messages'
 import en from "@/locales/en.json";
 import ne from "@/locales/ne.json";
 import router from '@/router/routes'
@@ -48,6 +43,8 @@ import SplitButton from 'primevue/splitbutton'
 import Tooltip from 'primevue/tooltip'
 import SelectButton from 'primevue/selectbutton'
 
+import primeLocaleEn from '@/locales/prime_en'
+
 // Override logic to add close emit
 Message.mounted = function () {
     if (!this.sticky) {
@@ -69,7 +66,7 @@ const app = createApp(App);
 
 app.use(router)
 app.use(i18n)
-app.use(PrimeVue)
+app.use(PrimeVue, { locale: primeLocaleEn })
 
 app.directive('tooltip', Tooltip)
 

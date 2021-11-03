@@ -11,6 +11,10 @@
         </div>
         <div class="right">
             <SelectButton v-model="locale" :options="availableLocales" />
+            <Button type="button" icon="pi pi-sliders-h" @click="router.push({ name: 'admin' })" />
+            <Button type="button" icon="pi pi-home" @click="router.push({ name: 'home' })" />
+            <Button type="button" icon="pi pi-cog" />
+            <SplitButton icon="pi pi-user" :model="items"></SplitButton>
             <Avatar
                 :image-url="logo"
                 image-size="cover"
@@ -23,13 +27,8 @@
                 border-color="#007bff"
                 border-width="0px"
                 :inline="true"
-                @click="log(user?.username)"
                 v-tooltip="user?.username"
             ></Avatar>
-            <Button type="button" icon="pi pi-sliders-h" @click="router.push({ name: 'admin' })" />
-            <Button type="button" icon="pi pi-home" @click="router.push({ name: 'home' })" />
-            <Button type="button" icon="pi pi-cog" />
-            <SplitButton icon="pi pi-user" :model="items"></SplitButton>
         </div>
     </div>
 </template>
@@ -38,52 +37,73 @@
 import { useI18n } from 'vue-i18n'
 import router from '@/router/routes';
 import { getUser } from '@/modules/globalState'
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { indexOf } from 'lodash';
 
 import Avatar from '@/components/Avatar.vue';
 import logo from '@/assets/harry.jpeg'
 
-const { locale, availableLocales } = useI18n({
+// import { usePrimeVue } from "primevue/config"
+// import PrimeVue from 'primevue/config'
+// import primeLocaleNe from '@/locales/prime_ne'
+
+const { t, locale, availableLocales } = useI18n({
     inheritLocale: true, useScope: 'global'
 })
 
+const items = ref()
 const user = computed(() => getUser())
 
 const emit = defineEmits<{
     (event: 'menuToggle'): void
 }>()
 
-function log(value: any) {
-    console.log(value)
+// On locale change, recalculate item label using I18n
+watch(
+    () => locale.value,
+    (value, prevValue) => {
+        setItems()
+        if (value === 'ne') {
+            // const primevue = usePrimeVue()
+            // primevue.config.locale.dayNamesMin = ["Zo", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
+            // PrimeVue.config.locale = primeLocaleNe;
+        }
+
+    }
+)
+
+// initial item calculation
+setItems()
+
+function setItems() {
+    items.value = [
+        {
+            label: t('SignIn'),
+            icon: 'pi pi-sign-in',
+            visible: user.value ? false : true,
+            command: () => {
+                router.push({ name: 'signin' })
+            }
+        },
+        {
+            label: t('CreateAccount'),
+            icon: 'pi pi-user-plus',
+            visible: indexOf(user.value?.roles, 'ROLE_ADMIN') > -1 ? true : false,
+            command: () => {
+                router.push({ name: 'signup' })
+            }
+        },
+        {
+            label: t('SignOut'),
+            icon: 'pi pi-sign-out',
+            visible: user.value ? true : false,
+            command: () => {
+                router.push({ name: 'signout' })
+            }
+        }
+    ]
 }
 
-const items = [
-    {
-        label: 'Sign In',
-        icon: 'pi pi-sign-in',
-        visible: user.value ? false : true,
-        command: () => {
-            router.push({ name: 'signin' })
-        }
-    },
-    {
-        label: 'Create Account',
-        icon: 'pi pi-user-plus',
-        visible: indexOf(user.value?.roles, 'ROLE_ADMIN') > -1 ? true : false,
-        command: () => {
-            router.push({ name: 'signup' })
-        }
-    },
-    {
-        label: 'Sign out',
-        icon: 'pi pi-sign-out',
-        visible: user.value ? true : false,
-        command: () => {
-            router.push({ name: 'signout' })
-        }
-    }
-]
 </script>
 
 <style lang="scss">
