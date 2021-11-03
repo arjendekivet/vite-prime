@@ -39,17 +39,35 @@ import router from '@/router/routes';
 import { getUser } from '@/modules/globalState'
 import { computed, ref, watch } from 'vue';
 import { indexOf } from 'lodash';
+import { usePrimeVue } from "primevue/config";
 
 import Avatar from '@/components/Avatar.vue';
 import logo from '@/assets/harry.jpeg'
 
-// import { usePrimeVue } from "primevue/config"
-// import PrimeVue from 'primevue/config'
-// import primeLocaleNe from '@/locales/prime_ne'
-
+const primevue = usePrimeVue()
 const { t, locale, availableLocales } = useI18n({
     inheritLocale: true, useScope: 'global'
 })
+
+watch(
+    () => locale.value,
+    (value, prevValue) => {
+        changePrimeLocale(value)
+    }
+)
+
+const changePrimeLocale = async (locale: any) => {
+    if (indexOf(availableLocales, locale) > -1) {
+        if (locale === 'en') {
+            const { default: primeLocale } = await import('@/locales/prime_en')
+            primevue.config.locale = primeLocale
+
+        } else if (locale === 'ne') {
+            const { default: primeLocale } = await import('@/locales/prime_ne')
+            primevue.config.locale = primeLocale
+        }
+    }
+}
 
 const items = ref()
 const user = computed(() => getUser())
