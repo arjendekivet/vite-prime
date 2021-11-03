@@ -62,7 +62,7 @@ const i18n = createI18n({
         en, ne
     }
 })
-const app = createApp(App);
+const app = createApp(App)
 
 app.use(router)
 app.use(i18n)
