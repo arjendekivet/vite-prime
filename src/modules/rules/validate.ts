@@ -3,33 +3,11 @@ import Validator from '@/types/validator'
 import Fieldconfig from '@/types/fieldconfig'
 import { useVuelidate, ValidationRule, ValidationRuleWithParams, ValidatorFn } from '@vuelidate/core'
 import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue } from '@vuelidate/validators'
+import { isAsyncFn , isCustomValidatorType } from '@/modules/rules/core'
+import rc_ from '@/modules/rules/constants'
 import cvh from '@/modules/rules/validateHelpers' // imports the default export as namespace cvh...
 
-// create an alias for cvh.helpers?
-let v_h_ = cvh.cHelpers;
-
-// create a map to be able to dynamically refer to the vuelidate validators
-export const mapValidators = {
-    required,
-    requiredIf,
-    requiredUnless,
-    email,
-    // minLength, // omit this and substitute it with a cynapps custom version [cvh.CV_TYPE_MIN_LENGTH]: cvh._minLength
-    // maxLength,  // omit this and substitute it with a cynapps custom version [cvh.CV_TYPE_MAX_LENGTH]: cvh._maxLength
-    // between,// omit this and substitute it with a cynapps custom version [cvh.CV_TYPE_BETWEEN]: cvh._between
-    maxValue, 
-    // custom cynapps validators which are rule-executioners for NON-validation purposes, like "display", and "disable". So these does not register in $errors etc.
-    [cvh.CV_TYPE_DISABLE_IF]: cvh.disablerIf,
-    [cvh.CV_TYPE_DISPLAY_IF]: cvh.displayerIf,
-    // custom cynapps validators which are substitutions of vuelidat builtins. 
-    // These are rule-executioners for validation purposes, so they run when $validate() is called AND they show up in v$ as regular validator results in $errors, $silenterrors, etc
-    [cvh.CV_TYPE_MIN_LENGTH]: cvh._minLength,
-    [cvh.CV_TYPE_MAX_LENGTH]: cvh._maxLength,
-    [cvh.CV_TYPE_BETWEEN]: cvh._between,
-    ['__cv__fetchedResultContainsPipo']: cvh._fetchedResultContainsPipo,
-    [cvh.CV_TYPE_SET_EXTERNAL_RESULTS]: cvh._setExternalResults,
-}
-
+const mapValidators = cvh.mapValidators;
 /**
  * Alias for useVuelidate such that the form does not have to know which validator package we are using. We would only have to know the signature ...
  */
@@ -44,7 +22,7 @@ export const useValidation = useVuelidate
  * @returns 
  */
 function augmentValidator(addedParams = {}, validator: ValidationRuleWithParams | ValidationRuleWithParams | ValidatorFn): ValidationRule {
-    const isAsync = cvh.isAsyncFn(validator ?? "")
+    const isAsync = isAsyncFn(validator ?? "")
     if (isAsync){
         return helpers.withParams(addedParams, helpers.withAsync(validator))
     }
@@ -86,7 +64,7 @@ const ruleGenerator = function(type: string, params: object = {} , validatorFn: 
 }
    
 //add to mapValidators ...
-mapValidators[cvh.RULE_GENERATOR] = ruleGenerator
+mapValidators[rc_.RULE_GENERATOR] = ruleGenerator
     
 export function validName(name) {
     let validNamePattern = new RegExp("^[a-zA-Z]+(?:[-'\\s][a-zA-Z]+)*$");
@@ -142,7 +120,7 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
             }
 
             // use the tag to deduce if this is a custom validator that needs a special mapping plus invocation
-            hasCustomPrefix = tag && cvh.isCustomValidatorType(tag)
+            hasCustomPrefix = tag && isCustomValidatorType(tag)
             
             // TODO: First decide if we have to IGNORE the rule ? Moet dat? Moet het veld niet wellicht een rule ten behoeve van een ander veld aftrappen?
             // dus wanneer een veld indirect/gededuceerd dependents heeft, dan een rule NIET ignoren, omdat anders NOOIT een rule result wordt genoteerd over een veld en andere velden dat dan nooit kunnen consulteren?
@@ -150,8 +128,8 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
             if ( hasCustomPrefix ){
                 if (mapValidators[tag]){
                     //register the state about having to addDisplayRule or addDisableRule or ... Once false, it should remain false
-                    addDisableRule = ( addDisableRule === false || tag === cvh.CV_TYPE_DISABLE_IF) ? false : true
-                    addDisplayRule = ( addDisplayRule === false || tag === cvh.CV_TYPE_DISPLAY_IF) ? false : true
+                    addDisableRule = ( addDisableRule === false || tag === rc_.CV_TYPE_DISABLE_IF) ? false : true
+                    addDisplayRule = ( addDisplayRule === false || tag === rc_.CV_TYPE_DISPLAY_IF) ? false : true
                     objParams = Object.assign({}, cfgValidator.params, { type: tag, fieldCfg: field, formDefinition, formData, fieldLabel } )
                     // we must map AND INVOKE a dedicated HOF from our mapValidators.
                     objValidator[tag] = augmentValidator(objParams, mapValidators[tag](objParams))
@@ -163,7 +141,7 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
             else { //for dynamic isCustom validator configs, which bring their own fn:Function configuration....
                 if ( cfgValidator.isCustom ){
                     // we must create the validator dynamically via the rule_generator... must use a HOF to get the additional parametrization implemented?
-                    mappedValidator = mapValidators[cvh.RULE_GENERATOR](tag, _.clone(cfgValidator.params), cfgValidator.fn, cfgValidator.message || "no message yet", field, formDefinition, formData )
+                    mappedValidator = mapValidators[rc_.RULE_GENERATOR](tag, _.clone(cfgValidator.params), cfgValidator.fn, cfgValidator.message || "no message yet", field, formDefinition, formData )
                     //temporarily still support this special case
                     if (!mappedValidator && cfgValidator.type === 'displayIf' && cfgValidator.fn){
                         mappedValidator = visibility(cfgValidator.params, cfgValidator.fn, field, formDefinition, formData)
@@ -267,7 +245,7 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
         // A. If we still have to programmatically add a displayerIf Rule, do so.
         if (addDisplayRule){
             try{
-                tag = cvh.CV_TYPE_DISPLAY_IF
+                tag = rc_.CV_TYPE_DISPLAY_IF
                 objParams = Object.assign({}, { type: tag, fieldCfg: field, formDefinition, formData, fieldLabel } )
                 objValidator[tag] = augmentValidator(objParams, mapValidators[tag](objParams))
             }
@@ -278,7 +256,7 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
         // B. If we still have to  programmatically add a disablerIf Rule, do so.
         if (addDisableRule){
             try{
-                tag = cvh.CV_TYPE_DISABLE_IF
+                tag = rc_.CV_TYPE_DISABLE_IF
                 objParams = Object.assign({}, { type: tag, fieldCfg: field, formDefinition, formData, fieldLabel } )
                 objValidator[tag] = augmentValidator(objParams, mapValidators[tag](objParams))
             } catch(e){
