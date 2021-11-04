@@ -42,6 +42,8 @@ import Checkbox from 'primevue/checkbox';
 import SplitButton from 'primevue/splitbutton'
 import Tooltip from 'primevue/tooltip'
 import SelectButton from 'primevue/selectbutton'
+import Editor from 'primevue/editor'
+import C_Editor from '@/components/C_Editor.vue'
 
 import primeLocaleEn from '@/locales/prime_en'
 
@@ -66,7 +68,10 @@ const app = createApp(App)
 
 app.use(router)
 app.use(i18n)
-app.use(PrimeVue, { locale: primeLocaleEn })
+
+// inputStyle: 'outlined' || 'filled'
+// ripple: true => is button ripple effect ...
+app.use(PrimeVue, { locale: primeLocaleEn, ripple: true })
 
 app.directive('tooltip', Tooltip)
 
@@ -98,5 +103,7 @@ app.component('MultiSelect', MultiSelect);
 app.component('Checkbox', Checkbox);
 app.component('SplitButton', SplitButton);
 app.component('SelectButton', SelectButton);
+app.component('Editor', Editor);
+app.component('C_Editor', C_Editor);
 
 app.mount('#app')

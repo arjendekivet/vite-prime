@@ -21,7 +21,7 @@ import 'vue-json-pretty/lib/styles.css';
 import { Vue3JsonEditor } from 'vue3-json-editor'
 
 type FormProp = {
-    modelValue: Object | undefined,
+    modelValue: any,
     readOnly: boolean,
 }
 const props = withDefaults(defineProps<FormProp>(), {
