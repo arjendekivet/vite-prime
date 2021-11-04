@@ -17,108 +17,107 @@ type FormConfig = {
 // use the same fields as in storybook for a test ..
 let fields = [
     {
-      id: '_id',
-      isField: true,
-      label: 'Id',
-      type: 'P_InputText',
-      dddefaultValue: "6666666666666",
-      disabled: true,
-      icon: { type: 'right', name: 'pi-lock' }
+        id: '_id',
+        isField: true,
+        label: 'Id',
+        type: 'P_InputText',
+        dddefaultValue: "6666666666666",
+        disabled: true,
+        icon: { type: 'right', name: 'pi-lock' }
     },
     {
-      id: 'setting0',
-      isField: true,
-      label: 'Setting0. Structurally hidden.',
-      type: 'P_InputText',
-      icon: { type: 'right', name: 'pi-lock' },
-      defaultValue: 3,
-      hhhidden: true,
-      validators: [
-        //{ type: rc_.CV_TYPE_REQUIREDIF, params: { prop: { $model: 'setting1' } } },
-        { type: rc_.CV_TYPE_REQUIREDIF, params: { prop: { $model: 'setting1' } } },
-        { type: rc_.CV_TYPE_BETWEEN, params: { min: 1, max: 100 } }, 
-     ]
+        id: 'setting0',
+        isField: true,
+        label: 'Setting0. Structurally hidden.',
+        type: 'P_InputText',
+        icon: { type: 'right', name: 'pi-lock' },
+        defaultValue: 3,
+        hhhidden: true,
+        validators: [
+            { type: rc_.CV_TYPE_REQUIREDIF, params: { prop: { $model: 'setting1' } } },
+            { type: rc_.CV_TYPE_BETWEEN, params: { min: 1, max: 100 } },
+        ]
     },
     {
-      id: 'setting1',
-      isField: true,
-      label: 'Setting1. Calls a dummy async validator',
-      type: 'P_InputText',
-      icon: { type: 'right', name: 'pi-lock' },
-      defaultValue: 2,
-      ddddisabled: true,
-      validators: [
-        'required',
-        { type: rc_.CV_TYPE_MAX_LENGTH, params: { max: 5 } }, 
-     ]
+        id: 'setting1',
+        isField: true,
+        label: 'Setting1. Calls a dummy async validator',
+        type: 'P_InputText',
+        icon: { type: 'right', name: 'pi-lock' },
+        defaultValue: 2,
+        ddddisabled: true,
+        validators: [
+            'required',
+            { type: rc_.CV_TYPE_MAX_VALUE, params: { max: 5 } },
+        ]
     },
     {
-      id: 'setting2',
-      isField: true,
-      label: 'Setting2. Required & minLength 5 & maxLength 10, both async.',
-      type: 'P_InputText',
-      icon: { type: 'right', name: 'pi-lock' },
-      defaultValue: 10,
-      validators: [
-        'required', 
-        { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 5 } }, 
-        { type: rc_.CV_TYPE_MAX_LENGTH, params: { max: 10 } }, 
-      ]
+        id: 'setting2',
+        isField: true,
+        label: 'Setting2. Required & minLength 5 & maxLength 10, both async.',
+        type: 'P_InputText',
+        icon: { type: 'right', name: 'pi-lock' },
+        defaultValue: 10,
+        vvalidators: [
+            'required',
+            { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 5 } },
+            { type: rc_.CV_TYPE_MAX_LENGTH, params: { max: 10 } },
+        ]
     },
     {
-      id: 'title',
-      isField: true,
-      label: 'Title, disableIf rule with complex indirect async executioners...',
-      type: 'P_InputText',
-      placeholder: 'Title',
-      icon: { type: 'right', name: 'pi-bookmark' },
-      validators: [
-        //"required",
-        //{ type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
-        { 
-          type: rc_.CV_TYPE_DISABLE_IF,
-          params: { 
-              dependsOn: {
-                // [rc_.IS_HIDDEN]: ['setting0'],  
-                // [rc_.IS_DISABLED]: ['setting1'], 
-                // 'fetchedResultContainsPipo': { 
-                //     protocol: 'https', 
-                //     host: 'jsonplaceholder.typicode.com', 
-                //     port: '',
-                //     api: "/:entities/:id", 
-                //     // TODO TODO
-                //     vars: { 
-                //         id: 1,          //{ $model: 'setting0', fallback:'pipo' } //id should be dynamiclly invocable too etc etc 
-                //         entities: "albums" ,
-                //     } , // { $model: 'setting0', fallback:'pipo' } //entities should be dynamiclly invocable too etc etc
-                // },
-                [rc_.V_REQUIREDIF]: { prop: { $model: 'setting1' } }, // meaning: retrieve the runtime value of setting0 and if that is true field title becomes required ...
-                //[rc_.V_REQUIREDIF]: { prop: { $model: 'setting0' , targetField: 'setting1'} }, // meaning: retrieve the runtime value of setting0, and if that is true field title becomes required ...
-                [rc_.V_SET_EXTERNAL_RESULTS]: { 
-                    protocol: 'https', 
-                    host: 'jsonplaceholder.typicode.com', 
-                    port: '',
-                    api: "/:entities/:id", 
-                    vars: { id: 1, entities: "todos" },
-                    querystring: "", // {/** TODO */}, 
-                    comparisonValue: { externalProperty: '<meaning a property or path on the fetched data...>' , fallback:'pipo' }, // means if we wanted to compare something from somewhere with something else
-                    normValue: { useRunTimeValue: true }, //means use the passed in value, passed in by vuelidate when the rule is being invoked 
-                        //* $model: {} or a static value: value /*
-                },
-                [rc_.V_MAXLENGTH]: { 
-                    max: 5,
-                    targetField: { name:'setting1', label:'Setting1' },
-                },   
-                [rc_.V_MINLENGTH]: { 
-                    min: 3,
-                    targetField: { name:'setting2', label:'Setting2' },
-                  },
-              }
-          } 
-        },
-      ],
+        id: 'title',
+        isField: true,
+        label: 'Title, disableIf rule with complex indirect async executioners...',
+        type: 'P_InputText',
+        placeholder: 'Title',
+        icon: { type: 'right', name: 'pi-bookmark' },
+        vvalidators: [
+            //"required",
+            //{ type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
+            {
+                type: rc_.CV_TYPE_DISABLE_IF,
+                params: {
+                    dependsOn: {
+                        // [rc_.IS_HIDDEN]: ['setting0'],  
+                        // [rc_.IS_DISABLED]: ['setting1'], 
+                        // 'fetchedResultContainsPipo': { 
+                        //     protocol: 'https', 
+                        //     host: 'jsonplaceholder.typicode.com', 
+                        //     port: '',
+                        //     api: "/:entities/:id", 
+                        //     // TODO TODO
+                        //     vars: { 
+                        //         id: 1,          //{ $model: 'setting0', fallback:'pipo' } //id should be dynamiclly invocable too etc etc 
+                        //         entities: "albums" ,
+                        //     } , // { $model: 'setting0', fallback:'pipo' } //entities should be dynamiclly invocable too etc etc
+                        // },
+                        [rc_.V_REQUIREDIF]: { prop: { $model: 'setting1' } }, // meaning: retrieve the runtime value of setting0 and if that is true field title becomes required ...
+                        //[rc_.V_REQUIREDIF]: { prop: { $model: 'setting0' , targetField: 'setting1'} }, // meaning: retrieve the runtime value of setting0, and if that is true field title becomes required ...
+                        [rc_.V_SET_EXTERNAL_RESULTS]: {
+                            protocol: 'https',
+                            host: 'jsonplaceholder.typicode.com',
+                            port: '',
+                            api: "/:entities/:id",
+                            vars: { id: 1, entities: "todos" },
+                            querystring: "", // {/** TODO */}, 
+                            comparisonValue: { externalProperty: '<meaning a property or path on the fetched data...>', fallback: 'pipo' }, // means if we wanted to compare something from somewhere with something else
+                            normValue: { useRunTimeValue: true }, //means use the passed in value, passed in by vuelidate when the rule is being invoked 
+                            //* $model: {} or a static value: value /*
+                        },
+                        [rc_.V_MAXLENGTH]: {
+                            max: 5,
+                            targetField: { name: 'setting1', label: 'Setting1' },
+                        },
+                        [rc_.V_MINLENGTH]: {
+                            min: 3,
+                            targetField: { name: 'setting2', label: 'Setting2' },
+                        },
+                    }
+                }
+            },
+        ],
     },
-  ];
+];
 
 const formConfig: FormConfig = {
     layoutdefinition: [
@@ -129,7 +128,7 @@ const formConfig: FormConfig = {
             type: 'P_InputText',
             placeholder: 'Title',
             validators: ['required',
-                { type: 'minLength', params: [{ min: 10 }] }, 
+                { type: 'minLength', params: [{ min: 10 }] },
                 { type: 'maxLength', params: [{ max: 200 }] },
             ],
             icon: { type: 'right', name: 'pi-bookmark' }
@@ -198,27 +197,27 @@ const formConfig: FormConfig = {
             "validators": [
                 "required",
                 //{ "type": rc_.CV_TYPE_BETWEEN, params: { min: 3 , max: 15 } },
-                { "type": rc_.CV_TYPE_MIN_LENGTH, params: { min: 2 } }, 
+                { "type": rc_.CV_TYPE_MIN_LENGTH, params: { min: 2 } },
                 //{ "type": "between", "params": [{ "min": 10 }, { "max": 20 }] }
-                { 
+                {
                     type: rc_.CV_TYPE_DISABLE_IF,
-                    params: { 
-                        dependsOn: 
-                        { 
-                          not: { 
-                            [rc_.ALL_VISIBLE]: ['setting00'], 
-                            // [rc_.V_MINLENGTH]: { 
-                            //       min: { $model: 'setting0' },
-                            //       targetField: { name:'setting1', label:'Setting1' },
-                            //     },
-                            // [rc_.V_MAXLENGTH]: { 
-                            //       max: { $model: 'setting1' },
-                            //       targetField: { name:'setting2', label:'Setting2' },
-                            //     },  
-                            // }
+                    params: {
+                        dependsOn:
+                        {
+                            not: {
+                                [rc_.ALL_VISIBLE]: ['setting00'],
+                                // [rc_.V_MINLENGTH]: { 
+                                //       min: { $model: 'setting0' },
+                                //       targetField: { name:'setting1', label:'Setting1' },
+                                //     },
+                                // [rc_.V_MAXLENGTH]: { 
+                                //       max: { $model: 'setting1' },
+                                //       targetField: { name:'setting2', label:'Setting2' },
+                                //     },  
+                                // }
+                            }
                         }
-                      }
-                  },
+                    },
                 }
             ]
         },
@@ -233,7 +232,7 @@ const formConfig: FormConfig = {
             //"disabled": true,
             "validators": [
                 //{ "type": rc_.CV_TYPE_BETWEEN, params: { min: 16 , max: 30 } },
-                { "type": rc_.CV_TYPE_MIN_LENGTH, params: { min: { $model: 'setting0'} } }, 
+                { "type": rc_.CV_TYPE_MIN_LENGTH, params: { min: { $model: 'setting0' } } },
                 //{ "type": "between", "params": [{ "min": 10 }, { "max": 20 }] },
             ]
         },
@@ -260,7 +259,7 @@ const formConfig: FormConfig = {
             //"placeholder": "TITLE. Note: Should also be disables when setting0 has minLength compliancy!!!", //Should implement a fully DYNAMIC 'between' validator with range 'min' from setting0 and 'max' from setting1.",
             "validators": [
                 "required",
-                { "type": rc_.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
+                { "type": rc_.CV_TYPE_MIN_LENGTH, params: { min: 10 } },
                 //{ "type": rc_.CV_TYPE_MIN_LENGTH, params: { min: { ref: 'setting0'} } }, 
                 //{ "type": rc_.CV_TYPE_MIN_LENGTH, params: { min: { $model: 'setting0'} } },
                 //{ "type": rc_.CV_TYPE_MAX_LENGTH, params: { max: { $model: 'setting1'} } },
@@ -269,31 +268,31 @@ const formConfig: FormConfig = {
                 //     type: rc_.CV_TYPE_DISABLE_IF,
                 //     params: { dependsOn: { not: { [rc_.IS_MIN_LENGTH]: ["setting0"] } } },
                 // },
-                { 
+                {
                     type: rc_.CV_TYPE_DISABLE_IF,
                     //params: { dependsOn: { [rc_.ALL_VISIBLE]: ['cat_1'] , [rc_.ALL_VALID]: ['cat_1'] } }, // equivalent would be SOME_<> or IS_ when there is only 1 dependecy mentioned
-                    params: { 
+                    params: {
                         dependsOn: {
-                            and: { 
+                            and: {
                                 [rc_.IS_DISABLED]: ['setting0'],
-                                [rc_.ALL_VISIBLE]: ['setting1','setting2'],
+                                [rc_.ALL_VISIBLE]: ['setting1', 'setting2'],
                                 not: {
-                                    [rc_.V_MINLENGTH]: { 
+                                    [rc_.V_MINLENGTH]: {
                                         min: { $model: 'setting0' }, // means: find the value for min from $model:<setting0> as the param for the invocation.
                                         // if target is empty, it means run [rc_.V_MINLENGTH] on the requesting field, which is cat_2. 
                                         // But with a non-empty target, it would TEST targetField instead of the invocing field!!! So it will try to get the value from the targetField and pass that in as the comparisonValue!
-                                        targetField: { name:'setting1', label:'Setting 1' }, // optional!
+                                        targetField: { name: 'setting1', label: 'Setting 1' }, // optional!
                                     },
-                                    [rc_.V_MAXLENGTH]: { 
+                                    [rc_.V_MAXLENGTH]: {
                                         max: { $model: 'setting1' }, // means: find the value for min from $model:<setting0> as the param for the invocation.
                                         // if target is empty, it means run [rc_.V_MINLENGTH] on the requesting field, which is cat_2. 
                                         // But with a non-empty target, it would TEST targetField instead of the invocing field!!! So it will try to get the value from the targetField and pass that in as the comparisonValue!
-                                        targetField: { name:'setting2', label:'Setting 2' }, // optional!
+                                        targetField: { name: 'setting2', label: 'Setting 2' }, // optional!
                                     }
                                 }
                             }
                         },
-                    }, 
+                    },
                 },
             ],
             "icon": { "type": "right", "name": "pi-bookmark" }

@@ -27,32 +27,36 @@ Perhaps even run rules against dynamical TARGETS.
 // against field C (target" "C") for a minLength comparison based on the length of the value of field "setting0". 
  This will work, because we re-use the builtin-validators or our own validators, which accept dynamic parametrizations and thus can be reused on the fly, 
  as long as they are callable and not associated to fields.
-*/ 
+*/
 
 import _ from 'lodash'
 import rc_ from '@/modules/rules/constants'
 //import { isAsyncFn, isCustomValidatorType, hofRuleFnGenerator, probeCustomRuleFn, probeCustomRuleFnRecursor } from '@/modules/rules/core' 
-import '@/modules/rules/core' 
+import '@/modules/rules/core'
+import { wrapVuelidateBuiltinValidatorOneParam } from '@/modules/rules/core'
 import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue, minValue, and } from '@vuelidate/validators'
-import display from '@/modules/rules/features/displayIf' 
-import enabling from '@/modules/rules/features/disableIf' 
-import validity from '@/modules/rules/features/validity' 
-import empty_ from '@/modules/rules/features/empty' 
-import { setExternalResults, _setExternalResults } from '@/modules/rules/features/setExternalResults' 
-import inbetween from '@/modules/rules/features/between' 
-import minlength from '@/modules/rules/features/minLength' 
-import maxlength from '@/modules/rules/features/maxLength' 
-import requiredif from '@/modules/rules/features/requiredIf' 
+import display from '@/modules/rules/features/displayIf'
+import enabling from '@/modules/rules/features/disableIf'
+import validity from '@/modules/rules/features/validity'
+import empty_ from '@/modules/rules/features/empty'
+import { setExternalResults, _setExternalResults } from '@/modules/rules/features/setExternalResults'
+import inbetween from '@/modules/rules/features/between'
+import minlength from '@/modules/rules/features/minLength'
+import maxlength from '@/modules/rules/features/maxLength'
+import requiredif from '@/modules/rules/features/requiredIf'
 
 // re-export stuff from core
 export * from './core';
 
 export const cHelpers = {
+    [rc_.V_MAXVALUE]: wrapVuelidateBuiltinValidatorOneParam({ paramName: "max", ruleType: rc_.V_MAXVALUE, targetValidator: maxValue }), //executioner. Wrapped vuelidate minValue
+    // wrapped vuelidate minValue
+    [rc_.V_MINVALUE]: wrapVuelidateBuiltinValidatorOneParam({ paramName: "min", ruleType: rc_.V_MINVALUE, targetValidator: minValue }), // minlength.minLength, //executioner
     // wrapped vuelidate minLength
-    [rc_.V_MINLENGTH]: minlength.minLength, //executioner
+    [rc_.V_MINLENGTH]: wrapVuelidateBuiltinValidatorOneParam({ paramName: "min", ruleType: rc_.V_MINLENGTH, targetValidator: minLength }), // minlength.minLength, //executioner
     [rc_.IS_MIN_LENGTH]: minlength.isMinLength, //a retriever
     // wrapped vuelidate maxLength
-    [rc_.V_MAXLENGTH]: maxlength.maxLength, //executioner
+    [rc_.V_MAXLENGTH]: wrapVuelidateBuiltinValidatorOneParam({ paramName: "max", ruleType: rc_.V_MAXLENGTH, targetValidator: maxLength }), //maxlength.maxLength, //executioner
     [rc_.IS_MAX_LENGTH]: maxlength.isMaxLength, //a retriever
     [rc_.V_BETWEEN]: inbetween.between,
     // custom, about 'show/hide', non-validation
@@ -93,9 +97,10 @@ export const cHelpers = {
     // about external api calls
     [rc_.V_SET_EXTERNAL_RESULTS]: setExternalResults,
     // about requiredIf
-    [rc_.V_REQUIREDIF]: requiredif.requiredIf,
+    //[rc_.V_REQUIREDIF]: requiredif.requiredIf,
+    [rc_.V_REQUIREDIF]: wrapVuelidateBuiltinValidatorOneParam({ paramName: "prop", ruleType: rc_.V_REQUIREDIF, targetValidator: requiredIf }),
     [rc_.IS_REQUIRED_IF]: requiredif.isRequiredIf,
-    [rc_.NOT_REQUIRED_IF]: requiredif.isRequiredIf,
+    [rc_.NOT_REQUIRED_IF]: requiredif.notRequiredIf,
     // TODO: two odd helpers ...
     [rc_.GET_INVALID_MESSAGE]: validity.getInvalidMessage,
     [rc_.GET_DISABLED_MESSAGE]: enabling.getDisabledMessage,
@@ -107,8 +112,8 @@ export const mapValidators = {
     required,
     requiredUnless,
     email,
-    minValue,
-    maxValue, 
+    //minValue,
+    //maxValue,
     // custom cynapps validators which are wrappers for rule-executioners for NON-validation purposes, like "display", and "disable". So these do not register in $errors etc.
     [rc_.CV_TYPE_DISABLE_IF]: enabling.disableIf,
     [rc_.CV_TYPE_DISPLAY_IF]: display.displayIf,
@@ -119,6 +124,8 @@ export const mapValidators = {
     [rc_.CV_TYPE_MAX_LENGTH]: maxlength._maxLength,
     [rc_.CV_TYPE_BETWEEN]: inbetween._between,
     [rc_.CV_TYPE_REQUIREDIF]: requiredif._requiredIf,
+    [rc_.CV_TYPE_MIN_VALUE]: (args) => hofRuleFnGenerator(args, { startFn: rc_.V_MINVALUE, asValidator: true }),
+    [rc_.CV_TYPE_MAX_VALUE]: (args) => hofRuleFnGenerator(args, { startFn: rc_.V_MAXVALUE, asValidator: true }),
     //['__cv__fetchedResultContainsPipo']: _fetchedResultContainsPipo,
     //[rc_.CV_TYPE_SET_EXTERNAL_RESULTS_BAK]: _setExternalResultsBak,
 }

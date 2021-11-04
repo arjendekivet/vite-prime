@@ -11,65 +11,65 @@ import { maxLength as maxlength } from '@vuelidate/validators' //aliassed as max
  * @param objParams 
  * @returns 
  */
- export const maxLength = async (vm, objContext ) => {
+export const maxLength = async (vm, objContext) => {
     // test if we have vm.fieldValues always or should we use params.formData ????
     //destructure the params into some crucial variables
-    const { value , params, ...cfg } = objContext // contains the source field name, from where to grab the payload for the max argumen
+    const { value, params, ...cfg } = objContext // contains the source field name, from where to grab the payload for the max argumen
     let comparisonValue = value;
     let maximum: number;
     let defaulted = true; // If we cannot run properly, we should NOT result in failure.
     let result
     let dummyValidator;
-    let message="";
+    let message = "";
     let preMessage: string;
     let partMessage: string;
-    
+
     let sourceFieldName, targetFieldName, targetFieldLabel, metaType;
     let refName
     let probe
-    
-    try{
+
+    try {
         maximum = Number(params?.max)
     }
-    catch(e){
+    catch (e) {
         console.warn(e)
     }
     // if we did not receive a number straight away, we should have received a $model to retrieve it from or some other method to invoke...
-    if ( isNaN(maximum) ){
+    if (isNaN(maximum)) {
         sourceFieldName = params?.max?.$model
-        if (sourceFieldName && typeof sourceFieldName === 'string'){
+        if (sourceFieldName && typeof sourceFieldName === 'string') {
             maximum = Number(vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName])
         }
-        else { 
+        else {
             refName = params?.max?.ref
-            if (refName && typeof refName === 'string'){
+            if (refName && typeof refName === 'string') {
                 probe = vm?.$refs?.[refName]?.value
                 maximum = Number(probe)
             }
         }
     }
-    if ( !isNaN(maximum)){
-        try { 
+    if (!isNaN(maximum)) {
+        try {
             //check if we have to run on another target instead of on the requesting field!!!
             targetFieldName = params?.targetField && params.targetField.name
-            if (targetFieldName && typeof targetFieldName === 'string'){
+            if (targetFieldName && typeof targetFieldName === 'string') {
                 comparisonValue = vm?.v$?.[targetFieldName]?.$model ?? vm?.fieldValues?.value?.[targetFieldName]
             }
             // Note: here we are re-using the builtin vuelidate maxLength validator -aliassed as maxlength- without having to know exactly how it is implemented or generates it's message
-            dummyValidator = maxlength(maximum); 
+            dummyValidator = maxlength(maximum);
             result = dummyValidator?.$validator(comparisonValue);
             // Only if contrary to 'defaulted', compose the message.
-            if ( result !== defaulted ){  
-                let cfgMessage = { dummyValidator, targetFieldName , params, cfg, comparisonValue, ruleType: rc_.V_MAXLENGTH, argInput: [maximum] };
+            if (result !== defaulted) {
+                let cfgMessage = { dummyValidator, targetFieldName, params, cfg, comparisonValue, ruleType: rc_.V_MAXLENGTH, argInput: [maximum] };
                 message = composeRuleFeedbackMessage(cfgMessage)
             }
         }
-        catch(e) {
-            console.warn(e); 
+        catch (e) {
+            console.warn(e);
         }
     }
     // return result || { result, message } ; // only output the message when failed
-    return Promise.resolve(result || { result, message }) 
+    return Promise.resolve(result || { result, message })
 }
 
 /**
@@ -81,11 +81,11 @@ import { maxLength as maxlength } from '@vuelidate/validators' //aliassed as max
 export const isMaxLength = (vm, objContext: object) => {
     const { fieldName } = objContext
     let result, defaulted = true
-    try { 
+    try {
         result = (vm?.v$?.[fieldName]?.[CV_TYPE_MAX_LENGTH]?.$response?.extraParams?.rule_result ?? defaulted)
     }
-    catch(e) {
-        console.warn(e); 
+    catch (e) {
+        console.warn(e);
         return defaulted;
     }
     return result;
@@ -98,7 +98,7 @@ export const isMaxLength = (vm, objContext: object) => {
  * @param args 
  * @returns 
  */
- export const _maxLength = (args) => {
+export const _maxLength = (args) => {
     const defaultRuleResult = true;
     // const staticConfigProperty; // absent, we do support any static config property to set minlength statically to true / false. That would be incomprehensible.
     const doInvertRuleResult = false
@@ -106,13 +106,15 @@ export const isMaxLength = (vm, objContext: object) => {
     const startFn = rc_.V_MAXLENGTH; //this config means that said method should be invoked from allways, before probing for dependencies, 
     let resultFunction
     try {
-        resultFunction = hofRuleFnGenerator( args, { defaultRuleResult , doInvertRuleResult, startFn, asValidator } )
+        resultFunction = hofRuleFnGenerator(args, { defaultRuleResult, doInvertRuleResult, startFn, asValidator })
     } catch (error) {
         console.warn(error)
     }
     return resultFunction
 }
-
+/** 
+ (args) => { return hofRuleFnGenerator( args, { defaultRuleResult: true , doInvertRuleResult: false, startFn: rc_.V_MAXLENGTH , asValidator: true } ) }
+*/
 export default {
     maxLength,
     isMaxLength,

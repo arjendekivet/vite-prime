@@ -99,9 +99,9 @@ const $externalResults = reactive({})
 // Use a simple ref for now as there is no combined logic for rules that need it to be computed
 // This way type casting stays in place
 const rules = ref({})
-const v$ = useValidation(rules, fieldValues, { $lazy: false, $autoDirty: true, $externalResults } ) //  $rewardEarly nog niet supported? $commit() dan ook nog niet.
+const v$ = useValidation(rules, fieldValues, { $lazy: false, $autoDirty: true, $externalResults }) //  $rewardEarly nog niet supported? $commit() dan ook nog niet.
 
-const getFormData = async function() {
+const getFormData = async function () {
   try {
     fields.value = getFieldsFromConfig(compConfig.value, 'isField', true)
     rules.value = setValidators(fields.value, undefined, fieldValues)
@@ -109,8 +109,8 @@ const getFormData = async function() {
     if (props.initialFormData) {
       fieldValues.value = props.initialFormData
     } else if (props.id) {
-        let response = await EventService.getById(props.dataType, props.id)
-        fieldValues.value = convertResponseData(response?.data)
+      let response = await EventService.getById(props.dataType, props.id)
+      fieldValues.value = convertResponseData(response?.data)
     } else {
       _.forIn(fields.value, function (field, fieldId) {
         if (field && field.defaultValue) {
@@ -118,8 +118,9 @@ const getFormData = async function() {
         }
       })
     }
-  } 
-  catch(e){console.error(e)
+  }
+  catch (e) {
+    console.error(e)
   }
 }
 
@@ -225,15 +226,15 @@ const updateFieldValue = (fieldId: string, value: any) => {
   }
 }
 
-onBeforeMount( async() => {
-  try{
+onBeforeMount(async () => {
+  try {
     await EventService.getSchema(props.dataType)
       .then((response: any) => {
         schema.value = response.data
       })
-    .catch((error: any) => {
-      addErrorMessage(error)
-    })
+      .catch((error: any) => {
+        addErrorMessage(error)
+      })
 
     if (props.config) {
       myConfig.value = props.config
@@ -244,14 +245,14 @@ onBeforeMount( async() => {
       } else {
         setDefaultLayout()
       }
-    } 
+    }
     else {
       setDefaultLayout()
     }
 
     await getFormData()
   }
-  catch(e) { console.error(e) }
+  catch (e) { console.error(e) }
   finally {
     // Note: if we use sync validators
     // plus $lazy: false AND $autoDirty: true as the global vuelidate config, 
