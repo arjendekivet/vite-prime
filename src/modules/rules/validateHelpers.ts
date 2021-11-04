@@ -42,6 +42,10 @@ import { setExternalResults, _setExternalResults } from '@/modules/rules/feature
 import inbetween from '@/modules/rules/features/between' 
 import minlength from '@/modules/rules/features/minLength' 
 import maxlength from '@/modules/rules/features/maxLength' 
+import requiredif from '@/modules/rules/features/requiredIf' 
+
+// re-export stuff from core
+export * from './core';
 
 export const cHelpers = {
     // wrapped vuelidate minLength
@@ -88,47 +92,19 @@ export const cHelpers = {
     [rc_.NONE_EMPTY]: empty_.noneEmpty,
     // about external api calls
     [rc_.V_SET_EXTERNAL_RESULTS]: setExternalResults,
-    // TODO: two helpers, which might not have to live in this namespace
-    getInvalidMessage: validity.getInvalidMessage,
-    getDisabledMessage: enabling.getDisabledMessage,
-    /**
-     * Checks if for a field the -builtin- requiredIf validator resulted true.
-     * Note: this is only a retriever of a rule result, it does not calculate or execute a rule itself.
-     * This result will only indeed exist IF for that field the builtIn requiredIf rule existed AND was called & registered, before this retrieval helper method is called. 
-     * @param vm 
-     * @param fieldName 
-     * @returns 
-     */
-     isRequiredIf: (vm, objContext) => {
-        const { fieldNames: fieldName } = objContext
-        let result, defaulted = false;
-        try { 
-            result = vm?.v$?.[fieldName]?.requiredIf?.$invalid ?? defaulted;
-        }
-        catch(e) {
-            console.warn(e); 
-            result = defaulted;
-        }
-        return result
-    },
-    notRequiredIf:  (vm, objContext) => {
-        let result, defaulted = true;
-        try { 
-            result = !cHelpers.isRequiredIf(vm,objContext)
-        }
-        catch(e) {
-            console.warn(e); 
-            result = defaulted;
-        }
-        return result
-    }
+    // about requiredIf
+    [rc_.V_REQUIREDIF]: requiredif.requiredIf,
+    [rc_.IS_REQUIRED_IF]: requiredif.isRequiredIf,
+    [rc_.NOT_REQUIRED_IF]: requiredif.isRequiredIf,
+    // TODO: two odd helpers ...
+    [rc_.GET_INVALID_MESSAGE]: validity.getInvalidMessage,
+    [rc_.GET_DISABLED_MESSAGE]: enabling.getDisabledMessage,
 }
 
 // create a map to be able to dynamically refer to the vuelidate validators
 export const mapValidators = {
     // builtin vuelidate validators...
     required,
-    requiredIf,
     requiredUnless,
     email,
     minValue,
@@ -142,13 +118,8 @@ export const mapValidators = {
     [rc_.CV_TYPE_MIN_LENGTH]: minlength._minLength,
     [rc_.CV_TYPE_MAX_LENGTH]: maxlength._maxLength,
     [rc_.CV_TYPE_BETWEEN]: inbetween._between,
+    [rc_.CV_TYPE_REQUIREDIF]: requiredif._requiredIf,
     //['__cv__fetchedResultContainsPipo']: _fetchedResultContainsPipo,
     //[rc_.CV_TYPE_SET_EXTERNAL_RESULTS_BAK]: _setExternalResultsBak,
 }
-
-export * from './core';
-
-export default { 
-    mapValidators,
-    cHelpers
-};
+export default { mapValidators, cHelpers };

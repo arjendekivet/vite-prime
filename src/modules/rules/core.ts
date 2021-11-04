@@ -1,18 +1,23 @@
 import _ from 'lodash'
+import { helpers } from '@vuelidate/validators'
 import rc_ from '@/modules/rules/constants'
 import { cHelpers } from './validateHelpers'
 
+// re-export cHelpers and stuff for other helper modules!!!
+export * from './validateHelpers';
+
 export const isAsyncFn = (fn: Function) => {
-    const fnConstructorName = fn.constructor?.name ?? ""
-    const isAsync = fnConstructorName.includes('AsyncFunction')
-    return isAsync
+    const fnConstructorName = fn?.constructor?.name ?? ""
+    const result = fnConstructorName?.includes?.('AsyncFunction') ?? false
+    return result
 }
 
 /*** 
  * Indicates if a validator is a cynapps custom validator, when the type name starts with our constant custom prefix: V_CUSTOM_PREFIX
  */
  export const isCustomValidatorType = (type: string) => {
-    return type?.indexOf?.(rc_.V_CUSTOM_PREFIX) > -1 ?? false
+    const result = type?.indexOf?.(rc_.V_CUSTOM_PREFIX) > -1 ?? false
+    return result
 }
 
 /**
@@ -233,5 +238,133 @@ export const probeCustomRuleFnRecursor = async ( value, vm, objCfg, asLogical = 
     }
 }
 
-// can we re-export cHelpers and stuff for other helper modules
-export * from './validateHelpers';
+export const composeRuleFeedbackMessage = (pContext) => {
+    const { dummyValidator, targetFieldName , params, cfg, comparisonValue, ruleType , criteria } = pContext
+    let preMessage = `(Rule '${ruleType}')`
+    let targetFieldLabel
+    let partMessage;
+    let message;
+    let metaType
+    let inputArgs = criteria?.join?.(',') ?? ""
+    try{
+    //Only compose a hefty message if the execution was triggered indirectly
+    if (typeof targetFieldName === 'string'){
+        targetFieldLabel = params?.targetField?.label ?? targetFieldName
+        if (cfg?.fieldCfg?.label && targetFieldName.toLowerCase() !== cfg.fieldCfg.label.toLowerCase() ){
+            metaType = cfg?.metaParams?.type ?? cfg?.metaParams?.params?.type
+            metaType = metaType ?? cfg?.metaParams?.params?.params?.type
+            preMessage = `(Field '${cfg.fieldCfg.label}' by rule '${metaType}' indirectly tested field '${targetFieldLabel}' 
+            with value '${comparisonValue}' against rule '${ruleType}(${criteria})')`;
+        }
+    }
+    if (dummyValidator?.$message && typeof(dummyValidator.$message) === 'function' ){
+        partMessage = dummyValidator.$message({$params: dummyValidator.$params}) 
+    } 
+    else { partMessage = dummyValidator.$message }
+    }
+    catch(e){
+        console.warn(e)
+    }
+    message = `${partMessage}. ${preMessage??''}`;
+    return message;
+}
+
+///////////////// HOF that generates an executioner for each builtin vuelidate validator that takes 1 paramer ....
+/**
+ * The passed in const { value, fieldName, params, ...cfg } = objContext is augmented to support rerunning of the rule.
+ * TODO: get a general defaulted from somewhere?
+ * TODO: make an array of supported vuelidate builtins that have ONE param? to know when to invoke this one.
+ * @param vm 
+ * @param objParams 
+ * @returns 
+ */
+export const wrapVuelidateBuiltinValidatorOneParam = async (vm: any, objContext: object) => {
+    const { value , params , paramName, ruleType, targetValidator, ...cfg } = objContext
+        // the runtime value against which usually a rule will be executed. If however a targetField is specified, then that field should provide the runtime comparisonValue... 
+    let comparisonValue = value;
+    let condition; // this param should contain the single argument for the invocation of the targetValidator
+    let isAsync = false;
+    // all validators have as norm: true. Else they do not qualify and need to return a feedback message.
+    let defaulted = true;
+    let result = defaulted;
+    let dummyValidator;
+    let message = "";
+    let fn;
+    let sourceFieldName, targetFieldName, targetFieldLabel, metaType;
+    let refName
+    let probe
+    
+    // TODO: parse the invocation configuration in params.
+    // TODO if it supports a function. Could that function have params? How?
+    // Does it config to get a $model etc etc?
+    if (params?.[paramName]?.staticValue ){
+        condition = params[paramName].staticValue
+    }
+    else if (params?.[paramName]?.$model){
+        sourceFieldName = params[paramName].$model
+        if (sourceFieldName && typeof sourceFieldName === 'string'){
+            condition = vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName]
+        }
+    }
+    else if (params?.[paramName]?.ref){ 
+        refName = params[paramName].ref
+        if (refName && typeof refName === 'string'){
+            condition = vm?.$refs?.[refName]?.value
+        }
+    }
+    else if (params?.[paramName]?.fn){ 
+        // is it a fn Name get the reference from either the executors or the retrievers?
+        fn = params[paramName].fn
+        if (fn && typeof fn === 'string'){
+            condition = cHelpers?.[fn]
+        }
+        else if (typeof fn === 'function'){
+            condition = fn
+            isAsync = isAsyncFn(fn)
+        }
+    }
+    else {
+        // assume we received a direct, static value, whatever it is (object, array, scalar)
+        condition = params?.[paramName] 
+    }
+
+    // if prop is not set, the function will return false and we can short circuit???
+
+    if (condition !== undefined){
+        try { 
+            //check if we have to run on another target instead of on the requesting field!!!
+            targetFieldName = params?.targetField && params.targetField.name
+            if (targetFieldName && typeof targetFieldName === 'string'){
+                comparisonValue = vm?.v$?.[targetFieldName]?.$model ?? vm?.fieldValues?.value?.[targetFieldName]
+            }
+            // Note: here we are using the builtin vuelidate requiredIf -aliassed 'requiredif' in the import- validator, without having to know it's implementation
+            if (isAsync){
+                // configure the validator
+                dummyValidator = helpers.withAsync(targetValidator(condition))
+                // run the validator against the comparisonvalue
+                result = await dummyValidator?.$validator(comparisonValue);
+            }
+            else{
+                // configure the validator
+                dummyValidator = targetValidator(condition);  
+                // run the validator against the comparisonvalue
+                result = dummyValidator?.$validator(comparisonValue);
+            }
+            
+            // Only when resulted in the opposite of the norm result (defaulted), should we compose the feedback message
+            if ( result !== defaulted ){ 
+                debugger;
+                let cfgMessage = { dummyValidator, targetFieldName , params, cfg, comparisonValue, ruleType , criteria: [condition] };
+                message = composeRuleFeedbackMessage(cfgMessage)
+            }
+        }
+        catch(e) {
+            console.warn(e); 
+        }
+    }
+    // only output the message when failed
+    // return result || { result, message }
+    // Trivially use Promise.resolve, to support it being async, to test out the whole async rules chaining principle...
+    return Promise.resolve(result || { result, message }) 
+}
+

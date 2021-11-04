@@ -1,6 +1,6 @@
 import rc_ from '@/modules/rules/constants'
 import _ from 'lodash'
-import { hofRuleFnGenerator, cHelpers } from '@/modules/rules/core'
+import { hofRuleFnGenerator, cHelpers, isAsyncFn, composeRuleFeedbackMessage } from '@/modules/rules/core'
 import { maxLength as maxlength } from '@vuelidate/validators' //aliassed as maxlength
 
 /**
@@ -17,7 +17,7 @@ import { maxLength as maxlength } from '@vuelidate/validators' //aliassed as max
     const { value , params, ...cfg } = objContext // contains the source field name, from where to grab the payload for the max argumen
     let comparisonValue = value;
     let maximum: number;
-    let defaulted = true; // ????????????????????? how would we know what to default to?
+    let defaulted = true; // If we cannot run properly, we should NOT result in failure.
     let result
     let dummyValidator;
     let message="";
@@ -58,22 +58,10 @@ import { maxLength as maxlength } from '@vuelidate/validators' //aliassed as max
             // Note: here we are re-using the builtin vuelidate maxLength validator -aliassed as maxlength- without having to know exactly how it is implemented or generates it's message
             dummyValidator = maxlength(maximum); 
             result = dummyValidator?.$validator(comparisonValue);
-            
-            // Only if failed, compose the message.
-            if (!result){ 
-                preMessage = `(Rule '${rc_.V_MAXLENGTH}')`
-                //Only compose a full fledged message if the execution was triggered indirectly
-                //TODO; translate i18n ...
-                if (typeof targetFieldName === 'string'){
-                    targetFieldLabel = params?.targetField?.label ?? targetFieldName
-                    if (cfg?.fieldCfg?.label && targetFieldName.toLowerCase() !== cfg.fieldCfg.label.toLowerCase() ){
-                        metaType = cfg?.metaParams?.type ?? cfg?.metaParams?.params?.type
-                        metaType = metaType ?? cfg?.metaParams?.params?.params?.type
-                        preMessage = `(Field '${cfg.fieldCfg.label}' by rule '${metaType}' indirectly 'tested' field '${targetFieldLabel}' with value ${comparisonValue} in rule '${rc_.V_MAXLENGTH}(${maximum})')`;
-                    }
-                }
-                partMessage = dummyValidator?.$message?.({$params: dummyValidator.$params}) ?? dummyValidator?.$message
-                message = `${partMessage}. ${preMessage??''}`;
+            // Only if contrary to 'defaulted', compose the message.
+            if ( result !== defaulted ){  
+                let cfgMessage = { dummyValidator, targetFieldName , params, cfg, comparisonValue, ruleType: rc_.V_MAXLENGTH, argInput: [maximum] };
+                message = composeRuleFeedbackMessage(cfgMessage)
             }
         }
         catch(e) {

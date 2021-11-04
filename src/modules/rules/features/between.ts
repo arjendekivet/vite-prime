@@ -2,10 +2,10 @@
 import rc_ from '@/modules/rules/constants'
 import _ from 'lodash'
 import { hofRuleFnGenerator, cHelpers } from '@/modules/rules/core'
-import { between as inbetween } from '@vuelidate/validators'
+import { between as inbetween } from '@vuelidate/validators' //aliassed to inbetween
 
 export const between = (vm, objContext ) => {
-    let defaulted = true; // ????????????????????? how would we know what to default to?
+    let defaulted = true;
     let result
     let dummyValidator;
     let message: string
@@ -54,7 +54,10 @@ export const between = (vm, objContext ) => {
             // Note: here we are re-using the builtin vuelidate 'between' -aliassed in the import as inbetween- validator, without having to know exactly how it is implemented or how it generates it's message
             dummyValidator = inbetween(minimum,maximum); 
             result = dummyValidator?.$validator(value);
-            message = dummyValidator?.$message?.({$params: dummyValidator.$params}) ?? dummyValidator?.$message
+            // Only if contrary to 'defaulted', compose the message.
+            if ( result !== defaulted ){  
+                message = dummyValidator?.$message?.({$params: dummyValidator.$params}) ?? dummyValidator?.$message
+            }
         }
         catch(e) {
             console.warn(e); 

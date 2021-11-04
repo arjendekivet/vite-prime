@@ -2,7 +2,7 @@ import _ from 'lodash'
 import Validator from '@/types/validator'
 import Fieldconfig from '@/types/fieldconfig'
 import { useVuelidate, ValidationRule, ValidationRuleWithParams, ValidatorFn } from '@vuelidate/core'
-import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue } from '@vuelidate/validators'
+import { helpers  } from '@vuelidate/validators'
 import { isAsyncFn , isCustomValidatorType } from '@/modules/rules/core'
 import rc_ from '@/modules/rules/constants'
 import cvh from '@/modules/rules/validateHelpers' // imports the default export as namespace cvh...
@@ -120,7 +120,7 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
             }
 
             // use the tag to deduce if this is a custom validator that needs a special mapping plus invocation
-            hasCustomPrefix = tag && isCustomValidatorType(tag)
+            hasCustomPrefix = (tag && isCustomValidatorType(tag)) ? true : false
             
             // TODO: First decide if we have to IGNORE the rule ? Moet dat? Moet het veld niet wellicht een rule ten behoeve van een ander veld aftrappen?
             // dus wanneer een veld indirect/gededuceerd dependents heeft, dan een rule NIET ignoren, omdat anders NOOIT een rule result wordt genoteerd over een veld en andere velden dat dan nooit kunnen consulteren?

@@ -1,6 +1,6 @@
 import rc_ from '@/modules/rules/constants'
 import _ from 'lodash'
-import { hofRuleFnGenerator, cHelpers } from '@/modules/rules/core'
+import { hofRuleFnGenerator, cHelpers, isAsyncFn, composeRuleFeedbackMessage } from '@/modules/rules/core'
 import { minLength as minlength } from '@vuelidate/validators' //aliassed as minlength
 
 /**
@@ -61,9 +61,9 @@ export const minLength = async (vm: any, objContext: object) => {
             // Note: here we are using the builtin vuelidate minLength -aliassed 'minlength' in the import- validator, without having to know it's implementation
             dummyValidator = minlength(minimum); 
             result = dummyValidator?.$validator(comparisonValue); // Note: when comparisonValue is empty/undefined,{},[]  it will PASS / QUALIFY
-            
-            // Only if failed, compose the message.
-            if (!result){ 
+                        
+            // Only if contrary to 'defaulted', compose the message.
+            if ( result !== defaulted ){  
                 preMessage = `(Rule '${rc_.V_MINLENGTH}')`
                 //Only compose a hefty message if the execution was triggered indirectly
                 if (typeof targetFieldName === 'string'){

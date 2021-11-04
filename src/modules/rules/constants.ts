@@ -15,6 +15,7 @@ export const V_DISABLEIF = 'disableIf'; //sort of legacy, for rules that bring f
 export const V_MINLENGTH = 'minLength'; //now it holds the name of the method to invoke on cHelpers for wrapped builtin vuelidate validators ...
 export const V_MAXLENGTH = 'maxLength';
 export const V_BETWEEN = 'between';
+export const V_REQUIREDIF = 'requiredIf';
 
 export const CFG_PROP_ENTITY_DISPLAY = 'hidden'; // indicates in fieldCfg the optional property 'hidden' decides the field display
 export const CFG_PROP_ENTITY_DISPLAY_INVERT = true; // indicates a display rule will have to negate the config prop
@@ -75,6 +76,9 @@ export const IS_MAX_LENGTH = "isMaxLength";
 
 export const V_SET_EXTERNAL_RESULTS = "setExternalResults" 
 
+export const GET_INVALID_MESSAGE = "getInvalidMessage"
+export const GET_DISABLED_MESSAGE = "getDisabledMessage"
+
 // Introduce constants for the custom validator names/types in order NOT to clash with built-in and other imported working vuelidate validators
 export const CV_TYPE_DISABLE_IF = `${V_CUSTOM_PREFIX}${V_DISABLEIF}`;
 export const CV_TYPE_DISPLAY_IF = `${V_CUSTOM_PREFIX}${V_DISPLAYIF}`;
@@ -82,6 +86,7 @@ export const CV_TYPE_MIN_LENGTH = `${V_CUSTOM_PREFIX}${V_MINLENGTH}`;
 export const CV_TYPE_MAX_LENGTH = `${V_CUSTOM_PREFIX}${V_MAXLENGTH}`;
 export const CV_TYPE_BETWEEN    = `${V_CUSTOM_PREFIX}${V_BETWEEN}`;
 export const CV_TYPE_SET_EXTERNAL_RESULTS = `${V_CUSTOM_PREFIX}${V_SET_EXTERNAL_RESULTS}`;
+export const CV_TYPE_REQUIREDIF = `${V_CUSTOM_PREFIX}${V_REQUIREDIF}`;
 
 /**
  * Helpers which merely retrieve optional presumed previous rule results. The require only the vm and an array of fieldname(s) as parameters.
@@ -90,31 +95,28 @@ export const SUPPORTED_RETRIEVERS = [
     IS_VISIBLE, SOME_VISIBLE, ALL_VISIBLE, 
     IS_HIDDEN, SOME_HIDDEN, ALL_HIDDEN ,
     IS_VALID, SOME_VALID, ALL_VALID, 
-    IS_INVALID, SOME_INVALID, ALL_INVALID, 
+    IS_INVALID, SOME_INVALID, ALL_INVALID,
+    IS_VALID_LAZY, SOME_VALID_LAZY, ALL_VALID_LAZY,
+    IS_INVALID_LAZY, SOME_INVALID_LAZY, ALL_INVALID_LAZY,
     IS_DISABLED, SOME_DISABLED, ALL_DISABLED, 
-    //TODO ALL_ENABLED etc ?? 
+    IS_ENABLED, SOME_ENABLED, ALL_ENABLED,
     IS_EMPTY, SOME_EMPTY, ALL_EMPTY,
     NOT_EMPTY, SOME_NOT_EMPTY, NONE_EMPTY,
     // these search for the results for builtin vuelidate validators!!!! They do not -yet- rerun proper validators thmeselves.
     IS_REQUIRED_IF, NOT_REQUIRED_IF,
     IS_MIN_LENGTH, 
     IS_MAX_LENGTH,
-    //moved to executioners!!!!
-    // V_MINLENGTH,
-    // V_MAXLENGTH,
-    // V_BETWEEN,
 ]
 
 /**
- * Helpers which are able to run an actual validator. These can take a proper rule execution configuration for dynamic parametrization AND dynamic targeting.
+ * Helpers which are able to execute an actual validator. These can take a proper rule execution configuration for dynamic parametrization AND dynamic targeting.
  */
 export const SUPPORTED_EXECUTIONERS = [
     V_MINLENGTH,
     V_MAXLENGTH,
     V_BETWEEN,
-    //"fetchedResultContainsPipo",
-    //V_SET_EXTERNAL_RESULTS_BAK,
-    V_SET_EXTERNAL_RESULTS, //imported and added ...
+    V_REQUIREDIF,
+    V_SET_EXTERNAL_RESULTS,
 ]
 
 export default { 
@@ -135,6 +137,7 @@ export default {
     V_MINLENGTH,
     V_MAXLENGTH,
     V_BETWEEN,
+    V_REQUIREDIF,
     V_SET_EXTERNAL_RESULTS,
     // custom validators that support dynamical parametrizations
     CV_TYPE_DISABLE_IF, 
@@ -142,6 +145,7 @@ export default {
     CV_TYPE_MIN_LENGTH,
     CV_TYPE_MAX_LENGTH,
     CV_TYPE_BETWEEN,
+    CV_TYPE_REQUIREDIF,
     CV_TYPE_SET_EXTERNAL_RESULTS,
     // Helpers that merely "read" rule results, as opposed to "execute" other rules:
     IS_VISIBLE,SOME_VISIBLE,ALL_VISIBLE,
@@ -162,4 +166,6 @@ export default {
     IS_MIN_LENGTH, //SOME_MIN_LENGTH, ALL_MIN_LENGTH, NOT_MIN_LENGTH, SOME_NOT_MIN_LENGTH, NONE_MIN_LENGTH ???? terminology 
     IS_MAX_LENGTH,
     // IS_BETWEEN, etc
+    GET_INVALID_MESSAGE,
+    GET_DISABLED_MESSAGE,
 };

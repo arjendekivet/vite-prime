@@ -34,6 +34,8 @@ let fields = [
       defaultValue: 3,
       hhhidden: true,
       validators: [
+        //{ type: rc_.CV_TYPE_REQUIREDIF, params: { prop: { $model: 'setting1' } } },
+        { type: rc_.CV_TYPE_REQUIREDIF, params: { prop: { $model: 'setting1' } } },
         { type: rc_.CV_TYPE_BETWEEN, params: { min: 1, max: 100 } }, 
      ]
     },
@@ -90,6 +92,8 @@ let fields = [
                 //         entities: "albums" ,
                 //     } , // { $model: 'setting0', fallback:'pipo' } //entities should be dynamiclly invocable too etc etc
                 // },
+                [rc_.V_REQUIREDIF]: { prop: { $model: 'setting1' } }, // meaning: retrieve the runtime value of setting0 and if that is true field title becomes required ...
+                //[rc_.V_REQUIREDIF]: { prop: { $model: 'setting0' , targetField: 'setting1'} }, // meaning: retrieve the runtime value of setting0, and if that is true field title becomes required ...
                 [rc_.V_SET_EXTERNAL_RESULTS]: { 
                     protocol: 'https', 
                     host: 'jsonplaceholder.typicode.com', 
