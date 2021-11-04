@@ -57,7 +57,6 @@ watch(
 )
 
 const changePrimeLocale = async (locale: any) => {
-    debugger
     if (indexOf(availableLocales, locale) > -1) {
         const { default: primeLocale } = await import(`../locales/prime_${locale}`)
         if (primeLocale) {
