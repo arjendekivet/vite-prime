@@ -29,6 +29,9 @@ export default {
     async postForm(type: string, submitValues: object) {
         return await apiClient.post('/' + type, submitValues, { headers: authHeader() })
     },
+    async getSchema(type: string) {
+        return await apiClient.get('schema/' + type, { headers: authHeader() })
+    },
     async putForm(type: string, id: string, submitValues: object) {
         return await apiClient.put('/' + type + '/' + id, submitValues, { headers: authHeader() })
     },

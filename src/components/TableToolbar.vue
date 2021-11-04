@@ -1,12 +1,17 @@
 <template>
     <Toolbar class="table--toolbar">
         <template #left>
-            <Button type="button" icon="pi pi-file" title="New" @click="emit('newDoc')" />
+            <Button
+                type="button"
+                icon="pi pi-file"
+                @click="emit('newDoc')"
+                v-tooltip="t('NewDocument')"
+            />
             <Button
                 v-show="hasSelection"
                 type="button"
                 icon="pi pi-trash"
-                title="Delete"
+                v-tooltip="t('DeleteSelection')"
                 @click="emit('deleteSelection')"
             />
         </template>
@@ -17,7 +22,7 @@
                     type="text"
                     v-model:modelValue="searchValue"
                     @keyup="emit('update:searchValue', searchValue)"
-                    placeholder="Search"
+                    :placeholder="t('Search')"
                 />
             </span>
         </template>
@@ -25,8 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import router from '@/router/routes';
-import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     searchValue: String,
@@ -36,6 +40,10 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['newDoc', 'deleteSelection', 'update:searchValue'])
+
+const { t } = useI18n({
+    inheritLocale: true, useScope: 'global'
+})
 
 </script>
 

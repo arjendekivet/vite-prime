@@ -1,7 +1,10 @@
-import { createApp } from 'vue';
+import { createApp } from 'vue'
+import { createI18n } from 'vue-i18n'
+import en from "@/locales/en.json";
+import ne from "@/locales/ne.json";
 import router from '@/router/routes'
-import App from '@/App.vue';
-import PrimeVue from 'primevue/config';
+import App from '@/App.vue'
+import PrimeVue from 'primevue/config'
 
 // import 'primevue/resources/themes/bootstrap4-light-blue/theme.css' //theme
 // import '@/themes/nova-vue/theme.css' // local theme 01
@@ -37,6 +40,10 @@ import Password from 'primevue/password';
 import MultiSelect from 'primevue/multiselect';
 import Checkbox from 'primevue/checkbox';
 import SplitButton from 'primevue/splitbutton'
+import Tooltip from 'primevue/tooltip'
+import SelectButton from 'primevue/selectbutton'
+
+import primeLocaleEn from '@/locales/prime_en'
 
 // Override logic to add close emit
 Message.mounted = function () {
@@ -48,10 +55,20 @@ Message.mounted = function () {
     }
 }
 
-const app = createApp(App);
+const i18n = createI18n({
+    legacy: false, // you must set `false`, to use Composition API
+    locale: 'en',
+    messages: {
+        en, ne
+    }
+})
+const app = createApp(App)
 
 app.use(router)
-app.use(PrimeVue);
+app.use(i18n)
+app.use(PrimeVue, { locale: primeLocaleEn })
+
+app.directive('tooltip', Tooltip)
 
 app.component('Button', Button);
 app.component('DataTable', DataTable);
@@ -80,5 +97,6 @@ app.component('Password', Password);
 app.component('MultiSelect', MultiSelect);
 app.component('Checkbox', Checkbox);
 app.component('SplitButton', SplitButton);
+app.component('SelectButton', SelectButton);
 
 app.mount('#app')

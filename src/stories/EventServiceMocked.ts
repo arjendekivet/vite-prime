@@ -2,6 +2,14 @@ import { action } from '@storybook/addon-actions'
 
 const EventService: any = {}
 
+EventService.getSchema = (dataType: string) => {
+    const tethered = function (resolve: any, reject: any) {
+        const returnData: any = { data: {} }
+        resolve(returnData)
+    }
+    return new Promise(tethered);
+}
+
 EventService.deleteByIds = (dataType: string, selectedIds: any) => {
     const tethered = function (resolve: any, reject: any) {
         const returnData = { data: { deletedCount: selectedIds.length } }

@@ -83,7 +83,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const columns = ref<ColumnConfig[]>()
 const localTableData = ref()
-const searchValue = ref<string[]>()
+const searchValue = ref<string>()
 const configTitle = ref<string>()
 const formLayoutKey = ref<string>('dummy')
 const selected = ref<Object[]>()
@@ -106,7 +106,7 @@ if (props.layoutKey) {
             }
             getData()
         })
-        .catch((error) => {
+        .catch((error: any) => {
             // isLoading.value = false
             addErrorMessage(error)
         })
@@ -195,10 +195,10 @@ function searchUpdate(searchValue: string) {
             )
         } else {
             EventService.getDataByFilter(props.dataType, searchValue, false, 0)
-                .then((response) => {
+                .then((response: any) => {
                     localTableData.value = response.data
                 })
-                .catch((error) => {
+                .catch((error: any) => {
                     addErrorMessage(error)
                 })
         }
