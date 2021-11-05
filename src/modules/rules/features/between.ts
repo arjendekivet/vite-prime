@@ -1,7 +1,7 @@
 
 import rc_ from '@/modules/rules/constants'
 import _ from 'lodash'
-import { hofRuleFnGenerator, cHelpers, isAsyncFn, composeRuleFeedbackMessage } from '@/modules/rules/core'
+import { makeRule, cHelpers, isAsyncFn, composeRuleFeedbackMessage } from '@/modules/rules/core'
 import { between as inbetween } from '@vuelidate/validators' //aliassed to inbetween
 
 export const between = (vm, objContext) => {
@@ -62,7 +62,7 @@ export const between = (vm, objContext) => {
             result = dummyValidator?.$validator(comparisonValue);
             // Only if contrary to 'defaulted', compose the message.
             if (result !== defaulted) {
-                let cfgMessage = { dummyValidator, targetFieldName, params, cfg, comparisonValue, ruleType: rc_.V_BETWEEN, argInput: [minimum, maximum] };
+                let cfgMessage = { dummyValidator, targetFieldName, params, cfg, comparisonValue, type: rc_.V_BETWEEN, argInput: [minimum, maximum] };
                 message = composeRuleFeedbackMessage(cfgMessage)
                 //message = dummyValidator?.$message?.({$params: dummyValidator.$params}) ?? dummyValidator?.$message
             }
@@ -89,7 +89,7 @@ export const _between = (args) => {
     const startFn = rc_.V_BETWEEN; //this config means that said method should be invoked from allways, before probing for dependencies, 
     let resultFunction
     try {
-        resultFunction = hofRuleFnGenerator(args, { defaultRuleResult, doInvertRuleResult, startFn, asValidator })
+        resultFunction = makeRule(args, { defaultRuleResult, doInvertRuleResult, startFn, asValidator })
     } catch (error) {
         console.warn(error)
     }

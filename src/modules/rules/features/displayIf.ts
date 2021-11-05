@@ -1,9 +1,9 @@
 /**
  * Logic for an executable 'visibility' feature rule, it's associated helpers and constants
-*/ 
+*/
 import rc_ from '@/modules/rules/constants'
 import _ from 'lodash'
-import { hofRuleFnGenerator, cHelpers } from '@/modules/rules/core'
+import { makeRule, cHelpers } from '@/modules/rules/core'
 
 /**
  * Generates an executioner for rule of type displayIf for vuelidate.
@@ -12,13 +12,13 @@ import { hofRuleFnGenerator, cHelpers } from '@/modules/rules/core'
  * @param args 
  * @returns 
  */
- export const displayIf = (args) => {
+export const displayIf = (args) => {
     const defaultRuleResult = true;
     const staticConfigProperty = rc_.CFG_PROP_ENTITY_DISPLAY
     const doInvertRuleResult = rc_.CFG_PROP_ENTITY_DISPLAY_INVERT
     let resultFunction
     try {
-        resultFunction = hofRuleFnGenerator( args, { defaultRuleResult, staticConfigProperty , doInvertRuleResult } )
+        resultFunction = makeRule(args, { defaultRuleResult, staticConfigProperty, doInvertRuleResult })
     } catch (error) {
         console.warn(error)
     }
@@ -31,7 +31,7 @@ import { hofRuleFnGenerator, cHelpers } from '@/modules/rules/core'
  * @param fieldName 
  * @returns 
  */
- export const isVisible = (vm, objContext) => {
+export const isVisible = (vm, objContext) => {
     const { fieldNames: fieldName } = objContext
     let defaulted = true;
     let result, result_1, result_2;
@@ -44,7 +44,7 @@ import { hofRuleFnGenerator, cHelpers } from '@/modules/rules/core'
 
         result = result_1 && result_2
     }
-    catch(e) {
+    catch (e) {
         console.warn(e);
         result = defaulted;
     }
@@ -54,9 +54,9 @@ import { hofRuleFnGenerator, cHelpers } from '@/modules/rules/core'
 export const isHidden = (vm, objContext) => {
     let result, defaulted = false;
     try {
-        result = !cHelpers.isVisible(vm,objContext)
+        result = !cHelpers.isVisible(vm, objContext)
     }
-    catch(e) {
+    catch (e) {
         console.warn(e);
         result = defaulted;
     }
@@ -68,13 +68,13 @@ export const someHidden = (vm, objContext) => {
     let result, defaulted = false;
     let arrResults = [];
     try {
-        _.forEach(fieldNames, function(fieldName) {
+        _.forEach(fieldNames, function (fieldName) {
             result = !cHelpers.isVisible(vm, { fieldNames: fieldName })
             arrResults.push(result)
         })
         result = _.some(arrResults, Boolean);
     }
-    catch(e) {
+    catch (e) {
         console.warn(e);
         result = defaulted;
     }
@@ -86,22 +86,22 @@ export const someHidden = (vm, objContext) => {
  * @param fieldName 
  * @returns 
  */
- export const someVisible = (vm, objContext) => {
+export const someVisible = (vm, objContext) => {
     const { fieldNames } = objContext
     let result, defaulted = true;
     let arrResults = [];
     try {
-        _.forEach(fieldNames, function(fieldName) {
+        _.forEach(fieldNames, function (fieldName) {
             // re-use isVisible
-            result =  cHelpers.isVisible(vm, { fieldNames: fieldName })
+            result = cHelpers.isVisible(vm, { fieldNames: fieldName })
             arrResults.push(result)
         })
         result = _.some(arrResults, Boolean);
     }
-    catch(e) {
+    catch (e) {
         console.warn(e);
         result = defaulted;
-    }  
+    }
     return result
 }
 
@@ -110,16 +110,16 @@ export const allVisible = (vm, objContext) => {
     let result, defaulted = true;
     let arrResults = [];
     try {
-        _.forEach(fieldNames, function(fieldName) {
-            result = cHelpers.isVisible(vm,{ fieldNames: fieldName })
+        _.forEach(fieldNames, function (fieldName) {
+            result = cHelpers.isVisible(vm, { fieldNames: fieldName })
             arrResults.push(result)
         })
         result = _.every(arrResults, Boolean);
     }
-    catch(e) {
+    catch (e) {
         console.warn(e);
         result = defaulted;
-    }  
+    }
     return result
 }
 
@@ -128,24 +128,24 @@ export const allHidden = (vm, objContext) => {
     let result, defaulted = false;
     let arrResults = [];
     try {
-        _.forEach(fieldNames, function(fieldName) {
-            result = !cHelpers.isVisible(vm,{ fieldNames: fieldName })
+        _.forEach(fieldNames, function (fieldName) {
+            result = !cHelpers.isVisible(vm, { fieldNames: fieldName })
             arrResults.push(result)
         })
         result = _.every(arrResults, Boolean);
     }
-    catch(e) {
+    catch (e) {
         console.warn(e);
         result = defaulted;
     }
     return result
 }
 
-export default { 
+export default {
     // the executioner, can serve as a validator type.
-    displayIf, 
+    displayIf,
     // helpers/retrievers, can be used within other validators.
-    isVisible, 
+    isVisible,
     someVisible,
     allVisible,
     isHidden,

@@ -33,7 +33,7 @@ import _ from 'lodash'
 import rc_ from '@/modules/rules/constants'
 //import { isAsyncFn, isCustomValidatorType, hofRuleFnGenerator, probeCustomRuleFn, probeCustomRuleFnRecursor } from '@/modules/rules/core' 
 import '@/modules/rules/core'
-import { wrapVuelidateBuiltinValidatorOneParam } from '@/modules/rules/core'
+import { makeRule, makeValidator } from '@/modules/rules/core'
 import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue, minValue, and } from '@vuelidate/validators'
 import display from '@/modules/rules/features/displayIf'
 import enabling from '@/modules/rules/features/disableIf'
@@ -49,17 +49,18 @@ import requiredif from '@/modules/rules/features/requiredIf'
 export * from './core';
 
 export const cHelpers = {
-    [rc_.V_MAXVALUE]: wrapVuelidateBuiltinValidatorOneParam({ paramName: "max", ruleType: rc_.V_MAXVALUE, targetValidator: maxValue }), //executioner. Wrapped vuelidate minValue
-    // wrapped vuelidate minValue
-    [rc_.V_MINVALUE]: wrapVuelidateBuiltinValidatorOneParam({ paramName: "min", ruleType: rc_.V_MINVALUE, targetValidator: minValue }), // minlength.minLength, //executioner
-    // wrapped vuelidate minLength
-    [rc_.V_MINLENGTH]: wrapVuelidateBuiltinValidatorOneParam({ paramName: "min", ruleType: rc_.V_MINLENGTH, targetValidator: minLength }), // minlength.minLength, //executioner
-    [rc_.IS_MIN_LENGTH]: minlength.isMinLength, //a retriever
-    // wrapped vuelidate maxLength
-    [rc_.V_MAXLENGTH]: wrapVuelidateBuiltinValidatorOneParam({ paramName: "max", ruleType: rc_.V_MAXLENGTH, targetValidator: maxLength }), //maxlength.maxLength, //executioner
-    [rc_.IS_MAX_LENGTH]: maxlength.isMaxLength, //a retriever
+    // Some executioners. These re-use vuelidate builtin validators, like MaxValue, minValue, etc. 
+    [rc_.V_MAXVALUE]: makeValidator({ validator: maxValue, type: rc_.V_MAXVALUE, param: "max" }),
+    [rc_.V_MINVALUE]: makeValidator({ validator: minValue, type: rc_.V_MINVALUE, param: "min" }),
+    [rc_.V_MINLENGTH]: makeValidator({ validator: minLength, type: rc_.V_MINLENGTH, param: "min" }),
+    [rc_.V_MAXLENGTH]: makeValidator({ validator: maxLength, type: rc_.V_MAXLENGTH, param: "max" }),
+    //[rc_.V_REQUIREDIF]: makeValidator({ validator: requiredIf, type: rc_.V_REQUIREDIF, param: "prop" }),
+    [rc_.V_REQUIREDIF]: requiredif.requiredIfBakkerOhe,
     [rc_.V_BETWEEN]: inbetween.between,
-    // custom, about 'show/hide', non-validation
+    // some retrievers, these read results of the associated executioners.
+    [rc_.IS_MIN_LENGTH]: minlength.isMinLength, //a retriever
+    [rc_.IS_MAX_LENGTH]: maxlength.isMaxLength, //a retriever
+    // retrievers of custom executioners about 'show/hide', non-validation
     [rc_.IS_VISIBLE]: display.isVisible,
     [rc_.SOME_VISIBLE]: display.someVisible,
     [rc_.ALL_VISIBLE]: display.allVisible,
@@ -98,7 +99,7 @@ export const cHelpers = {
     [rc_.V_SET_EXTERNAL_RESULTS]: setExternalResults,
     // about requiredIf
     //[rc_.V_REQUIREDIF]: requiredif.requiredIf,
-    [rc_.V_REQUIREDIF]: wrapVuelidateBuiltinValidatorOneParam({ paramName: "prop", ruleType: rc_.V_REQUIREDIF, targetValidator: requiredIf }),
+    [rc_.V_REQUIREDIF]: makeValidator({ param: "prop", type: rc_.V_REQUIREDIF, validator: requiredIf }),
     [rc_.IS_REQUIRED_IF]: requiredif.isRequiredIf,
     [rc_.NOT_REQUIRED_IF]: requiredif.notRequiredIf,
     // TODO: two odd helpers ...
@@ -106,7 +107,7 @@ export const cHelpers = {
     [rc_.GET_DISABLED_MESSAGE]: enabling.getDisabledMessage,
 }
 
-// create a map to be able to dynamically refer to the vuelidate validators
+// create a map to be able to dynamically refer to the rules we need, like builtin vuelidate validators and custom validators
 export const mapValidators = {
     // builtin vuelidate validators...
     required,
@@ -124,8 +125,8 @@ export const mapValidators = {
     [rc_.CV_TYPE_MAX_LENGTH]: maxlength._maxLength,
     [rc_.CV_TYPE_BETWEEN]: inbetween._between,
     [rc_.CV_TYPE_REQUIREDIF]: requiredif._requiredIf,
-    [rc_.CV_TYPE_MIN_VALUE]: (args) => hofRuleFnGenerator(args, { startFn: rc_.V_MINVALUE, asValidator: true }),
-    [rc_.CV_TYPE_MAX_VALUE]: (args) => hofRuleFnGenerator(args, { startFn: rc_.V_MAXVALUE, asValidator: true }),
+    [rc_.CV_TYPE_MIN_VALUE]: (args) => makeRule(args, { startFn: rc_.V_MINVALUE, asValidator: true }),
+    [rc_.CV_TYPE_MAX_VALUE]: (args) => makeRule(args, { startFn: rc_.V_MAXVALUE, asValidator: true }),
     //['__cv__fetchedResultContainsPipo']: _fetchedResultContainsPipo,
     //[rc_.CV_TYPE_SET_EXTERNAL_RESULTS_BAK]: _setExternalResultsBak,
 }

@@ -1,6 +1,6 @@
 import rc_, { SOME_ENABLED } from '@/modules/rules/constants'
 import _ from 'lodash'
-import { hofRuleFnGenerator, cHelpers } from '@/modules/rules/core'
+import { cHelpers } from '@/modules/rules/core'
 
 /**
  * Note: this module does not yet export an "executioner" rule
@@ -15,14 +15,14 @@ import { hofRuleFnGenerator, cHelpers } from '@/modules/rules/core'
      * @param fieldName 
      * @returns 
      */
- export const isEmpty = (vm, objContext) => {
+export const isEmpty = (vm, objContext) => {
     const { fieldNames: fieldName } = objContext
     let result, defaulted = true;
-    try { 
-        result = helpers.len( (vm?.v$?.[fieldName]?.$model ) ?? "" ) === 0;
+    try {
+        result = helpers.len((vm?.v$?.[fieldName]?.$model) ?? "") === 0;
     }
-    catch(e) {
-        console.warn(e); 
+    catch (e) {
+        console.warn(e);
         result = defaulted;
     }
     return result
@@ -32,13 +32,13 @@ export const someEmpty = (vm, objContext) => {
     let result, defaulted = true;
     let arrResults = [];
     try {
-        _.forEach(fieldNames, function(fieldName) {
+        _.forEach(fieldNames, function (fieldName) {
             result = cHelpers.isEmpty(vm, { fieldNames: fieldName })
             arrResults.push(result)
         })
         result = _.some(arrResults, Boolean);
     }
-    catch(e) {
+    catch (e) {
         console.warn(e);
         result = defaulted;
     }
@@ -50,13 +50,13 @@ export const allEmpty = (vm, objContext) => {
     let result, defaulted = true;
     let arrResults = [];
     try {
-        _.forEach(fieldNames, function(fieldName) {
+        _.forEach(fieldNames, function (fieldName) {
             result = cHelpers.isEmpty(vm, { fieldNames: fieldName })
             arrResults.push(result)
         })
         result = _.every(arrResults, Boolean);
     }
-    catch(e) {
+    catch (e) {
         console.warn(e);
         result = defaulted;
     }
@@ -66,11 +66,11 @@ export const allEmpty = (vm, objContext) => {
 export const notEmpty = (vm, objContext) => {
     const { fieldNames: fieldName } = objContext
     let result, defaulted = false;
-    try { 
+    try {
         result = !(cHelpers.isEmpty(vm, { fieldNames: fieldName }))
     }
-    catch(e) {
-        console.warn(e); 
+    catch (e) {
+        console.warn(e);
         result = defaulted;
     }
     return result
@@ -81,13 +81,13 @@ export const someNotEmpty = (vm, objContext) => {
     let result, defaulted = false;
     let arrResults = [];
     try {
-        _.forEach(fieldNames, function(fieldName) {
+        _.forEach(fieldNames, function (fieldName) {
             result = !cHelpers.isEmpty(vm, { fieldNames: fieldName })
             arrResults.push(result)
         })
         result = _.some(arrResults, Boolean);
     }
-    catch(e) {
+    catch (e) {
         console.warn(e);
         result = defaulted;
     }
@@ -99,13 +99,13 @@ export const noneEmpty = (vm, objContext) => {
     let result, defaulted = false;
     let arrResults = [];
     try {
-        _.forEach(fieldNames, function(fieldName) {
+        _.forEach(fieldNames, function (fieldName) {
             result = !cHelpers.isEmpty(vm, { fieldNames: fieldName })
             arrResults.push(result)
         })
         result = _.every(arrResults, Boolean);
     }
-    catch(e) {
+    catch (e) {
         console.warn(e);
         result = defaulted;
     }

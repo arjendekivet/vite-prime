@@ -1,0 +1,1394 @@
+/**
+ * Logica: 
+* Qua <Feature> "Validity, Visibility, Mode (Read/ReadOnly/Edit), Calculation/Computation/value" 
+              (hoe het dan ook gaat heten qua config property en qua html attribute vue component property: display/hidden/show/hide/visible/invisible ) 
+
+* 1. Als een entity configuratie een eigen statische <Feature> config property heeft, is die leading. Die MAG NIET worden overruled. Einde evaluatie.
+* 2. Als het veld dat niet heeft, maar wel een "dependency in een rule" heeft, dan bepaalt die dependency rule het resultaat van die feature.
+*      Bijvoorbeeld: veld heeft "dependsOn" of upstream heeft "dependents" die op dit veld slaat.
+*      Vraagstuk: Moet de genoemde dependent field daadwerkelijk een relevante visibility validator hebben, of gaat dit buiten de verantwoordelijkheid van dit veld om? 
+*      In de zin van: geen rule is ook een rule. Geen rule om visibility te negeren betekent toestemming voor visibility. etc.
+* 
+//TODO: wrapp many of the builtin vuelidate validators in order to be able to OPTIONALLY dynamically parameterize them using $model or refs
+{ type: cvh.CV_MIN_LENGTH,  params: { min: 10 } } should work (ofcourse)
+{ type: cvh.CV_MIN_LENGTH,  params: { $model: "setting0" } } should work picking up the reactive value of some field "setting0"
+{ type: cvh.CV_MIN_LENGTH,  params: { ref: "setting0" } } should also work picking up the ref value of some ref "setting0"
+
+TODO: if we pass in ref instead of $model, we should be able to search all vm.$refs to get to the correct ref and use it's value. For example see the cHelpers.minleghth implementation
+
+TODO: we should also be able to EXECUTE rules via special helper rules, instead of merely retrieving results form previous $validate() calls. 
+Perhaps even run rules against dynamical TARGETS.
+ If we configure a rule to be executed, with the source coming from ($model or ref) but the target being another field, 
+ then that would mean that the comparison value to pass into the rules should not be the currently passed in runtime value, but the value from the target model.
+// $model inidicates the source where to retrieve expected "min" argument payload from. 
+// if we do NOT mention an additionally a non-empty "target", the MIN_LENGTH validator rule will be executed comparing the value of actual field which is calling. 
+// If a non-empty target is specified, the 'validator' will be run against the value of that field! 
+// So we could run a rule in field description that runs an on the fly a rule
+// against field C (target" "C") for a minLength comparison based on the length of the value of field "setting0". 
+ This will work, because we re-use the builtin-validators or our won validators, which accept dynamic parametrizations and thus can be reused on the fly, 
+ as long as they are callable and not associated to fields.
+*/ 
+// TODO: if all methods used can come from Array instead of Lodash, drop Lodash dependency
+// like myArray =[] myArray.every instead of _.every( myArray, <bla>) etc 
+
+import _ from 'lodash'
+// import { helpers } from '@vuelidate/validators'
+import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue , and } from '@vuelidate/validators'
+
+export const RULE_GENERATOR = "RULE_GENERATOR";
+export const VISIBILITY = 'displayIf';
+export const SILENTVALIDITY = '$silentErrors'
+export const V_SILENTERRORS = '$silentErrors'
+export const V_VALID = '$invalid' // or $error NB: test for invalidity in vuelidate so we should invert it ...
+export const V_DISPLAYIF = 'displayIf'; ////sort of legacy, for rules that bring fn:Function() from the JSON, which we do not support ideally
+export const V_DISABLEIF = 'disableIf'; //sort of legacy, for rules that bring fn:Function() from the JSON, which we do not support ideally
+
+export const V_MINLENGTH = 'minLength'; //now it holds the name of the method to invoke on cHelpers for wrapped builtin vuelidate validators ...
+export const V_MAXLENGTH = 'maxLength';
+export const V_BETWEEN = 'between';
+
+// Introduce constants for the validator names/types in order NOT to clash with built-in and other imported working vuelidate validators
+export const V_CUSTOM_PREFIX = '__cv__';
+export const CV_TYPE_DISABLE_IF = `${V_CUSTOM_PREFIX}${V_DISABLEIF}`;
+export const CV_TYPE_DISPLAY_IF = `${V_CUSTOM_PREFIX}${V_DISPLAYIF}`;
+export const CV_TYPE_MIN_LENGTH = `${V_CUSTOM_PREFIX}${V_MINLENGTH}`;
+export const CV_TYPE_MAX_LENGTH = `${V_CUSTOM_PREFIX}${V_MAXLENGTH}`;
+export const CV_TYPE_BETWEEN = `${V_CUSTOM_PREFIX}${V_BETWEEN}`;
+
+export const AND = "and";
+export const OR = "or";
+export const NOT = "not";
+
+export const CFG_PROP_ENTITY_DISPLAY = 'hidden'; // indicates in fieldCfg the optional property 'hidden' decides the field display
+export const CFG_PROP_ENTITY_DISPLAY_INVERT = true; // indicates a display rule will have to negate the config prop
+
+export const CFG_PROP_ENTITY_DISABLE = 'disabled'; // indicates in fieldCfg the optional property 'disabled' decides the field disabling
+export const CFG_PROP_ENTITY_DISABLE_INVERT = false; // indicates a disable rule will NOT ave to negate the config prop
+
+// terms to be used in the Configuration of validators (in the form definitions / fields definition) pointing to the supported retriever functions
+export const IS_VALID = "isValidSilent"
+export const SOME_VALID = "someValidSilent"
+export const ALL_VALID = "allValidSilent";
+
+export const IS_INVALID = "isInvalidSilent"
+export const SOME_INVALID = "someInvalidSilent";
+export const ALL_INVALID = "allInvalidSilent";
+
+export const IS_VALID_LAZY = "isValid"
+export const SOME_VALID_LAZY = "someValid"
+export const ALL_VALID_LAZY = "allValid";
+
+export const IS_INVALID_LAZY = "isInvalid"
+export const SOME_INVALID_LAZY = "someInvalid";
+export const ALL_INVALID_LAZY = "allInvalid";
+
+export const IS_VISIBLE = "isVisible";
+export const SOME_VISIBLE = "someVisible";
+export const ALL_VISIBLE = "allVisible";
+
+export const IS_HIDDEN = "isHidden";
+export const SOME_HIDDEN = "someHidden";
+export const ALL_HIDDEN = "allHidden";
+
+export const IS_DISABLED = "isDisabled";
+export const SOME_DISABLED = "someDisabled";
+export const ALL_DISABLED = "allDisabled";
+
+export const IS_ENABLED = "isEnabled";
+export const SOME_ENABLED = "someEnabled";
+export const ALL_ENABLED = "allEnabled";
+
+// note: "empty" rules depend on the $model of the specified field. This assumes the two-way binding AND a dummy rule for a field when NO built in validator was specified at all. 
+// We already use two of such dummy rules, namely for visibility and for enabling for each field, so $model should be present for each field.
+export const IS_EMPTY = "isEmpty";
+export const SOME_EMPTY = "someEmpty";
+export const ALL_EMPTY = "allEmpty";
+
+export const NOT_EMPTY = "notEmpty";
+export const SOME_NOT_EMPTY = "someNotEmpty";
+export const NONE_EMPTY = "noneEmpty";
+
+// EXPERIMENT: helpers to retrieve the rule results of the built-in vuelidate requiredIf validator
+export const IS_REQUIRED_IF = "isRequiredIf"
+export const NOT_REQUIRED_IF = "notRequiredIf"
+
+// TODO EXPERIMENT: helpers to retrieve the rule results of the built-in vuelidate minLength validator
+export const IS_MIN_LENGTH = "isMinLength";
+export const IS_MAX_LENGTH = "isMaxLength";
+
+/**
+ * Helpers which merely retrieve optional presumed previous rule results. The require only the vm and an array of fieldname(s) as parameters.
+ */
+const SUPPORTED_RETRIEVERS = [
+    IS_VISIBLE, SOME_VISIBLE, ALL_VISIBLE, 
+    IS_VALID, SOME_VALID, ALL_VALID, 
+    IS_INVALID, SOME_INVALID, ALL_INVALID, 
+    IS_DISABLED, SOME_DISABLED, ALL_DISABLED, 
+    IS_HIDDEN, SOME_HIDDEN, ALL_HIDDEN ,
+    IS_EMPTY, SOME_EMPTY, ALL_EMPTY,
+    NOT_EMPTY, SOME_NOT_EMPTY, NONE_EMPTY,
+    // these search for the results for builtin vuelidate validators!!!! They do not -yet- rerun proper validators thmeselves.
+    IS_REQUIRED_IF, NOT_REQUIRED_IF,
+    IS_MIN_LENGTH, 
+    // V_MINLENGTH,
+    // V_MAXLENGTH,
+    // V_BETWEEN,
+]
+
+/**
+ * Helpers which are able to run an actual validator. These can take a proper rule execution configuration for dynamic parametrization AND dynamic targeting.
+ */
+const SUPPORTED_EXECUTIONERS = [
+    V_MINLENGTH,
+    V_MAXLENGTH,
+    V_BETWEEN,
+]
+/**
+ * define helper functions like isValid, isVisible, isDisabled, that take a fieldname and return a boolean if the retrieved info qualifies.
+ * // TODO: if these helpers all work robustly, rewrite them to the shortest possible format? Voorbeeld
+ * isEnabled: (vm, fieldName: string) => {
+        let result, defaulted = true;
+        try {
+            result = !cHelpers.isDisabled(vm,fieldName)
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    * kunnen we -wat- korter schrijven als:
+    isEnabled: (vm, fieldName: string) => {
+        try {
+            return !cHelpers.isDisabled(vm,fieldName)
+        }
+        catch(e) { 
+            return true 
+        }
+    },
+ */
+export const cHelpers = {
+    /**
+     * 
+     * How should we indicate minLength acts as an executable rule? as opossed to a retrieval rule?   
+     * Perhaps we should store the executioners on a separate object, like cExecs or such?
+     * 
+     * 
+     * @param value Wrapper for the builtin vuelidate wrapper for the minLength validator.
+     * We need this wrapper to be able to call the paraetrization in runtime based on a static configuration, without passing in function form the static configuration.
+     * Since we do not want to morph entire rulessets we need this to give rules dynamical invocation behavior. 
+     * @param vm 
+     * @param params 
+     */
+    minLength: async (vm, objContext ) => {
+        // test if we have vm.fieldValues always or should we use params.formData ????
+        //destructure the params into some crucial variables
+        const { value , params, ...cfg } = objContext // contains the source field name, from where to grab the payload for the min argumen
+        let comparisonValue = value;
+        let minimum: number;
+        let defaulted = true; // ????????????????????? how would we know what to default to?
+        let result
+        let dummyValidator;
+        let message="";
+        let preMessage: string;
+        let partMessage: string;
+        
+        let sourceFieldName, targetFieldName, targetFieldLabel, metaType;
+        let refName
+        let probe
+        
+        try{
+            //min = Number(vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName])
+            minimum = Number(params?.min)
+        }
+        catch(e){
+            console.warn(e)
+        }
+        // if we did not receive a number straight away, we should have received a $model to retrieve it from or some other method to invoke...
+        if ( isNaN(minimum) ){
+            sourceFieldName = params?.min?.$model //typeOf(min) === 'object' && min?.$model
+            if (sourceFieldName && typeof sourceFieldName === 'string'){
+                minimum = Number(vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName])
+            }
+            else { 
+                refName = params?.min?.ref
+                if (refName && typeof refName === 'string'){
+                    probe = vm?.$refs?.[refName]?.value
+                    minimum = Number(probe)
+                }
+            }
+        }
+        if ( !isNaN(minimum)){
+            try { 
+                //check if we have to run on another target instead of on the requesting field!!!
+                targetFieldName = params?.targetField && params.targetField.name
+                if (targetFieldName && typeof targetFieldName === 'string'){
+                    comparisonValue = vm?.v$?.[targetFieldName]?.$model ?? vm?.fieldValues?.value?.[targetFieldName]
+                }
+
+                // Note: here we are re-using the builtin vuelidate minLength validator, without having to know exactly how it is implemented or generates it's message
+                dummyValidator = minLength(minimum); 
+                result = dummyValidator?.$validator(comparisonValue); // Note: when comparisonValue is empty/undefined,{},[]  it will PASS / QUALIFY
+                
+                // Only if failed, compose the message.
+                if (!result){ 
+                    preMessage = `(Rule '${V_MINLENGTH}')`
+                    //Only compose a hefty message if the execution was triggered indirectly
+                    if (typeof targetFieldName === 'string'){
+                        targetFieldLabel = params?.targetField?.label ?? targetFieldName
+                        if (cfg?.fieldCfg?.label && targetFieldName.toLowerCase() !== cfg.fieldCfg.label.toLowerCase() ){
+                            metaType = cfg?.metaParams?.type ?? cfg?.metaParams?.params?.type
+                            metaType = metaType ?? cfg?.metaParams?.params?.params?.type
+                            preMessage = `(Field '${cfg.fieldCfg.label}' by rule '${metaType}' indirectly tested field '${targetFieldLabel}' with value '${comparisonValue}' against rule '${V_MINLENGTH}(${minimum})')`;
+                        }
+                    }
+                    partMessage = dummyValidator?.$message?.({$params: dummyValidator.$params}) ?? dummyValidator?.$message
+                    message = `${partMessage}. ${preMessage??''}`;
+                }
+            }
+            catch(e) {
+                console.warn(e); 
+            }
+        }
+        // only output the message when failed
+        // return result || { result, message }
+
+        // Trivially use Promise.resolve, to support it being async, to test out the whole async rules chaining principle...
+        // or even throw in a delay 
+        //setTimeout(function(){ 
+                // debugger; 
+                // console.log('about to return setTimeout callback ...')
+                return Promise.resolve(result || { result, message }) 
+        //    }, 10000 ) ; 
+    },
+    /**
+     * Retrieves the rule result from a supposed previous run of a rule of type CV_TYPE_MIN_LENGTH on field objparams.fieldName or such
+     * The passed in const { value, fieldName, params, ...cfg } = objContext is augmented to support rerunning of the rule.
+     * For now we only retrieve info but we could opt to rerun rules. Note: if 1 call is async we should make the entire chain async.
+     * @param vm 
+     * @param objParams 
+     * @returns 
+     */
+    isMinLength: (vm, objContext: object) => {
+        const { fieldName } = objContext
+        let result, defaulted = true
+        try { 
+            result = (vm?.v$?.[fieldName]?.[CV_TYPE_MIN_LENGTH]?.$response?.extraParams?.rule_result ?? defaulted)
+        }
+        catch(e) {
+            console.warn(e); 
+            return defaulted;
+        }
+        return result;
+    },
+    /**
+     * Retrieves the rule result from a supposed previous run of a rule of type CV_TYPE_MAX_LENGTH on field objparams.fieldName or such
+     * The passed in const { value, fieldName, params, ...cfg } = objContext is augmented to support rerunning of the rule.
+     * For now we only retrieve info but we could opt to rerun rules. Note: if 1 call is async we should make the entire chain async.
+     * @param vm 
+     * @param objParams 
+     * @returns 
+     */
+    maxLength: (vm, objContext ) => {
+        // test if we have vm.fieldValues always or should we use params.formData ????
+        //destructure the params into some crucial variables
+        const { value , params, ...cfg } = objContext // contains the source field name, from where to grab the payload for the max argumen
+        let comparisonValue = value;
+        let maximum: number;
+        let defaulted = true; // ????????????????????? how would we know what to default to?
+        let result
+        let dummyValidator;
+        let message="";
+        let preMessage: string;
+        let partMessage: string;
+        
+        let sourceFieldName, targetFieldName, targetFieldLabel, metaType;
+        let refName
+        let probe
+        
+        try{
+            maximum = Number(params?.max)
+        }
+        catch(e){
+            console.warn(e)
+        }
+        // if we did not receive a number straight away, we should have received a $model to retrieve it from or some other method to invoke...
+        if ( isNaN(maximum) ){
+            sourceFieldName = params?.max?.$model
+            if (sourceFieldName && typeof sourceFieldName === 'string'){
+                maximum = Number(vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName])
+            }
+            else { 
+                refName = params?.max?.ref
+                if (refName && typeof refName === 'string'){
+                    probe = vm?.$refs?.[refName]?.value
+                    maximum = Number(probe)
+                }
+            }
+        }
+        if ( !isNaN(maximum)){
+            try { 
+                //check if we have to run on another target instead of on the requesting field!!!
+                targetFieldName = params?.targetField && params.targetField.name
+                if (targetFieldName && typeof targetFieldName === 'string'){
+                    comparisonValue = vm?.v$?.[targetFieldName]?.$model ?? vm?.fieldValues?.value?.[targetFieldName]
+                }
+                // Note: here we are re-using the builtin vuelidate maxLength validator, without having to know exactly how it is implemented or generates it's message
+                dummyValidator = maxLength(maximum); 
+                result = dummyValidator?.$validator(comparisonValue);
+                
+                // Only if failed, compose the message.
+                if (!result){ 
+                    preMessage = `(Rule '${V_MAXLENGTH}')`
+                    //Only compose a hefty message if the execution was triggered indirectly
+                    if (typeof targetFieldName === 'string'){
+                        targetFieldLabel = params?.targetField?.label ?? targetFieldName
+                        if (cfg?.fieldCfg?.label && targetFieldName.toLowerCase() !== cfg.fieldCfg.label.toLowerCase() ){
+                            metaType = cfg?.metaParams?.type ?? cfg?.metaParams?.params?.type
+                            metaType = metaType ?? cfg?.metaParams?.params?.params?.type
+                            preMessage = `(Field '${cfg.fieldCfg.label}' by rule '${metaType}' indirectly tested field '${targetFieldLabel}' with value ${comparisonValue} against rule '${V_MAXLENGTH}(${maximum})')`;
+                        }
+                    }
+                    partMessage = dummyValidator?.$message?.({$params: dummyValidator.$params}) ?? dummyValidator?.$message
+                    message = `${partMessage}. ${preMessage??''}`;
+                }
+            }
+            catch(e) {
+                console.warn(e); 
+            }
+        }
+        return result || { result, message } ; // only output the message when failed
+    },
+    /**
+     * Receives //const { value, fieldName, params, ...cfg } = objContext
+     * @param vm 
+     * @param objContext 
+     * @returns 
+     */
+    isMaxLength: (vm, objContext: object) => {
+        const { fieldName } = objContext
+        let result, defaulted = true
+        try { 
+            result = (vm?.v$?.[fieldName]?.[CV_TYPE_MAX_LENGTH]?.$response?.extraParams?.rule_result ?? defaulted)
+        }
+        catch(e) {
+            console.warn(e); 
+            return defaulted;
+        }
+        return result;
+    },
+    between: (vm, objContext ) => {
+        let defaulted = true; // ????????????????????? how would we know what to default to?
+        let result
+        let dummyValidator;
+        let message: string
+        let minimum: number;
+        let maximum: number;
+        let sourceFieldName
+        let refName
+        let probe
+        // test if we have vm.fieldValues always or should we use params.formData ????
+        //destructure the params into some crucial variables
+        const { value , params, ...cfg } = objContext // contains the source field name, from where to grab the payload for the min argument.
+        // check if we did receive numbers directly
+        try{
+            minimum = Number(params?.min)
+            maximum = Number(params?.max)
+        }
+        catch(e){
+            console.warn(e)
+        }
+        if ( isNaN(minimum) ){
+            sourceFieldName = params?.min?.$model //typeOf(min) === 'object' && min?.$model
+            if (sourceFieldName && typeof sourceFieldName === 'string'){
+                minimum = Number(vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName])
+            }
+            refName = params?.min?.ref
+            if (refName && typeof refName === 'string'){
+                probe = vm?.$refs?.[refName]?.value
+                minimum = Number(probe)
+            }
+        }
+        // if we did not receive a number straight away, we could have received a $model to retrieve it from or a ref or TODO... some other method to invoke to get the numer param...
+        if ( isNaN(maximum) ){
+            sourceFieldName = params?.max?.$model //typeOf(min) === 'object' && min?.$model
+            if (sourceFieldName && typeof sourceFieldName === 'string'){
+                maximum = Number(vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName])
+            }
+            refName = params?.max?.ref
+            if (refName && typeof refName === 'string'){
+                probe = vm?.$refs?.[refName]?.value
+                maximum = Number(probe)
+            }
+        }
+        // if we have both parametrisations... invoke the vuelidate builtin between validator
+        if ( !isNaN(minimum) && !isNaN(maximum) ){
+            try { 
+                // Note: here we are re-using the builtin vuelidate between validator, without having to know exactly how it is implemented or how it generates it's message
+                dummyValidator = between(minimum,maximum); 
+                result = dummyValidator?.$validator(value);
+                message = dummyValidator?.$message?.({$params: dummyValidator.$params}) ?? dummyValidator?.$message
+            }
+            catch(e) {
+                console.warn(e); 
+            }
+        }
+        return { result, message } ;
+    },
+    /**
+     * Checks if for a field the -builtin- requiredIf validator resulted true.
+     * Note: this is only a retriever of a rule result, it does not calculate or execute a rule itself.
+     * This result will only indeed exist IF for that field the builtIn requiredIf rule existed AND was called & registered, before this retrieval helper method is called. 
+     * @param vm 
+     * @param fieldName 
+     * @returns 
+     */
+     isRequiredIf: (vm, objContext) => {
+        const { fieldNames: fieldName } = objContext
+        let result, defaulted = false;
+        try { 
+            result = vm?.v$?.[fieldName]?.requiredIf?.$invalid ?? defaulted;
+        }
+        catch(e) {
+            console.warn(e); 
+            result = defaulted;
+        }
+        return result
+    },
+    notRequiredIf:  (vm, objContext) => {
+        let result, defaulted = true;
+        try { 
+            result = !cHelpers.isRequiredIf(vm,objContext)
+        }
+        catch(e) {
+            console.warn(e); 
+            result = defaulted;
+        }
+        return result
+    },
+    /**
+     * Checks if a field is empty.
+     * Note: this is only a retriever of a rule result, it does not calculate or execute a rule itself!
+     * Since every field will have at least two rules ( for visibility and for disabling ) every field will be mapped and will have $model to consult!
+     * @param vm 
+     * @param fieldName 
+     * @returns 
+     */
+    isEmpty: (vm, objContext) => {
+        const { fieldNames: fieldName } = objContext
+        let result, defaulted = true;
+        try { 
+            result = helpers.len( (vm?.v$?.[fieldName]?.$model ) ?? "" ) === 0;
+        }
+        catch(e) {
+            console.warn(e); 
+            result = defaulted;
+        }
+        return result
+    },
+    someEmpty: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = true;
+        let arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                result = cHelpers.isEmpty(vm, { fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    allEmpty: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = true;
+        let arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                result = cHelpers.isEmpty(vm, { fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    notEmpty: (vm, objContext) => {
+        const { fieldNames: fieldName } = objContext
+        let result, defaulted = false;
+        try { 
+            result = !(cHelpers.isEmpty(vm, { fieldNames: fieldName }))
+        }
+        catch(e) {
+            console.warn(e); 
+            result = defaulted;
+        }
+        return result
+    },
+    someNotEmpty: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = false;
+        let arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                result = !cHelpers.isEmpty(vm, { fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    noneEmpty: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = false;
+        let arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                result = !cHelpers.isEmpty(vm, { fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    /**
+     * Checks if a field is silently -eagerly- valid. 
+     * Inverts the result because vuelidate flags $error or $invalid, which is the opposite of what we test here.
+     * @param vm 
+     * @param fieldName 
+     * @returns 
+     */
+    isValidSilent: (vm, objContext) => {
+        const { fieldNames: fieldName } = objContext
+        let result, defaulted = true;
+        try {
+            // Test if we can use vm to get to rules to get to a $validator on it to call it or re-use it is a wrapped function?
+            // inverts: (if lenght > 0) then there are errors. primary result = true. (!result => false) !!result=true !!!result=false 
+            result = !!!(vm?.v$?.[fieldName]?.[V_SILENTERRORS]?.length > 0)
+        }
+        catch(e) {
+            console.warn(e); 
+            result = defaulted;
+        }
+        return result
+    },
+    /**
+     * Checks if a field is explicitely -being touched/dirty- valid. 
+     * Inverts the result because vuelidate flags $error or $invalid, which is the opposite of what we test here.
+     * @param vm 
+     * @param fieldName 
+     * @returns 
+     */
+    isValid: (vm, objContext) => {
+        const { fieldNames: fieldName } = objContext
+        let result, defaulted = true;
+        try { 
+            result = !!!(vm?.v$?.[fieldName]?.[V_VALID]) 
+        }
+        catch(e) {
+            console.warn(e); 
+            result = defaulted;
+        }
+        return result
+    },
+    /**
+     * Checks if two types of rules for display resulted in true.
+     * @param vm 
+     * @param fieldName 
+     * @returns 
+     */
+    isVisible: (vm, objContext) => {
+        const { fieldNames: fieldName } = objContext
+        let defaulted = true;
+        let result, result_1, result_2;
+        try {
+            // custom rule based on a FUNCTION in the field validators configuration. We do not expect this frequently though.... Functions from external JSON into Javascript Object literal configs is rare. 
+            // temporarily, as long as we also use the displayIf with spawned external functions :-)
+            result_1 = (vm?.v$?.[fieldName]?.[V_DISPLAYIF]?.$response?.extraParams?.rule_result ?? true)
+            // for now we surely have to take into account CV_TYPE_DISPLAY_IF!!!!
+            result_2 = (vm?.v$?.[fieldName]?.[CV_TYPE_DISPLAY_IF]?.$response?.extraParams?.rule_result ?? true)
+
+            result = result_1 && result_2
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    /**
+     * Checks for a RESULT for field rule to be disabled. Note: does not EXECUTE a rule.
+     * @param vm 
+     * @param fieldName 
+     * @returns 
+     */
+    isDisabled: (vm, objContext) => {
+        const { fieldNames: fieldName } = objContext
+        const defaulted = false
+        let result
+        try {
+            result = (vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.extraParams?.rule_result ?? defaulted)
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    isEnabled: (vm, objContext) => {
+        let result, defaulted = true;
+        try {
+            result = !cHelpers.isDisabled(vm,objContext)
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    isInvalid: (vm, objContext) => {
+        let result, defaulted = false;
+        try {
+            // invert the result because we re-use isValid, we returns true if valid
+            result = !cHelpers.isValid(vm,objContext)
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    getInvalidMessage: (vm, objContext) => {
+        const { fieldNames: fieldName } = objContext
+        let result
+        let probe = cHelpers.isInvalid(vm,objContext);
+        // Only get the message if invalid, since we do not want to have to detect if $response?.message belongs to an actual validator or etc etc
+        //if (cHelpers.isInvalid(vm,objContext)) {
+            result = vm?.v$?.[fieldName]?.$errors[0]?.$message || vm?.v$?.[fieldName]?.$errors[0]?.$response?.message || ""
+        //}
+        return result
+    },
+    isInvalidSilent: (vm, objContext) => {
+        let result, defaulted = false;
+        try {
+            // inverts: (if lenght > 0) then there are errors. primary result = true. (!result => false) !!result=true !!!result=false 
+            result = !cHelpers.isValidSilent(vm, objContext)
+        }
+        catch(e) {
+            console.warn(e); 
+            result = defaulted;
+        }
+        return result
+    },
+    isHidden: (vm, objContext) => {
+        let result, defaulted = false;
+        try {
+            result = !cHelpers.isVisible(vm,objContext)
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    someHidden: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = false;
+        let arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                result = !cHelpers.isVisible(vm, { fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    allHidden: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = false;
+        let arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                result = !cHelpers.isVisible(vm,{ fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    someValidSilent: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = false;
+        const arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                // re-use isValidSilent
+                result =  cHelpers.isValidSilent(vm,{ fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e){
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    someInvalidSilent: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = false;
+        const arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                // re-use isValidSilent
+                result = !cHelpers.isValidSilent(vm,{ fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e){
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    allValidSilent: (vm, objContext) => {
+        const { fieldNames } = objContext    
+        let result, defaulted = true;
+        let arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                // re-use isValid
+                result = cHelpers.isValidSilent(vm,{ fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e)
+        {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    allInvalidSilent: (vm, objContext) => {
+        let result, defaulted = false;
+        try {
+            result = !( cHelpers.someValidSilent(vm, objContext))
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        } 
+        return result
+    },
+    /**
+     * TODO Optimize:
+     * either rewrite in terms of NOT allInvalid 
+     * leave early as soon as one if true
+     * @param vm 
+     * @param objContext 
+     * @returns 
+     */
+    someValid: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = true;
+        let arrResults = [];
+        try {
+            result = !( cHelpers.allInvalid(vm, objContext))
+            // _.forEach(fieldNames, function(fieldName) {
+            //     // re-use isValid
+            //     result =  cHelpers.isValid(vm, fieldName)
+            //     arrResults.push(result)
+            // })
+            // result = _.some(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    allValid: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = true;
+        let arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                // re-use isValid
+                result =  cHelpers.isValid(vm,{ fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    },
+    allInvalid: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = false;
+        let arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                // re-use isValid but inverted
+                result = !cHelpers.isValid(vm,{ fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+            //result = !arrResults.includes(false);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        
+        return result
+    },
+    someInvalid: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = false;
+        let arrResults = [];
+        try {
+            result = !( cHelpers.allValid(vm, objContext))
+            // _.forEach(fieldNames, function(fieldName) {
+            //     // re-use isValid
+            //     result = cHelpers.isValid(vm,{ fieldNames: fieldName })
+            //     arrResults.push(result)
+            // })
+            // result = arrResults.includes(false);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }     
+        return result
+    },
+    /**
+     * @param vm 
+     * @param fieldName 
+     * @returns 
+     */
+    someVisible: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = true;
+        let arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                // re-use isVisible
+                result =  cHelpers.isVisible(vm, { fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }  
+        return result
+    }, 
+    allVisible: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = true;
+        let arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                result = cHelpers.isVisible(vm,{ fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        }  
+        return result
+    },
+    someDisabled: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = false;
+        let arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                result =  cHelpers.isDisabled(vm, { fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        } 
+        return result
+    }, 
+    allDisabled: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = false;
+        let arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                result = cHelpers.isDisabled(vm,{ fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        } 
+        return result
+    },
+    someEnabled: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = true;
+        let arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                result = !cHelpers.isDisabled(vm, { fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.some(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        } 
+        return result
+    }, 
+    allEnabled: (vm, objContext) => {
+        const { fieldNames } = objContext
+        let result, defaulted = true;
+        let arrResults = [];
+        try {
+            _.forEach(fieldNames, function(fieldName) {
+                result = !cHelpers.isDisabled(vm,{ fieldNames: fieldName })
+                arrResults.push(result)
+            })
+            result = _.every(arrResults, Boolean);
+        }
+        catch(e) {
+            console.warn(e);
+            result = defaulted;
+        } 
+        return result
+    },
+    getDisabledMessage: (vm, objContext) => {
+        const { fieldNames: fieldName } = objContext
+        let result = (vm?.v$?.[fieldName]?.[CV_TYPE_DISABLE_IF]?.$response?.message ?? '')
+        return `Disabled: ${result}`
+    },
+}
+
+/**
+ * A HOF that composes the parameterized version of a validator fn.
+ * For now used by custom validators of type 'disABLERIf' and diplayerIf .... and ????
+ * For now supports: 
+ * conditioning on the eager validity of some/all fields.
+ * conditioning on the lazy validity of some/all fields.
+ * conditioning on the visibility of some/all fields.
+ * conditioning on the disabled of some/all fields.
+ * conditioning on the empty / not-empty of some/all fields.
+ * @param args. Array.  We expect to get passed in all the necessary parametrizations. 
+ * @returns a parameterized ruleFn for vuelidate, to be used as a custom rule executioner for vuelidate (as opposed to only built-in ones and only for validation purposes).
+ * TODO: make async?
+ */
+const hofRuleFnGenerator = ( ...args) => {
+    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = args[0]
+    const { defaultRuleResult, staticConfigProperty , doInvertRuleResult , asValidator = false } = args[1]
+    const ruleType = params.type
+    let resultFunction
+    let fallBackFunction = async function ruleFn(value, vm){
+        return { 
+            $valid: true, // We should never "fail" based on a total dummy function, regardless "asValidator" ???
+            extraParams: { rule_result: defaultRuleResult , fieldCfg }, 
+            message: `Fallback or try-catch rule. Either an error occurred or neither static config property nor any configured rule of type ${ruleType} for ${fieldCfg.label}` 
+        }
+    }
+    let pretest 
+    let hasStaticConfigProperty 
+    try {
+        // 1. do we have an overruling static configuration property?
+        hasStaticConfigProperty = staticConfigProperty && ((fieldCfg?.[staticConfigProperty] ?? false)  !== false )
+        if ( hasStaticConfigProperty )
+        {
+            resultFunction = async function ruleFn(value, vm){
+                let rule_result = doInvertRuleResult ? !!!fieldCfg?.[staticConfigProperty] : !!fieldCfg?.[staticConfigProperty]
+                return { 
+                    $valid: asValidator ? rule_result : true, // when run as Validator, it should flag/register errors accordingly!
+                    extraParams: { rule_result , fieldCfg }, 
+                    message: `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticConfigProperty} on ${fieldCfg.label}` }
+            }
+        }
+        // 2. probe for a supported custom rule function
+        else if (!resultFunction){
+            resultFunction = probeCustomRuleFn(args)
+        }
+        // 3. make sure that if we did not have any function yet, we should return a liberal/neutral fallback function 
+        if (!resultFunction){
+            resultFunction = fallBackFunction
+        }
+
+    } catch (error) {
+        console.warn(error);
+        resultFunction = fallBackFunction;
+    }
+    return resultFunction
+}
+
+/**
+ * Generates a disablerIf rule-function for vuelidate.
+ * Supports refering to (other) field(s) regarding their visibility-state and/or disabled-state and/or validity-state or their value ...
+ * Configures a part of the arguments to call a Higher Order Function for that.
+ * @param args. Array.  We expect to pass in one object containing all the necessary parametrizations. 
+ * @returns a parameterized ruleFn for vuelidateto be used as a custom validator for vuelidate (as opposed to not a built-in one).
+ */
+ export const disablerIf = (args) => {
+    const defaultRuleResult = false;
+    const staticConfigProperty = CFG_PROP_ENTITY_DISABLE
+    const doInvertRuleResult = CFG_PROP_ENTITY_DISABLE_INVERT
+    let resultFunction
+    try {
+        resultFunction = hofRuleFnGenerator( args, { defaultRuleResult, staticConfigProperty , doInvertRuleResult } )
+    } catch (error) {
+        console.warn(error)
+    }
+    return resultFunction
+}
+
+/**
+ * Generates a displayerIf rule-function for vuelidate.
+ * Supports refering to (other) field(s) regarding their visibility-state and/or disabled-state and/or validity-state or their value ...
+ * Configures a part of the arguments to call a Higher Order Function for that.
+ * @param args 
+ * @returns 
+ */
+export const displayerIf = (args) => {
+    const defaultRuleResult = true;
+    const staticConfigProperty = CFG_PROP_ENTITY_DISPLAY
+    const doInvertRuleResult = CFG_PROP_ENTITY_DISPLAY_INVERT
+    let resultFunction
+    try {
+        resultFunction = hofRuleFnGenerator( args, { defaultRuleResult, staticConfigProperty , doInvertRuleResult } )
+    } catch (error) {
+        console.warn(error)
+    }
+    return resultFunction
+}
+
+//TEST to wrap a builtin vuelidate validator for dynamic parametrization
+/**
+ * Generates a minLength validator for vuelidate.
+ * Supports refering to (other) field(s) regarding their visibility-state and/or disabled-state and/or validity-state or their value ...
+ * Configures a part of the arguments to call a Higher Order Function for that.
+ * @param args 
+ * @returns 
+ */
+ export const _minLength = (args) => {
+    const defaultRuleResult = true;
+    // const staticConfigProperty; // absent, we do support any static config property to set minlength statically to true / false. That would be incomprehensible.
+    const doInvertRuleResult = false
+    const asValidator = true; // !!!!!!!!!! Since this one is to replace the builtin vuelidate validator, it should act as a proper validator.
+    const startFn = V_MINLENGTH; //this config means that said method should be invoked FIRSTLY, from allways, before probing for dependencies, 
+    let resultFunction
+    try {
+        resultFunction = hofRuleFnGenerator( args, { defaultRuleResult , doInvertRuleResult, startFn, asValidator } )
+    } catch (error) {
+        console.warn(error)
+    }
+    return resultFunction
+}
+
+/**
+ * Generates a maxLength validator for vuelidate.
+ * Supports refering to (other) field(s) regarding their visibility-state and/or disabled-state and/or validity-state or their value ...
+ * Configures a part of the arguments to call a Higher Order Function for that.
+ * @param args 
+ * @returns 
+ */
+ export const _maxLength = (args) => {
+    const defaultRuleResult = true;
+    // const staticConfigProperty; // absent, we do support any static config property to set minlength statically to true / false. That would be incomprehensible.
+    const doInvertRuleResult = false
+    const asValidator = true; // !!!!!!!!!! Since this one is to replace the builtin vuelidate validator, it should act as a proper validator.
+    const startFn = V_MAXLENGTH; //this config means that said method should be invoked from allways, before probing for dependencies, 
+    let resultFunction
+    try {
+        resultFunction = hofRuleFnGenerator( args, { defaultRuleResult , doInvertRuleResult, startFn, asValidator } )
+    } catch (error) {
+        console.warn(error)
+    }
+    return resultFunction
+}
+/**
+ * Generates a between validator for vuelidate.
+ * Supports refering to (other) field(s) regarding their visibility-state and/or disabled-state and/or validity-state or their value ...
+ * Configures a part of the arguments to call a Higher Order Function for that.
+ * @param args 
+ * @returns 
+ */
+ export const _between = (args) => {
+    const defaultRuleResult = true;
+    // const staticConfigProperty; // absent, we do support any static config property to set minlength statically to true / false. That would be incomprehensible.
+    const doInvertRuleResult = false
+    const asValidator = true; // !!!!!!!!!! Since this one is to replace the builtin vuelidate validator, it should act as a proper validator, meaning it should flag errors etc.
+    const startFn = V_BETWEEN; //this config means that said method should be invoked from allways, before probing for dependencies, 
+    let resultFunction
+    try {
+        resultFunction = hofRuleFnGenerator( args, { defaultRuleResult , doInvertRuleResult, startFn, asValidator } )
+    } catch (error) {
+        console.warn(error)
+    }
+    return resultFunction
+}
+/**
+ * Returns a vuelidate rule function, which returns a response object needed for custom vuelidate validators/rules.
+ * Calls a recursive funciton.
+ * @param arrCfg 
+ * @returns 
+ */
+const probeCustomRuleFn = (arrCfg) => {
+    const { dependsOn, asLogical, fieldCfg, formData, formDefinition, ...params } = arrCfg[0]
+    const { defaultRuleResult, staticConfigProperty , doInvertRuleResult , asValidator = false , startFn } = arrCfg[1]
+    return async function ruleFn(value, vm){
+        if (fieldCfg.id==='title'){
+            //debugger
+        }
+
+        let rule_result = await probeCustomRuleFnRecursor(value, vm, arrCfg[0], asLogical, startFn) // ??  defaultRuleResult
+        rule_result = rule_result ?? defaultRuleResult
+        const boolRuleResult = rule_result?.result ?? rule_result
+        const valid = asValidator ? boolRuleResult : true;
+        let message = `Rule of type ${params?.type} for field ${fieldCfg?.label} returned: ${boolRuleResult}.` 
+        if (rule_result?.message){
+            message = rule_result?.message ?? message //${message} 
+        }
+        return Promise.resolve({ 
+            $valid: valid, 
+            extraParams: { rule_result: boolRuleResult, fieldCfg }, 
+            message: message
+        })
+    }
+}
+
+/**
+ * Method that attempts to find and run the configured rule executioner or rule helper function(s).
+ * If necessary it will act as the inner recursor for the probeCustomRuleFn.
+ * It is able to recursively walk all nested conditions and return the correct overall Boolean evaluation result.
+ * resulting from calling and evaluating all combined condtions in the entire set of dependsOn criteria.
+ * TODO: aborts if it will not qualify the logical norm.
+ * @param {any} value. Passed by vuelidate, the runtime value of the field that invoked the rule.
+ * @param {Component} vm. Passed by vuelidate. The viewmodel/component instance, on which vuelidate (v$) was brought into scope.
+ * @param { Object } cfg. The relevant rule params, including the dependsOn object tree, and context like formData, formdefinition, field definition.
+ * @param {Booelan} asLogicalOperator. The and/or/not logical operator for the relevant dependsOn leaf conditions object
+ * @param {String | null} startFn. Optional. The name of a supported executioner. This should be run before optionally iterating over (nested) conditions in dependsOn.
+ * @returns {Object | Boolean} rule_result. If the return value contains o message, will compose an object with the boolean result and the message, else just the booelan.
+ */
+const probeCustomRuleFnRecursor = async ( value, vm, objCfg, asLogical = AND, startFn = null) => {
+    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = objCfg
+    const arrRetrievers = SUPPORTED_RETRIEVERS;
+    const arrExecutioners = SUPPORTED_EXECUTIONERS;
+    const arrToRecurse = [AND, OR, NOT]
+
+    let countAsResult = 0;
+    let rule_result;
+    let arrPartials = [];
+    let arrMessages = [];
+    let tmp
+    let iterator = dependsOn && typeof dependsOn === 'object' ? Object.entries(dependsOn) : {}
+    let doIterate = Object.keys(iterator).length > 0
+    let breakout = false;
+    let startFnUnqualified = false;
+    let isExecutioner = false;
+    let isRetriever = false;
+    let fnConstructorName = "";
+    let isAsync = false;
+    try{
+        //before probing the recursion for nested conditions, we should first check if there is an INDEPENDENT/AUTONOMOUS rule executioner to invoke.
+        if (startFn) {
+            if (arrExecutioners.includes(startFn)) {
+                let fn = startFn;
+                try {
+                    const objParams = { value, fieldCfg, formData, formDefinition, params }
+                    // check for async and if so await it...
+                    fnConstructorName = cHelpers[fn]?.constructor?.name ?? ""
+                    isAsync = fnConstructorName.includes('AsyncFunction')
+                    //debugger;
+                    tmp = isAsync ? await cHelpers[fn]?.(vm, objParams) : cHelpers[fn]?.(vm, objParams)
+                    countAsResult++
+                    arrPartials.push(tmp?.result ?? tmp) // if we have tmp.result grab that, else grab tmp
+                    if (tmp?.message){
+                        arrMessages.push(tmp.message)
+                    }
+                }
+                catch(e) {
+                    startFnUnqualified = true
+                    console.warn(e)
+                }
+            }
+            else {
+                startFnUnqualified = true
+            }
+            if (startFnUnqualified && asLogical === AND){
+                // when called as a logical AND operator, the end result at this level can never become true anymore, so bail out...
+                arrPartials.push(undefined)
+                arrMessages.push(`Flawed or errored startFn ${startFn} for 'conjunctive' invocation. Aborted.`)
+                countAsResult++
+                if (asLogical === AND){
+                    breakout = true;
+                }
+            }
+        }
+        // should we invoke the recursion iterator
+        if (!breakout && doIterate){
+            for (const [key, entryValue] of iterator) {
+                tmp = null
+                if (arrToRecurse.includes(key)){
+                    // to correctly recur downwards set the new dependsOn property to the relevant subset!!!!
+                    let objCfg2 = { "dependsOn": entryValue, fieldCfg, formData, formDefinition, params }
+                    try { 
+                        tmp = probeCustomRuleFnRecursor(value, vm, objCfg2, key) 
+                        //arrPartials.push(tmp)
+                        arrPartials.push(tmp?.result ?? tmp)
+                        if (tmp?.message){
+                            arrMessages.push(tmp.message)
+                        }
+                        countAsResult++
+                    }
+                    catch(e) {
+                        console.warn(e)
+                    }
+                }
+                else {
+                    isExecutioner = arrExecutioners.includes(key);
+                    isRetriever = arrRetrievers.includes(key);
+                    if ( isExecutioner || isRetriever ) {
+                        let fn = key;
+                        try {
+                            let objParams
+                            if (isRetriever){
+                                // TODO is the name params over here still comprehensible and unambiguous? 
+                                objParams = { fieldNames: entryValue, value, fieldCfg, formData, formDefinition, params }        
+                            }
+                            else
+                            {
+                                // we should make entryValue the new params, since executioners may need complete parametrization instructions. 
+                                // We must be cautious and introduce metaParams to make sure we do not overwrite stuff from entryValue with stuff from the previous params
+                                objParams = { params: entryValue, value, fieldCfg, formData, formDefinition, metaParams: params }        
+                            }
+
+                            // check for async and if so await it...
+                            //debugger;
+                            fnConstructorName = cHelpers[fn]?.constructor?.name ?? ""
+                            isAsync = fnConstructorName.includes('AsyncFunction')
+                            tmp = isAsync ? await cHelpers[fn]?.(vm, objParams) : cHelpers[fn]?.(vm, objParams)
+
+                            //tmp = cHelpers[fn]?.(vm, objParams)
+                            countAsResult++
+                            arrPartials.push(tmp?.result ?? tmp)
+                            if (tmp?.message){
+                                arrMessages.push(tmp.message)
+                            }
+                        }
+                        catch(e) {
+                            console.warn(e)
+                        }
+                    }  
+                }
+            }
+        }
+    }
+    catch(e){
+        console.warn(e)
+    }
+
+    // depending upon asLogicalOperator, we reduce arrPartials to a boolean via _.some. _.every or !_.every
+    if (countAsResult){
+        //debugger;
+        rule_result = asLogical === AND ? _.every(arrPartials,Boolean) : asLogical === OR ? _.some(arrPartials,Boolean) : !(_.some(arrPartials,Boolean))
+    }
+    if (arrMessages.length>0){
+        return { result: rule_result, message: arrMessages.join("; ") }
+    }
+    else {
+        return rule_result
+    }
+}
+
+/*** 
+ * Indicates if a validator is a cynapps custom validator, when the type name starts with our constant custom prefix: V_CUSTOM_PREFIX
+ */
+export const isCustomValidatorType = (type: string) => {
+    return type?.indexOf?.(V_CUSTOM_PREFIX) > -1 ?? false
+}
+
+export default { 
+    cHelpers, 
+    disablerIf, 
+    displayerIf,
+    _minLength,
+    _maxLength,
+    _between,
+    isCustomValidatorType, 
+    V_CUSTOM_PREFIX,
+    RULE_GENERATOR,
+    VISIBILITY,
+    SILENTVALIDITY,
+    V_SILENTERRORS,
+    V_VALID,
+    V_DISPLAYIF,
+    V_DISABLEIF,
+    V_MINLENGTH,
+    V_MAXLENGTH,
+    V_BETWEEN,
+    // custom validators that support dynamical parametrizations
+    CV_TYPE_DISABLE_IF, 
+    CV_TYPE_DISPLAY_IF,
+    CV_TYPE_MIN_LENGTH,
+    CV_TYPE_MAX_LENGTH,
+    CV_TYPE_BETWEEN,
+    // Helpers that merely "read" rule results, as opposed to "execute" other rules:
+    IS_VISIBLE,SOME_VISIBLE,ALL_VISIBLE,
+    IS_HIDDEN,SOME_HIDDEN,ALL_HIDDEN,
+    IS_VALID,SOME_VALID,ALL_VALID,
+    IS_INVALID,SOME_INVALID, ALL_INVALID,
+    IS_VALID_LAZY,SOME_VALID_LAZY,ALL_VALID_LAZY,
+    IS_INVALID_LAZY,SOME_INVALID_LAZY,ALL_INVALID_LAZY,
+    IS_DISABLED,SOME_DISABLED,ALL_DISABLED,
+    IS_ENABLED,SOME_ENABLED,ALL_ENABLED,
+    AND,
+    OR,
+    NOT,
+    IS_EMPTY,SOME_EMPTY,ALL_EMPTY,
+    NOT_EMPTY,SOME_NOT_EMPTY,NONE_EMPTY,
+    IS_REQUIRED_IF, NOT_REQUIRED_IF,
+    // TODO ...
+    IS_MIN_LENGTH, //SOME_MIN_LENGTH, ALL_MIN_LENGTH, NOT_MIN_LENGTH, SOME_NOT_MIN_LENGTH, NONE_MIN_LENGTH ???? terminology 
+    // IS_MAX_LENGTH,
+    // IS_BETWEEN, etc
+};

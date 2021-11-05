@@ -1,6 +1,6 @@
 import rc_ from '@/modules/rules/constants'
 import _ from 'lodash'
-import { hofRuleFnGenerator, cHelpers, isAsyncFn, composeRuleFeedbackMessage } from '@/modules/rules/core'
+import { makeRule, cHelpers, isAsyncFn, composeRuleFeedbackMessage } from '@/modules/rules/core'
 import { maxLength as maxlength } from '@vuelidate/validators' //aliassed as maxlength
 
 /**
@@ -106,7 +106,7 @@ export const _maxLength = (args) => {
     const startFn = rc_.V_MAXLENGTH; //this config means that said method should be invoked from allways, before probing for dependencies, 
     let resultFunction
     try {
-        resultFunction = hofRuleFnGenerator(args, { defaultRuleResult, doInvertRuleResult, startFn, asValidator })
+        resultFunction = makeRule(args, { defaultRuleResult, doInvertRuleResult, startFn, asValidator })
     } catch (error) {
         console.warn(error)
     }

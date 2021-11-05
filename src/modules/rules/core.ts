@@ -20,7 +20,12 @@ export const isCustomValidatorType = (type: string) => {
     return result
 }
 
+// create yet another layer that will invoke the former hofRuleFnGenerator
+// (args) => makeRule(args, { startFn: rc_.V_MINVALUE, asValidator: true }),
+export const generateRule = (args) => makeRule(args, { startFn: rc_.V_MINVALUE, asValidator: true })
+
 /**
+ * hofRuleFnGenerator
  * A HOF that composes the parameterized version of a validator fn.
  * For now used by custom validators of type 'disABLERIf' and diplayerIf .... and ????
  * For now supports: 
@@ -33,6 +38,49 @@ export const isCustomValidatorType = (type: string) => {
  * @returns a parameterized ruleFn for vuelidate, to be used as a custom rule executioner for vuelidate (as opposed to only built-in ones and only for validation purposes).
  * TODO: make async?
  */
+export const makeRule = (...args) => {
+    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = args[0]
+    // can we make sure that, if undefined, defaultRuleResult = true etc
+    const { defaultRuleResult = true, doInvertRuleResult = false, asValidator = false, staticConfigProperty } = args[1]
+
+    const ruleType = params.type
+    let hasStaticConfigProperty
+    let resultFunction
+    // also a simple synchronous Fn...
+    let fallBackFunction = function ruleFn(value, vm) {
+        return {
+            $valid: true, // We should never "fail" based on a total dummy function, regardless "asValidator" ???
+            extraParams: { rule_result: defaultRuleResult, fieldCfg },
+            message: `Fallback or try-catch rule. Either an error occurred or neither static config property nor any configured rule of type ${ruleType} for ${fieldCfg.label}`
+        }
+    }
+    try {
+        // 1. if we have an overruling static configuration property, use a simple & synchronous ruleFn
+        hasStaticConfigProperty = staticConfigProperty && ((fieldCfg?.[staticConfigProperty] ?? false) !== false)
+        if (hasStaticConfigProperty) {
+            resultFunction = function ruleFn(value, vm) {
+                let rule_result = doInvertRuleResult ? !!!fieldCfg?.[staticConfigProperty] : !!fieldCfg?.[staticConfigProperty]
+                return {
+                    $valid: asValidator ? rule_result : true, // when run as Validator, it should flag/register errors accordingly!
+                    extraParams: { rule_result, fieldCfg },
+                    message: `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticConfigProperty} on ${fieldCfg.label}`
+                }
+            }
+        }
+        // 2. probe for a supported custom rule function
+        else if (!resultFunction) {
+            resultFunction = probeCustomRuleFn(args)
+        }
+    } catch (error) {
+        console.warn(error);
+    }
+    // 3. make sure that if we did not have any function yet, we should return a liberal/neutral fallback function 
+    if (!resultFunction || typeof resultFunction !== 'function') {
+        resultFunction = fallBackFunction
+    }
+    return resultFunction
+}
+
 export const hofRuleFnGenerator = (...args) => {
     const { dependsOn, fieldCfg, formData, formDefinition, ...params } = args[0]
     // can we make sure that, if undefined, defaultRuleResult = true etc
@@ -76,7 +124,6 @@ export const hofRuleFnGenerator = (...args) => {
     }
     return resultFunction
 }
-
 /**
  * Returns a vuelidate rule function, which returns a response object needed for custom vuelidate validators/rules.
  * Calls a recursive funciton.
@@ -86,7 +133,11 @@ export const hofRuleFnGenerator = (...args) => {
 export const probeCustomRuleFn = (arrCfg) => {
     const { dependsOn, asLogical, fieldCfg, formData, formDefinition, ...params } = arrCfg[0]
     const { defaultRuleResult, staticConfigProperty, doInvertRuleResult, asValidator = false, startFn } = arrCfg[1]
+    debugger;
+    //we should make sure value or vm are not shadowed here? How come in setExternalResults we appear to receive a data-object as the vm ????
+    if (fieldCfg.id === 'title') { debugger }
     return async function ruleFn(value, vm) {
+        if (fieldCfg.id === 'title') { debugger }
         let rule_result = await probeCustomRuleFnRecursor(value, vm, arrCfg[0], asLogical, startFn) // ??  defaultRuleResult
         rule_result = rule_result ?? defaultRuleResult
         const boolRuleResult = rule_result?.result ?? rule_result
@@ -141,6 +192,9 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
             if (arrExecutioners.includes(startFn)) {
                 let fn = startFn;
                 try {
+                    if (startFn === rc_.V_SET_EXTERNAL_RESULTS) {
+                        debugger
+                    }
                     const objParams = { value, fieldCfg, formData, formDefinition, params }
                     // check for async and if so await it...
                     isAsync = isAsyncFn(cHelpers[fn] ?? "")
@@ -207,6 +261,9 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
                             }
                             // check for async and if so await it...
                             isAsync = isAsyncFn(cHelpers[fn] ?? "")
+                            if (isAsync) {
+                                debugger
+                            }
                             tmp = isAsync ? await cHelpers[fn]?.(vm, objParams) : cHelpers[fn]?.(vm, objParams)
                             //tmp = cHelpers[fn]?.(vm, objParams)
                             countAsResult++
@@ -240,8 +297,8 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
 }
 
 export const composeRuleFeedbackMessage = (pContext) => {
-    const { dummyValidator, targetFieldName, params, cfg, comparisonValue, ruleType, criteria } = pContext
-    let preMessage = `(Rule '${ruleType}')`
+    const { dummyValidator, targetFieldName, params, cfg, comparisonValue, type, criteria } = pContext
+    let preMessage = `(Rule '${type}')`
     let targetFieldLabel
     let partMessage;
     let message;
@@ -255,7 +312,7 @@ export const composeRuleFeedbackMessage = (pContext) => {
                 metaType = cfg?.metaParams?.type ?? cfg?.metaParams?.params?.type
                 metaType = metaType ?? cfg?.metaParams?.params?.params?.type
                 preMessage = `(Field '${cfg.fieldCfg.label}' by rule '${metaType}' indirectly tested field '${targetFieldLabel}' 
-            with value '${comparisonValue}' against rule '${ruleType}(${criteria})')`;
+                    with value '${comparisonValue}' against rule '${type}(${criteria})')`;
             }
         }
         if (dummyValidator?.$message && typeof (dummyValidator.$message) === 'function') {
@@ -279,16 +336,14 @@ export const composeRuleFeedbackMessage = (pContext) => {
  * @param objParams 
  * @returns 
  */
-export const wrapVuelidateBuiltinValidatorOneParam = (objCfg) => {
-    debugger
-    const { paramName, ruleType, targetValidator } = objCfg
+export const makeValidator = (objCfg) => {
+    const { param, type, validator } = objCfg
 
     return async function (vm: any, objContext: object) {
-        debugger;
         const { value, params, ...cfg } = objContext
         // the runtime value against which usually a rule will be executed. If however a targetField is specified, then that field should provide the runtime comparisonValue... 
         let comparisonValue = value;
-        let condition; // this param should contain the single argument for the invocation of the targetValidator
+        let condition; // this param should contain the single argument for the invocation of the validator
         let isAsync = false;
         // all validators have as norm: true. Else they do not qualify and need to return a feedback message.
         let defaulted = true;
@@ -303,24 +358,24 @@ export const wrapVuelidateBuiltinValidatorOneParam = (objCfg) => {
         // TODO: parse the invocation configuration in params.
         // TODO if it supports a function. Could that function have params? How?
         // Does it config to get a $model etc etc?
-        if (params?.[paramName]?.staticValue) {
-            condition = params[paramName].staticValue
+        if (params?.[param]?.staticValue) {
+            condition = params[param].staticValue
         }
-        else if (params?.[paramName]?.$model) {
-            sourceFieldName = params[paramName].$model
+        else if (params?.[param]?.$model) {
+            sourceFieldName = params[param].$model
             if (sourceFieldName && typeof sourceFieldName === 'string') {
                 condition = vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName]
             }
         }
-        else if (params?.[paramName]?.ref) {
-            refName = params[paramName].ref
+        else if (params?.[param]?.ref) {
+            refName = params[param].ref
             if (refName && typeof refName === 'string') {
                 condition = vm?.$refs?.[refName]?.value
             }
         }
-        else if (params?.[paramName]?.fn) {
+        else if (params?.[param]?.fn) {
             // is it a fn Name get the reference from either the executors or the retrievers?
-            fn = params[paramName].fn
+            fn = params[param].fn
             if (fn && typeof fn === 'string') {
                 condition = cHelpers?.[fn]
             }
@@ -331,7 +386,7 @@ export const wrapVuelidateBuiltinValidatorOneParam = (objCfg) => {
         }
         else {
             // assume we received a direct, static value, whatever it is (object, array, scalar)
-            condition = params?.[paramName]
+            condition = params?.[param]
         }
         //condition could be optional OR deliberately undefined?
         //if (condition !== undefined){
@@ -344,13 +399,13 @@ export const wrapVuelidateBuiltinValidatorOneParam = (objCfg) => {
             // Note: here we are using the builtin vuelidate requiredIf -aliassed 'requiredif' in the import- validator, without having to know it's implementation
             if (isAsync) {
                 // configure the validator
-                dummyValidator = helpers.withAsync(targetValidator(condition))
+                dummyValidator = helpers.withAsync(validator(condition))
                 // run the validator against the comparisonvalue
                 result = await dummyValidator?.$validator(comparisonValue);
             }
             else {
                 // configure the validator
-                dummyValidator = targetValidator(condition);
+                dummyValidator = validator(condition);
                 // run the validator against the comparisonvalue
                 result = dummyValidator?.$validator(comparisonValue);
             }
@@ -358,7 +413,7 @@ export const wrapVuelidateBuiltinValidatorOneParam = (objCfg) => {
             // Only when resulted in the opposite of the norm result (defaulted), should we compose the feedback message
             if (result !== defaulted) {
                 debugger;
-                let cfgMessage = { dummyValidator, targetFieldName, params, cfg, comparisonValue, ruleType, criteria: [condition] };
+                let cfgMessage = { dummyValidator, targetFieldName, params, cfg, comparisonValue, type, criteria: [condition] };
                 message = composeRuleFeedbackMessage(cfgMessage)
             }
         }

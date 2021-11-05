@@ -155,6 +155,8 @@ export default {
     CV_TYPE_BETWEEN,
     CV_TYPE_REQUIREDIF,
     CV_TYPE_SET_EXTERNAL_RESULTS,
+    CV_TYPE_MIN_VALUE,
+    CV_TYPE_MAX_VALUE,
     // Helpers that merely "read" rule results, as opposed to "execute" other rules:
     IS_VISIBLE, SOME_VISIBLE, ALL_VISIBLE,
     IS_HIDDEN, SOME_HIDDEN, ALL_HIDDEN,

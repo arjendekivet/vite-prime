@@ -1,11 +1,11 @@
 import _ from 'lodash'
 import rc_, { V_REQUIREDIF } from '@/modules/rules/constants'
-import { hofRuleFnGenerator, cHelpers, isAsyncFn, composeRuleFeedbackMessage, wrapVuelidateBuiltinValidatorOneParam } from '@/modules/rules/core'
+import { makeRule, cHelpers, isAsyncFn, composeRuleFeedbackMessage, makeValidator } from '@/modules/rules/core'
 import { requiredIf as requiredif } from '@vuelidate/validators' // aliassed to requiredif
 
 // executioner...
 debugger;
-export const requiredIf = wrapVuelidateBuiltinValidatorOneParam({ paramName: "prop", ruleType: rc_.V_REQUIREDIF, targetValidator: requiredif });
+export const requiredIfBak = makeValidator({ param: "prop", type: rc_.V_REQUIREDIF, validator: requiredif });
 
 export const requiredIfBakkerOhe = async (vm: any, objContext: object) => {
     debugger
@@ -164,7 +164,7 @@ export const _requiredIf = (args) => {
     const startFn = rc_.V_REQUIREDIF; //this config means that said method should be invoked first / allways, id est, before probing for dependencies.
     let resultFunction
     try {
-        resultFunction = hofRuleFnGenerator(args, { defaultRuleResult, doInvertRuleResult, startFn, asValidator })
+        resultFunction = makeRule(args, { defaultRuleResult, doInvertRuleResult, startFn, asValidator })
     } catch (error) {
         console.warn(error)
     }
@@ -172,7 +172,7 @@ export const _requiredIf = (args) => {
 }
 
 export default {
-    requiredIf, // the executioner
+    //requiredIf, // the executioner
     isRequiredIf, //helper
     notRequiredIf, //helper
     _requiredIf //hof to generate the wrapper to invoke our custom requiredIf
