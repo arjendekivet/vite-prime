@@ -58,7 +58,7 @@ watch(
 
 const changePrimeLocale = async (locale: any) => {
     if (indexOf(availableLocales, locale) > -1) {
-        const { default: primeLocale } = await import(`../locales/prime_${locale}`)
+        const { default: primeLocale } = await import(/* @vite-ignore */`../locales/prime_${locale}`)
         if (primeLocale) {
             primevue.config.locale = primeLocale
         }
