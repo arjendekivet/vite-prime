@@ -6,6 +6,7 @@ import "primeicons/primeicons.css"; //icons
 import { app } from "@storybook/vue3";
 import { createI18n } from "vue-i18n";
 import PrimeVue from "primevue/config";
+import Tooltip from "primevue/tooltip";
 import StoryBookApp from "@/stories/StorybookApp.vue";
 
 import en from "@/locales/en.json";
@@ -22,6 +23,7 @@ const i18n = createI18n({
 
 app.use(i18n);
 app.use(PrimeVue);
+app.directive("tooltip", Tooltip);
 
 import InputText from "primevue/inputtext";
 import Dropdown from "primevue/dropdown";

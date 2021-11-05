@@ -4,26 +4,25 @@ import { hofRuleFnGenerator } from '@/modules/rules/core'
 //define some dummy remote test call to our service to use a real async call and see if that can be used in validator helpers executors etc
 export const fetchedContains = async (vm, objContext) => {
     let response, result
-    const { value , params, fieldName, ...cfg } = objContext
+    const { value, params, fieldName, ...cfg } = objContext
     // voorbeeldje?
-                // params: { 
-        //     protocol: 'https', 
-        //     host: 'jsonplaceholder.typicode.com', 
-        //     api: "/:entities/:id", 
-        //     vars: { id: 1, entities: "todos" }
-        //     querystring: {/** TODO */}, 
-        // }, 
+    // params: { 
+    //     protocol: 'https', 
+    //     host: 'jsonplaceholder.typicode.com', 
+    //     api: "/:entities/:id", 
+    //     vars: { id: 1, entities: "todos" }
+    //     querystring: {/** TODO */}, 
+    // }, 
 
     try {
-        debugger;
         ///api/questions/614205906985e00ec0cdb9c7
         //let response0 = await EventService.getById('questions', '614205906985e00ec0cdb9c7')
         //response = await EventService.getById( 'questions', '614205906985e00ec0cdb9c7')
         //TODO: find a robust & elegant method that takes the querystring params and safely encodes and appends it to the url...
         //TODO: we should loop through the vars and mutate pathName 
-        let pathName = `${params?.api?.replace?.(':entities',params.vars.entities)}`
-        pathName = `${pathName.replace?.(':id',params.vars.id)}`
-        const url = new URL(`${params.protocol}://${params.host}${params.port? ':'+params.port :''}${pathName}/`);
+        let pathName = `${params?.api?.replace?.(':entities', params.vars.entities)}`
+        pathName = `${pathName.replace?.(':id', params.vars.id)}`
+        const url = new URL(`${params.protocol}://${params.host}${params.port ? ':' + params.port : ''}${pathName}/`);
 
         //TODO: register the results in a designated $externalResults map ....
         let response_ = await fetch(url.href)
@@ -34,21 +33,19 @@ export const fetchedContains = async (vm, objContext) => {
         // arrResults.push(JSON.stringify(response))
         arrResults.push(response)
         vm.v$[cfg.fieldCfg.id].$externalResults.value = arrResults
-        debugger
-        
+
         //let response_3 = await fetch(url)
         //let response_4 = await fetch(url).json?.()
 
-        result = response?.title?.includes(params?.comparisonValue || 'pipo') 
+        result = response?.title?.includes(params?.comparisonValue || 'pipo')
         result = true;
-    } catch(e) {
+    } catch (e) {
         console.warn(e)
         result = true;
     }
     //return setTimeout((result) => {return result}, 5000)
     //return result
-    debugger
-    console.log('remoteContains wil return:', result )
+    console.log('remoteContains wil return:', result)
     return result
 }
 
@@ -59,14 +56,14 @@ export const fetchedContains = async (vm, objContext) => {
  * @param args 
  * @returns 
  */
- export const _fetchedContains = (args) => {
+export const _fetchedContains = (args) => {
     const defaultRuleResult = false;
     const doInvertRuleResult = false
     const asValidator = true; // !!!!!!!!!! true to be able to run it as a proper validator, so that failing will flag the field etc, apart from also running it as a helper/executor
     const startFn = 'fetchedContains'; //this config means that said method should be invoked FIRST 
     let resultFunction
     try {
-        resultFunction = hofRuleFnGenerator( args, { defaultRuleResult , doInvertRuleResult, startFn, asValidator } )
+        resultFunction = hofRuleFnGenerator(args, { defaultRuleResult, doInvertRuleResult, startFn, asValidator })
     } catch (error) {
         console.warn(error)
     }

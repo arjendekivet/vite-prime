@@ -3,8 +3,6 @@ import OptionType from '@/types/Option'
 import QuestionType from '@/enums/questionTypes'
 import rc_ from '@/modules/rules/constants' //custom vuelidate helpers...
 
-debugger;
-
 export default {
   title: 'Cynapps/DynamicForm',
   components: { DynamicForm },
@@ -174,7 +172,7 @@ let formData: any = {
  * Story that demonstrates complex validators configurations
  */
 //reset fields
- 
+
 fields = [
   {
     id: '_id',
@@ -207,8 +205,8 @@ fields = [
     type: 'P_InputText',
     icon: { type: 'right', name: 'pi-lock' },
     validators: [
-      'required', 
-      { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 5 } }, 
+      'required',
+      { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 5 } },
     ]
   },
   {
@@ -220,19 +218,19 @@ fields = [
     icon: { type: 'right', name: 'pi-bookmark' },
     validators: [
       "required",
-      { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
-      { 
+      { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 10 } },
+      {
         type: rc_.CV_TYPE_DISABLE_IF,
-        params: { 
-            dependsOn: {
-              //[rc_.IS_HIDDEN]: ['setting0'],  
-              [rc_.IS_DISABLED]: ['setting1'],  
-              [rc_.V_MINLENGTH]: { 
-                  min: 3,
-                  targetField: { name:'setting2', label:'Setting2' },
-                },
-            }
-        } 
+        params: {
+          dependsOn: {
+            //[rc_.IS_HIDDEN]: ['setting0'],  
+            [rc_.IS_DISABLED]: ['setting1'],
+            [rc_.V_MINLENGTH]: {
+              min: 3,
+              targetField: { name: 'setting2', label: 'Setting2' },
+            },
+          }
+        }
       },
     ],
   },
@@ -272,7 +270,7 @@ fields = [
     ddddisabled: true,
     vvalidators: [
       'required',
-      { type: '__cv__fetchedResultContainsPipo' , params: { dataType: 'questions' , id: '614205906985e00ec0cdb9c7' , comparisonValue: 'pipo'} }
+      { type: '__cv__fetchedResultContainsPipo', params: { dataType: 'questions', id: '614205906985e00ec0cdb9c7', comparisonValue: 'pipo' } }
     ]
   },
   {
@@ -283,9 +281,9 @@ fields = [
     icon: { type: 'right', name: 'pi-lock' },
     defaultValue: 10,
     vvalidators: [
-      'required', 
-      { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 5 } }, 
-      { type: rc_.CV_TYPE_MAX_LENGTH, params: { min: 10 } }, 
+      'required',
+      { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 5 } },
+      { type: rc_.CV_TYPE_MAX_LENGTH, params: { min: 10 } },
     ]
   },
   {
@@ -298,34 +296,34 @@ fields = [
     validators: [
       //"required",
       //{ type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
-      { 
+      {
         type: rc_.CV_TYPE_DISABLE_IF,
-        params: { 
-            dependsOn: {
-              // [rc_.IS_HIDDEN]: ['setting0'],  
-              // [rc_.IS_DISABLED]: ['setting1'], 
-              //'fetchedResultContainsPipo': { dataType: 'questions' , id: '614205906985e00ec0cdb9c7' , comparisonValue: 'pipo' },
-              [rc_.V_SET_EXTERNAL_RESULTS]: { 
-                protocol: 'https', 
-                host: 'jsonplaceholder.typicode.com', 
-                port: '',
-                api: "/:entities/:id", 
-                vars: { id: 1, entities: "todos" },
-                querystring: "", // {/** TODO */}, 
-                comparisonValue: { externalProperty: '<meaning a property or path on the fetched data...>' , fallback:'pipo' }, // means if we wanted to compare something from somewhere with something else
-                normValue: { useRunTimeValue: true }, //means use the passed in value, passed in by vuelidate when the rule is being invoked 
-                    //* $model: {} or a static value: value /*
-              },
-              [rc_.V_MAXLENGTH]: { 
-                  max: 5,
-                  targetField: { name:'setting1', label:'Setting1' },
-              },   
-              [rc_.V_MINLENGTH]: { 
-                  min: 3,
-                  targetField: { name:'setting2', label:'Setting2' },
-                },
-            }
-        } 
+        params: {
+          dependsOn: {
+            // [rc_.IS_HIDDEN]: ['setting0'],  
+            // [rc_.IS_DISABLED]: ['setting1'], 
+            //'fetchedResultContainsPipo': { dataType: 'questions' , id: '614205906985e00ec0cdb9c7' , comparisonValue: 'pipo' },
+            [rc_.V_SET_EXTERNAL_RESULTS]: {
+              protocol: 'https',
+              host: 'jsonplaceholder.typicode.com',
+              port: '',
+              api: "/:entities/:id",
+              vars: { id: 1, entities: "todos" },
+              querystring: "", // {/** TODO */}, 
+              comparisonValue: { externalProperty: '<meaning a property or path on the fetched data...>', fallback: 'pipo' }, // means if we wanted to compare something from somewhere with something else
+              normValue: { useRunTimeValue: true }, //means use the passed in value, passed in by vuelidate when the rule is being invoked 
+              //* $model: {} or a static value: value /*
+            },
+            [rc_.V_MAXLENGTH]: {
+              max: 5,
+              targetField: { name: 'setting1', label: 'Setting1' },
+            },
+            [rc_.V_MINLENGTH]: {
+              min: 3,
+              targetField: { name: 'setting2', label: 'Setting2' },
+            },
+          }
+        }
       },
     ],
   },
@@ -356,12 +354,12 @@ formData = {
 //    readOnly: false,
 //  };
 
- export const DExistingDocument = Template.bind({});
- DExistingDocument.args = {
+export const DExistingDocument = Template.bind({});
+DExistingDocument.args = {
   config: fields,
   dataType: "questions",
   title: "Question: Field setting0 is structurally hidden. Fields id & setting1 structurally disabled. Field ",
   readOnly: false,
   initialFormData: formData
- };
+};
 
