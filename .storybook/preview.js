@@ -4,10 +4,26 @@ import "primeflex/primeflex.css";
 import "primeicons/primeicons.css"; //icons
 
 import { app } from "@storybook/vue3";
-// import router from "@/router/routes";
+import { createI18n } from "vue-i18n";
 import PrimeVue from "primevue/config";
-// app.use(router);
+import Tooltip from "primevue/tooltip";
+import StoryBookApp from "@/stories/StorybookApp.vue";
+
+import en from "@/locales/en.json";
+import ne from "@/locales/ne.json";
+
+const i18n = createI18n({
+  legacy: false, // you must set `false`, to use Composition API
+  locale: "en",
+  messages: {
+    en,
+    ne,
+  },
+});
+
+app.use(i18n);
 app.use(PrimeVue);
+app.directive("tooltip", Tooltip);
 
 import InputText from "primevue/inputtext";
 import Dropdown from "primevue/dropdown";
@@ -36,3 +52,10 @@ export const parameters = {
     },
   },
 };
+
+export const decorators = [
+  (story) => ({
+    components: { story, StoryBookApp },
+    template: "<StoryBookApp><story /></StoryBookApp>",
+  }),
+];

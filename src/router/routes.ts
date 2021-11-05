@@ -1,10 +1,16 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { getUser } from '@/modules/globalState'
 import Welcome from "@/pages/Welcome.vue";
 import Start from "@/pages/Start.vue";
 import Admin from "@/pages/Admin.vue";
-import Events from "@/components/tables/EventsTable.vue";
-import Questions from "@/components/tables/QuestionsTable.vue";
-import QuestionForm from "@/components/forms/QuestionForm.vue";
+import Table from "@/components/Table.vue";
+import Form from "@/components/Form.vue";
+import AppSignUp from "@/components/AppSignUp.vue";
+import AppSignIn from "@/components/AppSignIn.vue";
+import AppSignOut from "@/components/AppSignOut.vue";
+
+import ExampleForm from "@/components/forms/ExampleForm.vue";
+import ExampleFormTwo from "@/components/forms/ExampleFormTwo.vue";
 import AnswerForm from "@/components/forms/AnswerForm.vue";
 import Test from "@/pages/Test.vue";
 
@@ -13,7 +19,22 @@ const router = createRouter({
   routes: [
     {
       path: "/",
-      redirect: { name: "admin" },
+      redirect: { name: "home" },
+    },
+    {
+      path: "/signup",
+      name: "signup",
+      component: AppSignUp,
+    },
+    {
+      path: "/signin",
+      name: "signin",
+      component: AppSignIn,
+    },
+    {
+      path: "/signout",
+      name: "signout",
+      component: AppSignOut,
     },
     {
       path: "/home",
@@ -24,42 +45,50 @@ const router = createRouter({
       path: "/admin",
       name: "admin",
       component: Admin,
-      children: [{
-        path: 'welcome',
-        name: "welcome",
-        component: Welcome
-      },
-      {
-        path: "events",
-        name: "events",
-        component: Events,
-      },
-      {
-        path: "questions",
-        name: "questions",
-        component: Questions,
-      },
-      {
-        path: "questions/search/:searchText",
-        name: "questionsSearch",
-        component: Questions,
-      },
-      {
-        path: "questionform",
-        name: "questionform",
-        component: QuestionForm,
-      },
-      {
-        path: "questionform/:id",
-        name: "questionformbyid",
-        component: QuestionForm,
-        props: route => ({ id: route.params.id, readOnly: route.query.readOnly === 'false' ? false : true })
-      },
-      {
-        path: "answerform",
-        name: "answerform",
-        component: AnswerForm,
-      },]
+      redirect: { name: "admin_welcome" },
+      children: [
+        {
+          path: 'welcome',
+          name: "admin_welcome",
+          component: Welcome
+        },
+        {
+          path: "table/:type/:layout?/:formLayoutKey?",
+          name: "table",
+          component: Table,
+          props: route => ({
+            dataType: route.params.type,
+            layoutKey: route.params.layout,
+            formLayoutKey: route.params.formLayoutKey
+          })
+        },
+        {
+          path: "form/:type/:id?/:layout?",
+          name: "form",
+          component: Form,
+          props: route => ({
+            dataType: route.params.type,
+            id: route.params.id === '0' ? null : route.params.id,
+            formLayoutKey: route.params.layout,
+            readOnly: route.query.readOnly === 'false' || route.params.id === '0' || !route.params.id ? false : true
+          })
+        },
+        {
+          path: "answerform",
+          name: "answerform",
+          component: AnswerForm,
+        },
+        {
+          path: "exampleform",
+          name: "exampleform",
+          component: ExampleForm,
+        },
+        {
+          path: "exampleform2",
+          name: "exampleform2",
+          component: ExampleFormTwo,
+        },
+      ]
     },
     {
       path: "/test",
@@ -68,5 +97,14 @@ const router = createRouter({
     },
   ],
 });
+
+// If not logged in route to signin page
+router.beforeEach((to, from, next) => {
+  if (!(to.name === 'signin' || to.name === 'signup') && !getUser()) {
+    next({ name: 'signin' })
+  } else {
+    next()
+  }
+})
 
 export default router;
