@@ -49,20 +49,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, readonly, computed, onBeforeUnmount, inject } from 'vue'
+import { ref, provide, readonly, computed, onBeforeMount, onBeforeUnmount, inject, reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FormDefinitionRecursor from '@/components/FormDefinitionRecursor.vue'
 import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
 import Utils from '@/modules/utils'
 import { messages, addSubmitMessage, addErrorMessage, addWarningMessage } from '@/modules/UseFormMessages'
-import { setValidators, useValidation } from '@/modules/validate'
+import { setValidators, useValidation } from '@/modules/rules/validate'
 import formConfigDefaults from '@/data/FormLayoutDefaults'
-
-onBeforeUnmount(() => {
-  // clear component based messages
-  messages.value = []
-})
 
 type FormProp = {
   config?: Fieldconfig[],
@@ -99,47 +94,33 @@ const fieldValues: any = ref<object>({})
 const fields: any = ref<object>({})
 const schema: any = ref<object>({})
 const myConfig: any = ref<object>({})
+const $externalResults = reactive({})
 
 // Use a simple ref for now as there is no combined logic for rules that need it to be computed
 // This way type casting stays in place
 const rules = ref({})
-// define reactive for formData and then use a torefs on that to get a ref for each fieldValue, for usage in vuelidate dynamic parametrizations?????
+const v$ = useValidation(rules, fieldValues, { $lazy: false, $autoDirty: true, $externalResults } ) //  $rewardEarly nog niet supported? $commit() dan ook nog niet.
 
-// rules.value = setValidators(fields.value, undefined, fieldValues)
+const getFormData = async function() {
+  try {
+    fields.value = getFieldsFromConfig(compConfig.value, 'isField', true)
+    rules.value = setValidators(fields.value, undefined, fieldValues)
 
-EventService.getSchema(props.dataType)
-  .then((response: any) => {
-    schema.value = response.data
-  })
-  .catch((error: any) => {
-    addErrorMessage(error)
-  })
-
-if (props.config) {
-  myConfig.value = props.config
-  getFormData()
-} else if (props.formLayoutKey) {
-  EventService.getDataByFilter('layoutdefinition', props.formLayoutKey)
-    .then((response: any) => {
-      // find will return array, get the first in this case
-      // isLoading.value = false
-      if (response.data.length > 0) {
-        myConfig.value = response.data[0].config
-      } else {
-        setDefaultLayout()
-      }
-      getFormData()
-    })
-    .catch((error: any) => {
-      // isLoading.value = false
-      // console.error('Could not fetch layoutdefinition! Going to hardcoded backup option.', error)
-      addErrorMessage(error)
-      setDefaultLayout()
-      // myConfig.value = formConfigHardcoded
-    })
-} else {
-  setDefaultLayout()
-  getFormData()
+    if (props.initialFormData) {
+      fieldValues.value = props.initialFormData
+    } else if (props.id) {
+        let response = await EventService.getById(props.dataType, props.id)
+        fieldValues.value = convertResponseData(response?.data)
+    } else {
+      _.forIn(fields.value, function (field, fieldId) {
+        if (field && field.defaultValue) {
+          fieldValues.value[field.id] = field.defaultValue
+        }
+      })
+    }
+  } 
+  catch(e){console.error(e)
+  }
 }
 
 function setDefaultLayout() {
@@ -154,45 +135,6 @@ function setDefaultLayout() {
 
 function removeMessage(id: number) {
   Utils.removeMessage(messages, id)
-}
-
-function getFormData() {
-  fields.value = getFieldsFromConfig(compConfig.value, 'isField', true)
-
-  if (props.initialFormData) {
-    fieldValues.value = props.initialFormData
-  } else if (props.id) {
-    EventService.getById(props.dataType, props.id)
-      .then((response: any) => {
-        const convertedResponseData = convertResponseData(response.data)
-        fieldValues.value = convertedResponseData
-        rules.value = setValidators(fields.value, undefined, fieldValues)
-        //v$ = useValidation(rules, fieldValues,)
-
-      })
-      .catch((error: any) => {
-        addErrorMessage(error)
-      })
-  } else {
-    _.forIn(fields.value, function (field, fieldId) {
-      if (field && field.defaultValue) {
-        fieldValues.value[field.id] = field.defaultValue
-      }
-      rules.value = setValidators(fields.value, undefined, fieldValues)
-      //v$ = useValidation(rules, fieldValues,)
-
-    })
-  }
-}
-
-const v$: any = useValidation(rules, fieldValues, { $lazy: true, $autoDirty: false }) // global config doet niks? $lazy doet niks?, $rewardEarly doet niks? autoDirty?
-
-const updateFieldValue = (fieldId: string, value: any) => {
-  fieldValues.value[fieldId] = value
-
-  if (v$.value[fieldId]) {
-    v$.value[fieldId].$validate()
-  }
 }
 
 async function submitForm(dataType: string) {
@@ -261,28 +203,77 @@ function getFieldsFromConfig(arr: Fieldconfig[], key: string, value: string | bo
   return matches;
 }
 
-function calculateDependantFieldState(field: Fieldconfig, fieldValue: any) {
-  return;
-  field.dependantFields?.forEach(function (fieldId: string) {
-    const myField = fields.value[fieldId]
-    if (myField) {
-      myField.hidden = fieldValue ? false : true
+const updateFieldValue = (fieldId: string, value: any) => {
+  fieldValues.value[fieldId] = value
+  // ??????????????????
+  // als we async validators in andere rules hebben, die als dependency zijn genoemd, 
+  // gaan die niet af als niet heel v$.$validate() wordt gecalled????????????????????
+  // dat lijkt op zich logisch, als we in veld 1 iets wijzigen en veld 3 gebruikt indirect een validator against veld 1, 
+  // hoe kan vuelidate dan weten dat ie ook de rule vanveld 3 moet aftrappen.
+  // Maar als alles sync is, dan gaan die rules wel af????????????????????????
+  // Vergelijk dat nogmaals eenduidig, exact dezelfde rules in de andere branch, sync en async
+  // want dat zou betekenen dat struturele async rules een veel verdergaande calling vereisen....
+  // Ergens in de vuelidate github staat dat alle rules async zijn by default, klopt dat ook? Dat lijkt inconsistent.
 
-      if (!fieldValue) {
-        fieldValues.value[fieldId] = null
+  //v$?.value?.$validate()
+  v$?.value?.$touch() //is genoeg om indirecte / async validators te triggeren ...
+  v$?.value?.$reset()
 
-        // current field could have dependantFields which have to be hidden now, so call recursively ...
-        calculateDependantFieldState(myField, null)
-      }
-    }
-  })
+  if (v$.value[fieldId]) {
+    // validate the field explicitely... or validate the entire rule set since we can have dependencies????
+    v$.value[fieldId].$validate()
+  }
 }
+
+onBeforeMount( async() => {
+  try{
+    await EventService.getSchema(props.dataType)
+      .then((response: any) => {
+        schema.value = response.data
+      })
+    .catch((error: any) => {
+      addErrorMessage(error)
+    })
+
+    if (props.config) {
+      myConfig.value = props.config
+    } else if (props.formLayoutKey) {
+      const response = await EventService.getDataByFilter('layoutdefinition', props.formLayoutKey)
+      if (response.data.length > 0) {
+        myConfig.value = response.data[0].config
+      } else {
+        setDefaultLayout()
+      }
+    } 
+    else {
+      setDefaultLayout()
+    }
+
+    await getFormData()
+  }
+  catch(e) { console.error(e) }
+  finally {
+    // Note: if we use sync validators
+    // plus $lazy: false AND $autoDirty: true as the global vuelidate config, 
+    // then we do not have to call $validate explicitely over here, only $reset
+    // but with explicit async validators we apparently need to call $validate?
+    // plus we also need to call in updateFieldValue the overall $validate again?
+    v$?.value?.$validate()
+    //v$?.value?.$touch() //is dit genoeg om indirecte / async validators te triggeren? Kennelijk niet.
+    v$?.value?.$reset()
+  }
+})
+
+onBeforeUnmount(() => {
+  // clear component based messages
+  messages.value = []
+})
 
 provide('fieldValues', readonly(fieldValues))
 provide('fields', readonly(fields))
 provide('updateFieldValue', updateFieldValue)
-provide('calculateDependantFieldState', calculateDependantFieldState)
 provide('v$', v$)
+
 </script>
 
 <style lang="scss">

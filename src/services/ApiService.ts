@@ -26,25 +26,25 @@ type DeleteResponse = {
 }
 
 export default {
-    getSchema(type: string) {
-        return apiClient.get('schema/' + type, { headers: authHeader() })
+    async postForm(type: string, submitValues: object) {
+        return await apiClient.post('/' + type, submitValues, { headers: authHeader() })
     },
-    postForm(type: string, submitValues: object) {
-        return apiClient.post('/' + type, submitValues, { headers: authHeader() })
+    async getSchema(type: string) {
+        return await apiClient.get('schema/' + type, { headers: authHeader() })
     },
-    putForm(type: string, id: string, submitValues: object) {
-        return apiClient.put('/' + type + '/' + id, submitValues, { headers: authHeader() })
+    async putForm(type: string, id: string, submitValues: object) {
+        return await apiClient.put('/' + type + '/' + id, submitValues, { headers: authHeader() })
     },
-    getById(type: string, id: string) {
-        return apiClient.get('/' + type + '/' + id, { headers: authHeader() })
+    async getById(type: string, id: string) {
+        return await apiClient.get('/' + type + '/' + id, { headers: authHeader() })
     },
-    deleteByIds(type: string, ids: string[]): Promise<DeleteResponse> {
-        return apiClient.delete('/' + type + '/' + ids, { headers: authHeader() })
+    async deleteByIds(type: string, ids: string[]): Promise<DeleteResponse> {
+        return await apiClient.delete('/' + type + '/' + ids, { headers: authHeader() })
     },
-    getData(type: string, perPage: boolean, page: number): Promise<QuestionResponse> {
-        return apiClient.get('/' + type + '?_limit=' + perPage + '&_page=' + page, { headers: authHeader() })
+    async getData(type: string, perPage: boolean, page: number): Promise<QuestionResponse> {
+        return await apiClient.get('/' + type + '?_limit=' + perPage + '&_page=' + page, { headers: authHeader() })
     },
-    getDataByFilter(type: string, filter: string | string[], perPage: boolean = false, page: number = 0) {
-        return apiClient.get('/' + type + '/filter/' + filter + '?_limit=' + perPage + '&_page=' + page, { headers: authHeader() })
+    async getDataByFilter(type: string, filter: string | string[], perPage: boolean = false, page: number = 0) {
+        return await apiClient.get('/' + type + '/filter/' + filter + '?_limit=' + perPage + '&_page=' + page, { headers: authHeader() })
     }
 }

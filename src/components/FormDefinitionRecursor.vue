@@ -40,7 +40,6 @@
                 </template>
                 <template v-else>
                     <i v-if="getIconName(config)" :class="`pi ${getIconName(config)}`" />
-                    <!-- @change="onChange(config, v$)" -->
                     <component
                         ref="config.id"
                         v-bind="config"
@@ -61,7 +60,7 @@
                     >{{ getInvalidMsg(config, v$) }}
                     </small>
                     <div v-show="showDisabledMsg(config, v$)">
-                        <small 
+                        <small
                             :id="`${config.id}-disabled-msg`"
                             class="p-info"
                         >{{ getDisabledMsg(config, v$) }}
@@ -77,8 +76,7 @@
 import { inject } from 'vue'
 import Fieldconfig from '@/types/fieldconfig'
 
-import { validate } from '@/modules/validate'
-import { cHelpers } from '@/modules/validateHelpers'
+import { cHelpers } from '@/modules/rules/validateHelpers'
 
 import _ from 'lodash'
 
@@ -100,52 +98,36 @@ const emit = defineEmits(['updateFieldValue'])
 const v$: any = inject('v$')
 const fieldValues: any = inject('fieldValues')
 const updateFormFieldValue: any = inject('updateFieldValue')
-const calculateDependantFieldState: any = inject('calculateDependantFieldState')
+//const calculateDependantFieldState: any = inject('calculateDependantFieldState')
 
 /**
  * If any of the criteria is false, we should hide the calling element.
- * TODO: moet config.hidden of config.systemHidden hier meespelen of moet dat in 
+ * TODO: moet config.hidden of config.systemHidden hier meespelen of moet dat alleen in de rule executioner. 
+ * 
+ * De volgende overweging zou kunnen gelden: 
+ * 1. De rule-engine is de single source of truth mbt rules, wanneer die gerund hebben OF een standaard default, als ze NIET gerund hebben. 
+ * 2. Zolang de rules niet gerund worden, krijg je alleen de standaard default terug. Meer weet de rules engine niet.
+ * 3. De UI van het form moet eerder iets weten van alleen bepaalde features, zoals visibility en disabling, 
+ * maar niet van alle form validatie, en vraagt dat daarom expliciet NOG NIET aan de rules engine: je wil niet initieel alle velden markeren.
+ * 
+ * 4. De UI van het form kan daarom het beste zelf in de showField of de getDisabled uitrekenen wat er moet gebeuren:
+ * OFWEL op basis van overruling door statische metadata, zoals fieldCfg.hidden of fieldCfg.disabled, ofwel op basis van een rule result set.
+ * 
+ * 5. Maar een beter alternatief is wellicht om in de onMounted eenmaal alle rules te runnen (v$.$validate()) en daara een $reset te vragen.
+ * Alle validaties worden dan weer gedemarkeerd MAAR alle custom visibility & disabling rules behouden hun $response data, 
+ * want die gelden NOOIT als validatie rules en zijn dus sowieso nooit false voor validatie calls...
+ * 
+ * export const CFG_PROP_ENTITY_DISPLAY = 'hidden'; // indicates in fieldCfg the optional property 'hidden' decides the field display
+export const CFG_PROP_ENTITY_DISPLAY_INVERT = true; // indicates a display rule will have to negate the config prop
+
  */
 function showField(config, pv$){
     return cHelpers.isVisible({ v$: pv$ }, { fieldNames: config.id })
 }
 
-async function wrappedValidate(config, pv$, caller){
-    let result
-    try {
-        await pv$?.[config?.id]?.$validate?.()
-            .then((value) => { 
-                result = value;
-                return value;
-                })
-            .catch((error) => {
-                console.error(error);
-            })    
-    } catch(e){
-        console.warn(e)
-    }
-    finally {
-        return result
-    }
-}
-
 async function onBlur(config, pv$){
-    await pv$?.[config?.id]?.$validate?.()
+    return await pv$?.[config?.id]?.$validate?.()
 }
-
-/**
- * TODO: Is it even necessary using v-model plus having vuelidate monitoring the field state regarding validity, display, enabling, and ... ? 
- * TODO: Should be debounced?
- * TODO: should we get rid of the passed pV$? If it is a global we might as well simply decide in the doBlur itself to use v$.value.
- * Why should the invoker of doBlur have to know we are using vuelidate for rules execution? 
- */
-async function handleOnChange(config, pv$){   
-    await wrappedValidate(config,pv$,'onChange');
-}
-/**
- * Is only called after the onBlur and after leaving a field? Redundant then compared to onBlur?
- */
-const onChange = _.debounce(async (config, pv$) => { handleOnChange(config,pv$)}, 500);
 
 function showInvalidMsg(config, pv$){
     return cHelpers.isInvalid({ v$: pv$  }, { fieldNames: config.id }) 
@@ -160,7 +142,7 @@ function showDisabledMsg(config, pv$){
 }
 
 function getDisabledMsg(config, pv$){
-    return cHelpers.getDisabledMessage({ v$: pv$ }, { fieldNames: config.id })    
+    return cHelpers.getDisabledMessage({ v$: pv$ }, { fieldNames: config.id })
 }
 
 /**
@@ -187,7 +169,7 @@ function getIconName(field: Fieldconfig) {
 function updateFieldValue(field: any, value: any) {
     // injected method on parent
     updateFormFieldValue(field.id, value)
-    calculateDependantFieldState(field, value)
+    //calculateDependantFieldState(field, value)
 }
 </script>
 

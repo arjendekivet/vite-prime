@@ -1,6 +1,7 @@
 import DynamicForm from '@/components/Form.vue';
 import OptionType from '@/types/Option'
 import QuestionType from '@/enums/questionTypes'
+import rc_ from '@/modules/rules/constants' //custom vuelidate helpers...
 
 export default {
   title: 'Cynapps/DynamicForm',
@@ -41,7 +42,11 @@ const catThree: OptionType[] = [
   { label: 'G', value: 'G' },
 ];
 
-const fields =
+let fields;
+let formData;
+
+/**
+let fields =
   [
     {
       id: '_id',
@@ -130,7 +135,7 @@ const fields =
     }
   ]
 
-const formData: any = {
+let formData: any = {
   "_id": "6148453e3a86ae3466fa2759",
   "title": "het pak",
   "type": "open",
@@ -144,19 +149,217 @@ const formData: any = {
   "description": "het pak"
 }
 
-export const ANewDocument = Template.bind({});
-ANewDocument.args = {
-  config: fields,
-  dataType: "questions",
-  title: "Question",
-  readOnly: false
-};
+*/
 
-export const BExistingDocument = Template.bind({});
-BExistingDocument.args = {
+// export const ANewDocument = Template.bind({});
+// ANewDocument.args = {
+//   config: fields,
+//   dataType: "questions",
+//   title: "Question",
+//   readOnly: false
+// };
+
+// export const BExistingDocument = Template.bind({});
+// BExistingDocument.args = {
+//   config: fields,
+//   dataType: "questions",
+//   title: "Question",
+//   readOnly: false,
+//   initialFormData: formData
+// };
+
+/**
+ * Story that demonstrates complex validators configurations
+ */
+//reset fields
+
+fields = [
+  {
+    id: '_id',
+    isField: true,
+    label: 'Id',
+    type: 'P_InputText',
+    disabled: true,
+    icon: { type: 'right', name: 'pi-lock' }
+  },
+  {
+    id: 'setting0',
+    isField: true,
+    label: 'Setting0. Structurally hidden.',
+    type: 'P_InputText',
+    icon: { type: 'right', name: 'pi-lock' },
+    hidden: true,
+  },
+  {
+    id: 'setting1',
+    isField: true,
+    label: 'Setting1. Structurally disabled.',
+    type: 'P_InputText',
+    icon: { type: 'right', name: 'pi-lock' },
+    disabled: true,
+  },
+  {
+    id: 'setting2',
+    isField: true,
+    label: 'Setting2. Required & minLength 5.',
+    type: 'P_InputText',
+    icon: { type: 'right', name: 'pi-lock' },
+    validators: [
+      'required',
+      { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 5 } },
+    ]
+  },
+  {
+    id: 'title',
+    isField: true,
+    label: 'Title',
+    type: 'P_InputText',
+    placeholder: 'Title',
+    icon: { type: 'right', name: 'pi-bookmark' },
+    validators: [
+      "required",
+      { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 10 } },
+      {
+        type: rc_.CV_TYPE_DISABLE_IF,
+        params: {
+          dependsOn: {
+            //[rc_.IS_HIDDEN]: ['setting0'],  
+            [rc_.IS_DISABLED]: ['setting1'],
+            [rc_.V_MINLENGTH]: {
+              min: 3,
+              targetField: { name: 'setting2', label: 'Setting2' },
+            },
+          }
+        }
+      },
+    ],
+  },
+]
+/**
+ *  [rc_.V_MAXLENGTH]: { 
+                      max: { $model: 'setting1' },
+                      targetField: { name:'setting2', label:'Setting2' },
+                    },  
+ */
+fields = [
+  {
+    id: '_id',
+    isField: true,
+    label: 'Id',
+    type: 'P_InputText',
+    dddefaultValue: "6666666666666",
+    disabled: true,
+    icon: { type: 'right', name: 'pi-lock' }
+  },
+  {
+    id: 'setting0',
+    isField: true,
+    label: 'Setting0. Structurally hidden.',
+    type: 'P_InputText',
+    icon: { type: 'right', name: 'pi-lock' },
+    defaultValue: 3,
+    hidden: true,
+  },
+  {
+    id: 'setting1',
+    isField: true,
+    label: 'Setting1. Calls a dummy async validator',
+    type: 'P_InputText',
+    icon: { type: 'right', name: 'pi-lock' },
+    defaultValue: 2,
+    ddddisabled: true,
+    vvalidators: [
+      'required',
+      { type: '__cv__fetchedResultContainsPipo', params: { dataType: 'questions', id: '614205906985e00ec0cdb9c7', comparisonValue: 'pipo' } }
+    ]
+  },
+  {
+    id: 'setting2',
+    isField: true,
+    label: 'Setting2. Required & minLength 5 & maxLength 10, both async.',
+    type: 'P_InputText',
+    icon: { type: 'right', name: 'pi-lock' },
+    defaultValue: 10,
+    vvalidators: [
+      'required',
+      { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 5 } },
+      { type: rc_.CV_TYPE_MAX_LENGTH, params: { min: 10 } },
+    ]
+  },
+  {
+    id: 'title',
+    isField: true,
+    label: 'Title, disableIf rule with complex indirect async executioners...',
+    type: 'P_InputText',
+    placeholder: 'Title',
+    icon: { type: 'right', name: 'pi-bookmark' },
+    validators: [
+      //"required",
+      //{ type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
+      {
+        type: rc_.CV_TYPE_DISABLE_IF,
+        params: {
+          dependsOn: {
+            // [rc_.IS_HIDDEN]: ['setting0'],  
+            // [rc_.IS_DISABLED]: ['setting1'], 
+            //'fetchedResultContainsPipo': { dataType: 'questions' , id: '614205906985e00ec0cdb9c7' , comparisonValue: 'pipo' },
+            [rc_.V_SET_EXTERNAL_RESULTS]: {
+              protocol: 'https',
+              host: 'jsonplaceholder.typicode.com',
+              port: '',
+              api: "/:entities/:id",
+              vars: { id: 1, entities: "todos" },
+              querystring: "", // {/** TODO */}, 
+              comparisonValue: { externalProperty: '<meaning a property or path on the fetched data...>', fallback: 'pipo' }, // means if we wanted to compare something from somewhere with something else
+              normValue: { useRunTimeValue: true }, //means use the passed in value, passed in by vuelidate when the rule is being invoked 
+              //* $model: {} or a static value: value /*
+            },
+            [rc_.V_MAXLENGTH]: {
+              max: 5,
+              targetField: { name: 'setting1', label: 'Setting1' },
+            },
+            [rc_.V_MINLENGTH]: {
+              min: 3,
+              targetField: { name: 'setting2', label: 'Setting2' },
+            },
+          }
+        }
+      },
+    ],
+  },
+];
+
+formData = {
+  "_id": "6148453e3a86ae3466fa2759",
+  "setting0": 3,
+  "setting1": 12345,
+  "setting2": 123,
+  "title": "het pak",
+  // "type": "open",
+  // "answer": "der Anzug",
+  // "created_at": "2021-09-20T08:24:30.618Z",
+  // "updated_at": "2021-09-21T21:06:48.694Z",
+  // "__v": 4,
+  // "cat_1": "DE",
+  // "cat_2": "Ch-5",
+  // "cat_3": "G",
+  // "description": "het pak"
+}
+
+//  export const CNewDocument = Template.bind({});
+//  CNewDocument.args = {
+//    config: fields,
+//    dataType: "questions",
+//    title: "Question",
+//    readOnly: false,
+//  };
+
+export const DExistingDocument = Template.bind({});
+DExistingDocument.args = {
   config: fields,
   dataType: "questions",
-  title: "Question",
+  title: "Question: Field setting0 is structurally hidden. Fields id & setting1 structurally disabled. Field ",
   readOnly: false,
   initialFormData: formData
 };
+
