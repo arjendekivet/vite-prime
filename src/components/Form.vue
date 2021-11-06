@@ -104,7 +104,9 @@ const v$ = useValidation(rules, fieldValues, { $lazy: false, $autoDirty: true, $
 const getFormData = async function () {
   try {
     fields.value = getFieldsFromConfig(compConfig.value, 'isField', true)
-    rules.value = setValidators(fields.value, undefined, fieldValues)
+
+    // pass in the v$ ref too to have the reference to it where we need it! 
+    rules.value = setValidators(fields.value, undefined, fieldValues, v$)
 
     if (props.initialFormData) {
       fieldValues.value = props.initialFormData

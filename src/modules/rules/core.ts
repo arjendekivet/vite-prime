@@ -22,7 +22,7 @@ export const isCustomValidatorType = (type: string) => {
 
 // create yet another layer that will invoke the former hofRuleFnGenerator
 // (args) => makeRule(args, { startFn: rc_.V_MINVALUE, asValidator: true }),
-export const generateRule = (args) => makeRule(args, { startFn: rc_.V_MINVALUE, asValidator: true })
+export const makeRule = (...args) => generateRule(...args)
 
 /**
  * hofRuleFnGenerator
@@ -38,16 +38,18 @@ export const generateRule = (args) => makeRule(args, { startFn: rc_.V_MINVALUE, 
  * @returns a parameterized ruleFn for vuelidate, to be used as a custom rule executioner for vuelidate (as opposed to only built-in ones and only for validation purposes).
  * TODO: make async?
  */
-export const makeRule = (...args) => {
-    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = args[0]
+//export const makeRule = (...args) => {
+export const generateRule = (...args) => {
+    const { dependsOn, fieldCfg, formData, formDefinition, p_v$, ...params } = args[0]
+    const xVM = { v$: p_v$ }
     // can we make sure that, if undefined, defaultRuleResult = true etc
     const { defaultRuleResult = true, doInvertRuleResult = false, asValidator = false, staticConfigProperty } = args[1]
 
     const ruleType = params.type
     let hasStaticConfigProperty
     let resultFunction
-    // also a simple synchronous Fn...
-    let fallBackFunction = function ruleFn(value, vm) {
+    // also a simple synchronous Fn... but add in xVM too always to get a reference to v$ 
+    let fallBackFunction = function ruleFn(value, vm, vmx = xVM) {
         return {
             $valid: true, // We should never "fail" based on a total dummy function, regardless "asValidator" ???
             extraParams: { rule_result: defaultRuleResult, fieldCfg },
@@ -58,7 +60,7 @@ export const makeRule = (...args) => {
         // 1. if we have an overruling static configuration property, use a simple & synchronous ruleFn
         hasStaticConfigProperty = staticConfigProperty && ((fieldCfg?.[staticConfigProperty] ?? false) !== false)
         if (hasStaticConfigProperty) {
-            resultFunction = function ruleFn(value, vm) {
+            resultFunction = function ruleFn(value, vm, vmx = xVM) {
                 let rule_result = doInvertRuleResult ? !!!fieldCfg?.[staticConfigProperty] : !!fieldCfg?.[staticConfigProperty]
                 return {
                     $valid: asValidator ? rule_result : true, // when run as Validator, it should flag/register errors accordingly!
@@ -131,12 +133,14 @@ export const hofRuleFnGenerator = (...args) => {
  * @returns 
  */
 export const probeCustomRuleFn = (arrCfg) => {
-    const { dependsOn, asLogical, fieldCfg, formData, formDefinition, ...params } = arrCfg[0]
+    const { dependsOn, asLogical, fieldCfg, formData, formDefinition, p_v$, ...params } = arrCfg[0]
+    const xVM = { v$: p_v$ }
     const { defaultRuleResult, staticConfigProperty, doInvertRuleResult, asValidator = false, startFn } = arrCfg[1]
     debugger;
     //we should make sure value or vm are not shadowed here? How come in setExternalResults we appear to receive a data-object as the vm ????
     if (fieldCfg.id === 'title') { debugger }
-    return async function ruleFn(value, vm) {
+    // pass in xVM to be sure to have a reference to v$ ????? or this passes in via arrCfg[0] ...
+    return async function ruleFn(value, vm, /**vmX = xVM*/) {
         if (fieldCfg.id === 'title') { debugger }
         let rule_result = await probeCustomRuleFnRecursor(value, vm, arrCfg[0], asLogical, startFn) // ??  defaultRuleResult
         rule_result = rule_result ?? defaultRuleResult
@@ -168,7 +172,10 @@ export const probeCustomRuleFn = (arrCfg) => {
  * @returns {Object | Boolean} rule_result. If the return value contains o message, will compose an object with the boolean result and the message, else just the booelan.
  */
 export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = rc_.AND, startFn = null) => {
-    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = objCfg
+    const { dependsOn, fieldCfg, formData, formDefinition, p_v$, ...params } = objCfg
+    debugger // for now we can do without this ...
+    //const xVM = { v$: p_v$ }
+    //const vm = pvm?.v$ ? pvm : xVM
     const arrRetrievers = rc_.SUPPORTED_RETRIEVERS;
     const arrExecutioners = rc_.SUPPORTED_EXECUTIONERS;
     const arrToRecurse = [rc_.AND, rc_.OR, rc_.NOT]
@@ -195,7 +202,7 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
                     if (startFn === rc_.V_SET_EXTERNAL_RESULTS) {
                         debugger
                     }
-                    const objParams = { value, fieldCfg, formData, formDefinition, params }
+                    const objParams = { value, fieldCfg, formData, formDefinition, p_v$, params }
                     // check for async and if so await it...
                     isAsync = isAsyncFn(cHelpers[fn] ?? "")
                     tmp = isAsync ? await cHelpers[fn]?.(vm, objParams) : cHelpers[fn]?.(vm, objParams)
@@ -229,7 +236,7 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
                 tmp = null
                 if (arrToRecurse.includes(key)) {
                     // to correctly recur downwards set the new dependsOn property to the relevant subset!!!!
-                    let objCfg2 = { "dependsOn": entryValue, fieldCfg, formData, formDefinition, params }
+                    let objCfg2 = { "dependsOn": entryValue, fieldCfg, formData, formDefinition, p_v$, params }
                     try {
                         tmp = await probeCustomRuleFnRecursor(value, vm, objCfg2, key) //always await?????
                         //arrPartials.push(tmp)
@@ -252,12 +259,12 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
                             let objParams
                             if (isRetriever) {
                                 // TODO is the name params over here still comprehensible and unambiguous? 
-                                objParams = { fieldNames: entryValue, value, fieldCfg, formData, formDefinition, params }
+                                objParams = { fieldNames: entryValue, value, fieldCfg, formData, formDefinition, p_v$, params }
                             }
                             else {
                                 // we should make entryValue the new params, since executioners may need complete parametrization instructions. 
                                 // We must be cautious and introduce metaParams to make sure we do not overwrite stuff from entryValue with stuff from the previous params
-                                objParams = { params: entryValue, value, fieldCfg, formData, formDefinition, metaParams: params }
+                                objParams = { params: entryValue, value, fieldCfg, formData, formDefinition, p_v$, metaParams: params }
                             }
                             // check for async and if so await it...
                             isAsync = isAsyncFn(cHelpers[fn] ?? "")
@@ -339,8 +346,12 @@ export const composeRuleFeedbackMessage = (pContext) => {
 export const makeValidator = (objCfg) => {
     const { param, type, validator } = objCfg
 
-    return async function (vm: any, objContext: object) {
-        const { value, params, ...cfg } = objContext
+    return async function (pvm: any, objContext: object) {
+        //const { value, params, ...cfg } = objContext
+        const { value, params, p_v$, ...cfg } = objContext
+        //now prepare the namespace for the code below to reference vm.v$.<paths> !!!
+        const vm = pvm?.v$ ? pvm : { v$: p_v$.value }
+        debugger;
         // the runtime value against which usually a rule will be executed. If however a targetField is specified, then that field should provide the runtime comparisonValue... 
         let comparisonValue = value;
         let condition; // this param should contain the single argument for the invocation of the validator

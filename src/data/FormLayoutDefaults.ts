@@ -46,7 +46,7 @@ let fields = [
         icon: { type: 'right', name: 'pi-lock' },
         defaultValue: 2,
         ddddisabled: true,
-        vvalidators: [
+        validators: [
             'required',
             { type: rc_.CV_TYPE_MAX_VALUE, params: { max: 5 } },
         ]
@@ -58,7 +58,7 @@ let fields = [
         type: 'P_InputText',
         icon: { type: 'right', name: 'pi-lock' },
         defaultValue: 10,
-        vvalidators: [
+        validators: [
             'required',
             { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 5 } },
             { type: rc_.CV_TYPE_MAX_LENGTH, params: { max: 10 } },
@@ -71,7 +71,7 @@ let fields = [
         type: 'P_InputText',
         placeholder: 'Title',
         icon: { type: 'right', name: 'pi-bookmark' },
-        vvalidators: [
+        validators: [
             //"required",
             //{ type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
             {

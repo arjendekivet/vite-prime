@@ -86,7 +86,7 @@ interface formDefinition {
 
 // TODO: should we remove all rules every time on invocation or pass in all exisiting rules so the thing will notice which rules did change and refire these? or such?
 // Note: if we never pass in the existing rules, we do not need the pValidatorRules either...
-export function setValidators(formDefinition: formDefinition, pValidatorRules: Object = {}, formData: Object = {}) {
+export function setValidators(formDefinition: formDefinition, pValidatorRules: Object = {}, formData: Object = {}, p_v$) {
     const validatorRules = Object.assign({}, pValidatorRules)
     _.forEach(formDefinition, function (field) {
         let mappedValidator
@@ -131,7 +131,7 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
                     //register the state about having to addDisplayRule or addDisableRule or ... Once false, it should remain false
                     addDisableRule = (addDisableRule === false || tag === rc_.CV_TYPE_DISABLE_IF) ? false : true
                     addDisplayRule = (addDisplayRule === false || tag === rc_.CV_TYPE_DISPLAY_IF) ? false : true
-                    objParams = Object.assign({}, cfgValidator.params, { type: tag, fieldCfg: field, formDefinition, formData, fieldLabel })
+                    objParams = Object.assign({}, cfgValidator.params, { type: tag, fieldCfg: field, formDefinition, formData, fieldLabel, p_v$ })
                     // we must map AND INVOKE a dedicated HOF from our mapValidators.
                     objValidator[tag] = augmentValidator(objParams, mapValidators[tag](objParams))
                 }

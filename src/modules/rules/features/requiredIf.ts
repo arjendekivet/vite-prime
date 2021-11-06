@@ -7,106 +7,117 @@ import { requiredIf as requiredif } from '@vuelidate/validators' // aliassed to 
 debugger;
 export const requiredIfBak = makeValidator({ param: "prop", type: rc_.V_REQUIREDIF, validator: requiredif });
 
-export const requiredIfBakkerOhe = async (vm: any, objContext: object) => {
+export const requiredIfBakkerOhe = async (pvm: any, objContext: object) => {
     debugger
-    const { value, params, ...cfg } = objContext
-    let comparisonValue = value;
-    let condition; // this param should contain the 'prop' argument for the requiredIf invocation
-    let isAsync = false;
-    let defaulted = true;
-    let result = defaulted //preset result for if the prop / condition cannot be retrieved ... The ftarget ield will NOT be required then
-    let dummyValidator;
-    let message = "";
-    let preMessage: string;
-    let partMessage: string;
+    const { value, params, p_v$, ...cfg } = objContext
 
-    let sourceFieldName, targetFieldName, targetFieldLabel, metaType;
-    let refName
-    let probe
+    //now prepare the namespace for the code below to reference vm.v$.<paths> !!!
+    const vm = pvm?.v$ ? pvm : { v$: p_v$ }
 
-    // TODO: parse prop. Is it a config for a function. Does that funciton have params? How?
-    // Does it config to get a $model etc etc?
-    condition = params?.prop
+    debugger;
+    try {
+        let comparisonValue = value;
+        let condition; // this param should contain the 'prop' argument for the requiredIf invocation
+        let isAsync = false;
+        let defaulted = true;
+        let result = defaulted //preset result for if the prop / condition cannot be retrieved ... The ftarget ield will NOT be required then
+        let dummyValidator;
+        let message = "";
+        let preMessage: string;
+        let partMessage: string;
 
-    if (params?.prop && typeof params.prop !== 'object') {
-        // assume we received a striaght value
+        let sourceFieldName, targetFieldName, targetFieldLabel, metaType;
+        let refName
+        let probe
+
+        // TODO: parse prop. Is it a config for a function. Does that funciton have params? How?
+        // Does it config to get a $model etc etc?
         condition = params?.prop
-    }
-    else if (params?.prop?.$model) {
-        sourceFieldName = params.prop.$model
-        if (sourceFieldName && typeof sourceFieldName === 'string') {
-            condition = vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName]
-        }
-    }
-    else if (params?.prop?.ref) {
-        refName = params.prop.ref
-        if (refName && typeof refName === 'string') {
-            condition = vm?.$refs?.[refName]?.value
-        }
-    }
-    else if (params?.prop?.fn) {
-        // is it a fn Name get the reference from either the executors or the retrievers?
-        fn = params?.prop?.fn
-        if (fn && typeof fn === 'string') {
-            condition = cHelpers?.[fn]
-        }
-        else if (typeof fn === 'function') {
-            condition = fn
-            isAsync = isAsyncFn(fn)
-        }
-    }
 
-    // if prop is not set, the function will return false and we can short circuit???
-
-    if (condition !== undefined) {
-        try {
-            //check if we have to run on another target instead of on the requesting field!!!
-            targetFieldName = params?.targetField && params.targetField.name
-            if (targetFieldName && typeof targetFieldName === 'string') {
-                comparisonValue = vm?.v$?.[targetFieldName]?.$model ?? vm?.fieldValues?.value?.[targetFieldName]
-            }
-            // Note: here we are using the builtin vuelidate requiredIf -aliassed 'requiredif' in the import- validator, without having to know it's implementation
-            if (isAsync) {
-                // configure the validator
-                dummyValidator = helpers.withAsync(requiredif(condition))
-                // run the validator against the comparisonvalue
-                result = await dummyValidator?.$validator(comparisonValue);
-            }
-            else {
-                // configure the validator
-                dummyValidator = requiredif(condition);
-                // run the validator against the comparisonvalue
-                result = dummyValidator?.$validator(comparisonValue);
-            }
-
-            // Only when failing compose the message?
-            // if opposite to the norm result (defaulted) we should compose the message
-            if (result !== defaulted) {
-                debugger;
-                let cfgMessage = { dummyValidator, targetFieldName, params, cfg, comparisonValue, ruleType: rc_.V_REQUIREDIF, argInput: [condition] };
-                let message = composeRuleFeedbackMessage(cfgMessage)
-
-                // preMessage = `(Rule '${rc_.V_REQUIREDIF}')`
-                // //Only compose a hefty message if the execution was triggered indirectly
-                // if (typeof targetFieldName === 'string'){
-                //     targetFieldLabel = params?.targetField?.label ?? targetFieldName
-                //     if (cfg?.fieldCfg?.label && targetFieldName.toLowerCase() !== cfg.fieldCfg.label.toLowerCase() ){
-                //         metaType = cfg?.metaParams?.type ?? cfg?.metaParams?.params?.type
-                //         metaType = metaType ?? cfg?.metaParams?.params?.params?.type
-                //         preMessage = `(Field '${cfg.fieldCfg.label}' by rule '${metaType}' indirectly tested field '${targetFieldLabel}' 
-                //         with value '${comparisonValue}' against rule '${rc_.V_REQUIREDIF}(${condition})')`;
-                //     }
-                // }
-                // if (dummyValidator?.$message && typeof(dummyValidator.$message) === 'function' ){
-                //     partMessage = dummyValidator.$message({$params: dummyValidator.$params}) 
-                // } 
-                // else { partMessage = dummyValidator.$message }
-                // message = `${partMessage}. ${preMessage??''}`;
+        if (params?.prop && typeof params.prop !== 'object') {
+            // assume we received a striaght value
+            condition = params?.prop
+        }
+        else if (params?.prop?.$model) {
+            sourceFieldName = params.prop.$model
+            if (sourceFieldName && typeof sourceFieldName === 'string') {
+                condition = vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName]
             }
         }
-        catch (e) {
-            console.warn(e);
+        else if (params?.prop?.ref) {
+            refName = params.prop.ref
+            if (refName && typeof refName === 'string') {
+                condition = vm?.$refs?.[refName]?.value
+            }
         }
+        else if (params?.prop?.fn) {
+            // is it a fn Name get the reference from either the executors or the retrievers?
+            fn = params?.prop?.fn
+            if (fn && typeof fn === 'string') {
+                condition = cHelpers?.[fn]
+            }
+            else if (typeof fn === 'function') {
+                condition = fn
+                isAsync = isAsyncFn(fn)
+            }
+        }
+
+        // if prop is not set, the function will return false and we can short circuit???
+
+        if (condition !== undefined) {
+            try {
+                //check if we have to run on another target instead of on the requesting field!!!
+                targetFieldName = params?.targetField && params.targetField.name
+                if (targetFieldName && typeof targetFieldName === 'string') {
+                    comparisonValue = vm?.v$?.[targetFieldName]?.$model ?? vm?.fieldValues?.value?.[targetFieldName]
+                }
+                // Note: here we are using the builtin vuelidate requiredIf -aliassed 'requiredif' in the import- validator, without having to know it's implementation
+                if (isAsync) {
+                    // configure the validator
+                    dummyValidator = helpers.withAsync(requiredif(condition))
+                    // run the validator against the comparisonvalue
+                    result = await dummyValidator?.$validator(comparisonValue);
+                }
+                else {
+                    // configure the validator
+                    dummyValidator = requiredif(condition);
+                    // run the validator against the comparisonvalue
+                    result = dummyValidator?.$validator(comparisonValue);
+                }
+
+                // Only when failing compose the message?
+                // if opposite to the norm result (defaulted) we should compose the message
+                if (result !== defaulted) {
+                    debugger;
+                    let cfgMessage = { dummyValidator, targetFieldName, params, cfg, comparisonValue, ruleType: rc_.V_REQUIREDIF, argInput: [condition] };
+                    let message = composeRuleFeedbackMessage(cfgMessage)
+
+                    // preMessage = `(Rule '${rc_.V_REQUIREDIF}')`
+                    // //Only compose a hefty message if the execution was triggered indirectly
+                    // if (typeof targetFieldName === 'string'){
+                    //     targetFieldLabel = params?.targetField?.label ?? targetFieldName
+                    //     if (cfg?.fieldCfg?.label && targetFieldName.toLowerCase() !== cfg.fieldCfg.label.toLowerCase() ){
+                    //         metaType = cfg?.metaParams?.type ?? cfg?.metaParams?.params?.type
+                    //         metaType = metaType ?? cfg?.metaParams?.params?.params?.type
+                    //         preMessage = `(Field '${cfg.fieldCfg.label}' by rule '${metaType}' indirectly tested field '${targetFieldLabel}' 
+                    //         with value '${comparisonValue}' against rule '${rc_.V_REQUIREDIF}(${condition})')`;
+                    //     }
+                    // }
+                    // if (dummyValidator?.$message && typeof(dummyValidator.$message) === 'function' ){
+                    //     partMessage = dummyValidator.$message({$params: dummyValidator.$params}) 
+                    // } 
+                    // else { partMessage = dummyValidator.$message }
+                    // message = `${partMessage}. ${preMessage??''}`;
+                }
+            }
+            catch (e) {
+                console.warn(e);
+            }
+        }
+    }
+    catch (e) {
+        console.warn(e);
+        debugger;
     }
     // only output the message when failed
     // return result || { result, message }
@@ -173,6 +184,7 @@ export const _requiredIf = (args) => {
 
 export default {
     //requiredIf, // the executioner
+    requiredIfBakkerOhe,
     isRequiredIf, //helper
     notRequiredIf, //helper
     _requiredIf //hof to generate the wrapper to invoke our custom requiredIf

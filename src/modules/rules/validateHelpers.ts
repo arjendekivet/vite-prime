@@ -49,15 +49,17 @@ import requiredif from '@/modules/rules/features/requiredIf'
 export * from './core';
 
 export const cHelpers = {
-    // Some executioners. These re-use vuelidate builtin validators, like MaxValue, minValue, etc. 
+    // EXECUTIONERS. These re-use vuelidate builtin validators, like MaxValue, minValue, etc. or are custom validators.
     [rc_.V_MAXVALUE]: makeValidator({ validator: maxValue, type: rc_.V_MAXVALUE, param: "max" }),
     [rc_.V_MINVALUE]: makeValidator({ validator: minValue, type: rc_.V_MINVALUE, param: "min" }),
     [rc_.V_MINLENGTH]: makeValidator({ validator: minLength, type: rc_.V_MINLENGTH, param: "min" }),
     [rc_.V_MAXLENGTH]: makeValidator({ validator: maxLength, type: rc_.V_MAXLENGTH, param: "max" }),
-    //[rc_.V_REQUIREDIF]: makeValidator({ validator: requiredIf, type: rc_.V_REQUIREDIF, param: "prop" }),
-    [rc_.V_REQUIREDIF]: requiredif.requiredIfBakkerOhe,
     [rc_.V_BETWEEN]: inbetween.between,
-    // some retrievers, these read results of the associated executioners.
+    [rc_.V_REQUIREDIF]: makeValidator({ param: "prop", type: rc_.V_REQUIREDIF, validator: requiredIf }),
+    // custom executioner about external api calls
+    [rc_.V_SET_EXTERNAL_RESULTS]: setExternalResults,
+
+    // RETRIEVERS, these read results of the associated executioners.
     [rc_.IS_MIN_LENGTH]: minlength.isMinLength, //a retriever
     [rc_.IS_MAX_LENGTH]: maxlength.isMaxLength, //a retriever
     // retrievers of custom executioners about 'show/hide', non-validation
@@ -95,11 +97,7 @@ export const cHelpers = {
     [rc_.NOT_EMPTY]: empty_.notEmpty,
     [rc_.SOME_NOT_EMPTY]: empty_.someNotEmpty,
     [rc_.NONE_EMPTY]: empty_.noneEmpty,
-    // about external api calls
-    [rc_.V_SET_EXTERNAL_RESULTS]: setExternalResults,
     // about requiredIf
-    //[rc_.V_REQUIREDIF]: requiredif.requiredIf,
-    [rc_.V_REQUIREDIF]: makeValidator({ param: "prop", type: rc_.V_REQUIREDIF, validator: requiredIf }),
     [rc_.IS_REQUIRED_IF]: requiredif.isRequiredIf,
     [rc_.NOT_REQUIRED_IF]: requiredif.notRequiredIf,
     // TODO: two odd helpers ...
@@ -125,8 +123,10 @@ export const mapValidators = {
     [rc_.CV_TYPE_MAX_LENGTH]: maxlength._maxLength,
     [rc_.CV_TYPE_BETWEEN]: inbetween._between,
     [rc_.CV_TYPE_REQUIREDIF]: requiredif._requiredIf,
-    [rc_.CV_TYPE_MIN_VALUE]: (args) => makeRule(args, { startFn: rc_.V_MINVALUE, asValidator: true }),
-    [rc_.CV_TYPE_MAX_VALUE]: (args) => makeRule(args, { startFn: rc_.V_MAXVALUE, asValidator: true }),
+    //[rc_.CV_TYPE_MIN_VALUE]: (args) => makeRule(args, { startFn: rc_.V_MINVALUE, asValidator: true }),
+    //[rc_.CV_TYPE_MAX_VALUE]: (args) => makeRule(args, { startFn: rc_.V_MAXVALUE, asValidator: true }),
+    [rc_.CV_TYPE_MIN_VALUE]: makeRule(args, { startFn: rc_.V_MINVALUE, asValidator: true }),
+    [rc_.CV_TYPE_MAX_VALUE]: makeRule(args, { startFn: rc_.V_MAXVALUE, asValidator: true }),
     //['__cv__fetchedResultContainsPipo']: _fetchedResultContainsPipo,
     //[rc_.CV_TYPE_SET_EXTERNAL_RESULTS_BAK]: _setExternalResultsBak,
 }
