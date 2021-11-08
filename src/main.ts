@@ -17,6 +17,7 @@ import Button from 'primevue/button';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import InputText from 'primevue/inputtext';
+import InputNumber from 'primevue/inputnumber';
 import Dropdown from 'primevue/dropdown';
 import Textarea from 'primevue/textarea';
 import JsonEditor from '@/components/JsonEditor.vue'
@@ -73,6 +74,7 @@ app.directive('tooltip', Tooltip)
 app.component('Button', Button);
 app.component('DataTable', DataTable);
 app.component('Column', Column);
+app.component('P_InputNumber', InputNumber);
 app.component('P_InputText', InputText);
 app.component('P_Dropdown', Dropdown);
 app.component('P_Textarea', Textarea);

@@ -56,7 +56,7 @@ import Fieldconfig from '@/types/fieldconfig'
 import _ from 'lodash'
 import Utils from '@/modules/utils'
 import { messages, addSubmitMessage, addErrorMessage, addWarningMessage } from '@/modules/UseFormMessages'
-import { setValidators, useValidation } from '@/modules/rules/validate'
+import { setRules, useValidation } from '@/modules/rules/validate'
 import formConfigDefaults from '@/data/FormLayoutDefaults'
 
 type FormProp = {
@@ -106,7 +106,7 @@ const getFormData = async function () {
     fields.value = getFieldsFromConfig(compConfig.value, 'isField', true)
 
     // pass in the v$ ref too to have the reference to it where we need it! 
-    rules.value = setValidators(fields.value, undefined, fieldValues, v$)
+    rules.value = setRules(fields.value, undefined, fieldValues, v$)
 
     if (props.initialFormData) {
       fieldValues.value = props.initialFormData

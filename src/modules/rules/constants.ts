@@ -16,8 +16,10 @@ export const V_MINLENGTH = 'minLength'; //now it holds the name of the method to
 export const V_MAXLENGTH = 'maxLength';
 export const V_BETWEEN = 'between';
 export const V_REQUIREDIF = 'requiredIf';
+export const V_REQUIREDUNLESS = 'requiredUnless';
 export const V_MINVALUE = 'minValue';
 export const V_MAXVALUE = 'maxValue';
+export const V_ALPHA = 'alpha';
 
 export const CFG_PROP_ENTITY_DISPLAY = 'hidden'; // indicates in fieldCfg the optional property 'hidden' decides the field display
 export const CFG_PROP_ENTITY_DISPLAY_INVERT = true; // indicates a display rule will have to negate the config prop
@@ -89,8 +91,10 @@ export const CV_TYPE_MAX_LENGTH = `${V_CUSTOM_PREFIX}${V_MAXLENGTH}`;
 export const CV_TYPE_BETWEEN = `${V_CUSTOM_PREFIX}${V_BETWEEN}`;
 export const CV_TYPE_SET_EXTERNAL_RESULTS = `${V_CUSTOM_PREFIX}${V_SET_EXTERNAL_RESULTS}`;
 export const CV_TYPE_REQUIREDIF = `${V_CUSTOM_PREFIX}${V_REQUIREDIF}`;
+export const CV_TYPE_REQUIREDUNLESS = `${V_CUSTOM_PREFIX}${V_REQUIREDUNLESS}`;
 export const CV_TYPE_MIN_VALUE = `${V_CUSTOM_PREFIX}${V_MINVALUE}`;
 export const CV_TYPE_MAX_VALUE = `${V_CUSTOM_PREFIX}${V_MAXVALUE}`;
+export const CV_TYPE_ALPHA = `${V_CUSTOM_PREFIX}${V_ALPHA}`;
 
 /**
  * Helpers which merely retrieve optional presumed previous rule results. The require only the vm and an array of fieldname(s) as parameters.
@@ -120,9 +124,11 @@ export const SUPPORTED_EXECUTIONERS = [
     V_MAXLENGTH,
     V_BETWEEN,
     V_REQUIREDIF,
+    V_REQUIREDUNLESS,
     V_SET_EXTERNAL_RESULTS,
     V_MINVALUE,
-    V_MAXVALUE
+    V_MAXVALUE,
+    V_ALPHA
 ]
 
 export default {
@@ -144,9 +150,11 @@ export default {
     V_MAXLENGTH,
     V_BETWEEN,
     V_REQUIREDIF,
+    V_REQUIREDUNLESS,
     V_SET_EXTERNAL_RESULTS,
     V_MINVALUE,
     V_MAXVALUE,
+    V_ALPHA,
     // custom validators that support dynamical parametrizations
     CV_TYPE_DISABLE_IF,
     CV_TYPE_DISPLAY_IF,
@@ -154,9 +162,11 @@ export default {
     CV_TYPE_MAX_LENGTH,
     CV_TYPE_BETWEEN,
     CV_TYPE_REQUIREDIF,
+    CV_TYPE_REQUIREDUNLESS,
     CV_TYPE_SET_EXTERNAL_RESULTS,
     CV_TYPE_MIN_VALUE,
     CV_TYPE_MAX_VALUE,
+    CV_TYPE_ALPHA,
     // Helpers that merely "read" rule results, as opposed to "execute" other rules:
     IS_VISIBLE, SOME_VISIBLE, ALL_VISIBLE,
     IS_HIDDEN, SOME_HIDDEN, ALL_HIDDEN,

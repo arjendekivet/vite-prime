@@ -7,7 +7,7 @@ import { isAsyncFn, isCustomValidatorType } from '@/modules/rules/core'
 import rc_ from '@/modules/rules/constants'
 import cvh from '@/modules/rules/validateHelpers' // imports the default export as namespace cvh...
 
-const mapValidators = cvh.mapValidators;
+const mapRules = cvh.mapRules;
 /**
  * Alias for useVuelidate such that the form does not have to know which validator package we are using. We would only have to know the signature ...
  */
@@ -63,8 +63,8 @@ const ruleGenerator = function (type: string, params: object = {}, validatorFn: 
     return validator
 }
 
-//add to mapValidators ...
-mapValidators[rc_.RULE_GENERATOR] = ruleGenerator
+//add to mapRules ...
+mapRules[rc_.RULE_GENERATOR] = ruleGenerator
 
 export function validName(name) {
     let validNamePattern = new RegExp("^[a-zA-Z]+(?:[-'\\s][a-zA-Z]+)*$");
@@ -86,13 +86,13 @@ interface formDefinition {
 
 // TODO: should we remove all rules every time on invocation or pass in all exisiting rules so the thing will notice which rules did change and refire these? or such?
 // Note: if we never pass in the existing rules, we do not need the pValidatorRules either...
-export function setValidators(formDefinition: formDefinition, pValidatorRules: Object = {}, formData: Object = {}, p_v$) {
-    const validatorRules = Object.assign({}, pValidatorRules)
+export function setRules(formDefinition: formDefinition, pRules: Object = {}, formData: Object = {}, p_v$) {
+    const rules = Object.assign({}, pRules)
     _.forEach(formDefinition, function (field) {
         let mappedValidator
         let fieldName = field.id
         let fieldLabel = field.label
-        let objValidator = validatorRules?.[fieldName] || {} // Get previous to augment/overwrite or start freshly.
+        let objRule = rules?.[fieldName] || {} // Get previous to augment/overwrite or start freshly.
         let augmentedValidator // to hold the fieldLabel as an extra param, imerged into the original validator
         let hasCustomPrefix = false
         // setting to programmatically generate rules for displayIf and disableIf when no such validators are configured in the field configuration...
@@ -127,13 +127,13 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
             // dus wanneer een veld indirect/gededuceerd dependents heeft, dan een rule NIET ignoren, omdat anders NOOIT een rule result wordt genoteerd over een veld en andere velden dat dan nooit kunnen consulteren?
             // Deze skip / ignore feature bewaren we voor later, als performance reasons dat vereisen.
             if (hasCustomPrefix) {
-                if (mapValidators[tag]) {
+                if (mapRules[tag]) {
                     //register the state about having to addDisplayRule or addDisableRule or ... Once false, it should remain false
                     addDisableRule = (addDisableRule === false || tag === rc_.CV_TYPE_DISABLE_IF) ? false : true
                     addDisplayRule = (addDisplayRule === false || tag === rc_.CV_TYPE_DISPLAY_IF) ? false : true
                     objParams = Object.assign({}, cfgValidator.params, { type: tag, fieldCfg: field, formDefinition, formData, fieldLabel, p_v$ })
-                    // we must map AND INVOKE a dedicated HOF from our mapValidators.
-                    objValidator[tag] = augmentValidator(objParams, mapValidators[tag](objParams))
+                    // we must map AND INVOKE a dedicated HOF from our mapRules.
+                    objRule[tag] = augmentValidator(objParams, mapRules[tag](objParams))
                 }
                 else {
                     console.warn('unmapped custom precoded validator: ', tag)
@@ -142,14 +142,14 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
             else { //for dynamic isCustom validator configs, which bring their own fn:Function configuration....
                 if (cfgValidator.isCustom) {
                     // we must create the validator dynamically via the rule_generator... must use a HOF to get the additional parametrization implemented?
-                    mappedValidator = mapValidators[rc_.RULE_GENERATOR](tag, _.clone(cfgValidator.params), cfgValidator.fn, cfgValidator.message || "no message yet", field, formDefinition, formData)
+                    mappedValidator = mapRules[rc_.RULE_GENERATOR](tag, _.clone(cfgValidator.params), cfgValidator.fn, cfgValidator.message || "no message yet", field, formDefinition, formData)
                     //temporarily still support this special case
                     if (!mappedValidator && cfgValidator.type === 'displayIf' && cfgValidator.fn) {
                         mappedValidator = visibility(cfgValidator.params, cfgValidator.fn, field, formDefinition, formData)
                     }
                 }
                 else {
-                    mappedValidator = mapValidators[tag] // only relevant if we did map it in the first place -for now: the config COULD carry it's own complete implementation???-
+                    mappedValidator = mapRules[tag] // only relevant if we did map it in the first place -for now: the config COULD carry it's own complete implementation???-
                 }
 
                 let isParam = !isString && tag && Object.keys(cfgValidator.params).length > 0 // ! hasCustomPrefix???????
@@ -206,7 +206,7 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
                             augmentedValidator = augmentValidator({ fieldLabel }, mappedValidator)
                         }
                     }
-                    objValidator[tag] = augmentedValidator
+                    objRule[tag] = augmentedValidator
                 }
                 else {
                     // for now only hardcoded on visibility? meant for one display rule with a FUNCTION in the JSON (field anwer hiding on 'pipo' in field title)
@@ -238,7 +238,7 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
                                 augmentedValidator = augmentValidator({ fieldLabel }, mappedValidator)
                             }
                         }
-                        objValidator[tag] = augmentedValidator
+                        objRule[tag] = augmentedValidator
                     }
                 }
             }
@@ -248,7 +248,7 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
             try {
                 tag = rc_.CV_TYPE_DISPLAY_IF
                 objParams = Object.assign({}, { type: tag, fieldCfg: field, formDefinition, formData, fieldLabel })
-                objValidator[tag] = augmentValidator(objParams, mapValidators[tag](objParams))
+                objRule[tag] = augmentValidator(objParams, mapRules[tag](objParams))
             }
             catch (e) {
                 console.warn(e)
@@ -259,15 +259,15 @@ export function setValidators(formDefinition: formDefinition, pValidatorRules: O
             try {
                 tag = rc_.CV_TYPE_DISABLE_IF
                 objParams = Object.assign({}, { type: tag, fieldCfg: field, formDefinition, formData, fieldLabel })
-                objValidator[tag] = augmentValidator(objParams, mapValidators[tag](objParams))
+                objRule[tag] = augmentValidator(objParams, mapRules[tag](objParams))
             } catch (e) {
                 console.warn(e)
             }
         }
         // Register the validators on the ref that will be passed in to useVuelidate ...
-        if (_.values(objValidator).length > 0) {
-            validatorRules[fieldName] = objValidator
+        if (_.values(objRule).length > 0) {
+            rules[fieldName] = objRule
         }
     })
-    return validatorRules
+    return rules
 }

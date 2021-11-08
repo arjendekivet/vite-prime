@@ -125,7 +125,8 @@ export const _minLength = (args) => {
     const startFn = rc_.V_MINLENGTH; //this config means that said method should be invoked FIRSTLY, from allways, before probing for dependencies, 
     let resultFunction
     try {
-        resultFunction = makeRule(args, { defaultRuleResult, doInvertRuleResult, startFn, asValidator })
+        //resultFunction = makeRule(args, { defaultRuleResult, doInvertRuleResult, startFn, asValidator })
+        resultFunction = makeRule(args)({ defaultRuleResult, doInvertRuleResult, startFn, asValidator })
     } catch (error) {
         console.warn(error)
     }

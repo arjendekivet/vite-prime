@@ -33,8 +33,8 @@ import _ from 'lodash'
 import rc_ from '@/modules/rules/constants'
 //import { isAsyncFn, isCustomValidatorType, hofRuleFnGenerator, probeCustomRuleFn, probeCustomRuleFnRecursor } from '@/modules/rules/core' 
 import '@/modules/rules/core'
-import { makeRule, makeValidator } from '@/modules/rules/core'
-import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue, minValue, and } from '@vuelidate/validators'
+import { makeRule, wrapRule } from '@/modules/rules/core'
+import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue, minValue, alpha, alphaNum, numeric, integer, decimal, ipAddress, macAddress, url, sameAs } from '@vuelidate/validators'
 import display from '@/modules/rules/features/displayIf'
 import enabling from '@/modules/rules/features/disableIf'
 import validity from '@/modules/rules/features/validity'
@@ -48,16 +48,44 @@ import requiredif from '@/modules/rules/features/requiredIf'
 // re-export stuff from core
 export * from './core';
 
+// create a map to be able to dynamically refer to the rules we need, like builtin vuelidate validators and custom validators
+export const mapRules = {
+    // builtin vuelidate validators...
+    required,
+    //requiredUnless,
+    //alpha,
+    email,
+    // custom rules which are validator wrappers that substitute but re-use vuelidate builtins. 
+    // These are rule-executioners for validation purposes, so they run when $validate() is called AND they show up in v$ as regular validator results in $errors, $silenterrors, etc
+    [rc_.CV_TYPE_MIN_LENGTH]: makeRule({ startFn: rc_.V_MINLENGTH, asValidator: true }),//minlength._minLength,
+    [rc_.CV_TYPE_MAX_LENGTH]: makeRule({ startFn: rc_.V_MAXLENGTH, asValidator: true }),//maxlength._maxLength,
+    [rc_.CV_TYPE_BETWEEN]: makeRule({ startFn: rc_.V_BETWEEN, asValidator: true }),//inbetween._between,
+    [rc_.CV_TYPE_REQUIREDIF]: makeRule({ startFn: rc_.V_REQUIREDIF, asValidator: true }),//requiredif._requiredIf,
+    [rc_.CV_TYPE_REQUIREDUNLESS]: makeRule({ startFn: rc_.V_REQUIREDUNLESS, asValidator: true }),
+    [rc_.CV_TYPE_MIN_VALUE]: makeRule({ startFn: rc_.V_MINVALUE, asValidator: true }),
+    [rc_.CV_TYPE_MAX_VALUE]: makeRule({ startFn: rc_.V_MAXVALUE, asValidator: true }),
+    [rc_.CV_TYPE_ALPHA]: makeRule({ startFn: rc_.V_ALPHA, asValidator: true }),
+
+    // custom cynapps validators which will use wrappers for rule-executioners for NON-validation purposes, like "display", and "disable". So these do not register in $errors etc.
+    [rc_.CV_TYPE_DISABLE_IF]: enabling.disableIf, //TODO: declare via makeRule
+    [rc_.CV_TYPE_DISPLAY_IF]: display.displayIf, //TODO: declare via makeRule
+    [rc_.CV_TYPE_SET_EXTERNAL_RESULTS]: _setExternalResults, //TODO: declare via makeRule
+    //['__cv__fetchedResultContainsPipo']: _fetchedResultContainsPipo,
+    //[rc_.CV_TYPE_SET_EXTERNAL_RESULTS_BAK]: _setExternalResultsBak,
+}
+
 export const cHelpers = {
     // EXECUTIONERS. These re-use vuelidate builtin validators, like MaxValue, minValue, etc. or are custom validators.
-    [rc_.V_MAXVALUE]: makeValidator({ validator: maxValue, type: rc_.V_MAXVALUE, param: "max" }),
-    [rc_.V_MINVALUE]: makeValidator({ validator: minValue, type: rc_.V_MINVALUE, param: "min" }),
-    [rc_.V_MINLENGTH]: makeValidator({ validator: minLength, type: rc_.V_MINLENGTH, param: "min" }),
-    [rc_.V_MAXLENGTH]: makeValidator({ validator: maxLength, type: rc_.V_MAXLENGTH, param: "max" }),
-    [rc_.V_BETWEEN]: inbetween.between,
-    [rc_.V_REQUIREDIF]: makeValidator({ param: "prop", type: rc_.V_REQUIREDIF, validator: requiredIf }),
+    [rc_.V_MAXVALUE]: wrapRule({ validator: maxValue, type: rc_.CV_TYPE_MAX_VALUE, param: "max" }),
+    [rc_.V_MINVALUE]: wrapRule({ validator: minValue, type: rc_.CV_TYPE_MIN_VALUE, param: "min" }),
+    [rc_.V_MINLENGTH]: wrapRule({ validator: minLength, type: rc_.CV_TYPE_MIN_LENGTH, param: "min" }),
+    [rc_.V_MAXLENGTH]: wrapRule({ validator: maxLength, type: rc_.CV_TYPE_MAX_LENGTH, param: "max" }),
+    [rc_.V_BETWEEN]: inbetween.between, //todo via wrapRule
+    [rc_.V_REQUIREDIF]: wrapRule({ validator: requiredIf, type: rc_.CV_TYPE_REQUIREDIF, param: "prop" }),
+    [rc_.V_REQUIREDUNLESS]: wrapRule({ validator: requiredUnless, type: rc_.CV_TYPE_REQUIREDUNLESS, param: "prop" }),
+    [rc_.V_ALPHA]: wrapRule({ validator: alpha, type: rc_.CV_TYPE_ALPHA }),
     // custom executioner about external api calls
-    [rc_.V_SET_EXTERNAL_RESULTS]: setExternalResults,
+    [rc_.V_SET_EXTERNAL_RESULTS]: setExternalResults, //todo via wrapRule
 
     // RETRIEVERS, these read results of the associated executioners.
     [rc_.IS_MIN_LENGTH]: minlength.isMinLength, //a retriever
@@ -104,30 +132,4 @@ export const cHelpers = {
     [rc_.GET_INVALID_MESSAGE]: validity.getInvalidMessage,
     [rc_.GET_DISABLED_MESSAGE]: enabling.getDisabledMessage,
 }
-
-// create a map to be able to dynamically refer to the rules we need, like builtin vuelidate validators and custom validators
-export const mapValidators = {
-    // builtin vuelidate validators...
-    required,
-    requiredUnless,
-    email,
-    //minValue,
-    //maxValue,
-    // custom cynapps validators which are wrappers for rule-executioners for NON-validation purposes, like "display", and "disable". So these do not register in $errors etc.
-    [rc_.CV_TYPE_DISABLE_IF]: enabling.disableIf,
-    [rc_.CV_TYPE_DISPLAY_IF]: display.displayIf,
-    [rc_.CV_TYPE_SET_EXTERNAL_RESULTS]: _setExternalResults,
-    // custom cynapps validators which are wrappers that substitute but re-use vuelidate builtins. 
-    // These are rule-executioners for validation purposes, so they run when $validate() is called AND they show up in v$ as regular validator results in $errors, $silenterrors, etc
-    [rc_.CV_TYPE_MIN_LENGTH]: minlength._minLength,
-    [rc_.CV_TYPE_MAX_LENGTH]: maxlength._maxLength,
-    [rc_.CV_TYPE_BETWEEN]: inbetween._between,
-    [rc_.CV_TYPE_REQUIREDIF]: requiredif._requiredIf,
-    //[rc_.CV_TYPE_MIN_VALUE]: (args) => makeRule(args, { startFn: rc_.V_MINVALUE, asValidator: true }),
-    //[rc_.CV_TYPE_MAX_VALUE]: (args) => makeRule(args, { startFn: rc_.V_MAXVALUE, asValidator: true }),
-    [rc_.CV_TYPE_MIN_VALUE]: makeRule(args, { startFn: rc_.V_MINVALUE, asValidator: true }),
-    [rc_.CV_TYPE_MAX_VALUE]: makeRule(args, { startFn: rc_.V_MAXVALUE, asValidator: true }),
-    //['__cv__fetchedResultContainsPipo']: _fetchedResultContainsPipo,
-    //[rc_.CV_TYPE_SET_EXTERNAL_RESULTS_BAK]: _setExternalResultsBak,
-}
-export default { mapValidators, cHelpers };
+export default { mapRules, cHelpers };

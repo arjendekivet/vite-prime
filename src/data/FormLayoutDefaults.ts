@@ -34,21 +34,26 @@ let fields = [
         defaultValue: 3,
         hhhidden: true,
         validators: [
-            { type: rc_.CV_TYPE_REQUIREDIF, params: { prop: { $model: 'setting1' } } },
-            //{ type: rc_.CV_TYPE_BETWEEN, params: { min: 1, max: 100 } },
+            '__cv__alpha',
+            //{ type: rc_.CV_TYPE_REQUIREDIF, params: { prop: { $model: 'setting1' } } },
+            //{ type: rc_.CV_TYPE_REQUIREDUNLESS, params: { prop: { $model: 'setting1' } } },
+            // { type: rc_.CV_TYPE_MIN_VALUE, params: { min: 20 } },
+            // { type: rc_.CV_TYPE_MAX_VALUE, params: { max: 50 } },
+            // { type: rc_.CV_TYPE_REQUIREDIF, params: { prop: { $model: 'setting1' } } },
+            // { type: rc_.CV_TYPE_BETWEEN, params: { min: 25, max: 40 } },
         ]
     },
     {
         id: 'setting1',
         isField: true,
         label: 'Setting1. Calls a dummy async validator',
-        type: 'P_InputText',
+        type: 'P_InputNumber',
         icon: { type: 'right', name: 'pi-lock' },
         defaultValue: 2,
         ddddisabled: true,
         validators: [
             'required',
-            { type: rc_.CV_TYPE_MAX_VALUE, params: { max: 5 } },
+            //{ type: rc_.CV_TYPE_MAX_VALUE, params: { max: 5 } },
         ]
     },
     {
@@ -58,7 +63,7 @@ let fields = [
         type: 'P_InputText',
         icon: { type: 'right', name: 'pi-lock' },
         defaultValue: 10,
-        validators: [
+        vvalidators: [
             'required',
             { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 5 } },
             { type: rc_.CV_TYPE_MAX_LENGTH, params: { max: 10 } },
@@ -71,7 +76,7 @@ let fields = [
         type: 'P_InputText',
         placeholder: 'Title',
         icon: { type: 'right', name: 'pi-bookmark' },
-        validators: [
+        vvalidators: [
             //"required",
             //{ type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
             {

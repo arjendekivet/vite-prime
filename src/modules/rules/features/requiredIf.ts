@@ -1,11 +1,11 @@
 import _ from 'lodash'
 import rc_, { V_REQUIREDIF } from '@/modules/rules/constants'
-import { makeRule, cHelpers, isAsyncFn, composeRuleFeedbackMessage, makeValidator } from '@/modules/rules/core'
+import { makeRule, cHelpers, isAsyncFn, composeRuleFeedbackMessage, wrapRule } from '@/modules/rules/core'
 import { requiredIf as requiredif } from '@vuelidate/validators' // aliassed to requiredif
 
 // executioner...
 debugger;
-export const requiredIfBak = makeValidator({ param: "prop", type: rc_.V_REQUIREDIF, validator: requiredif });
+export const requiredIfBak = wrapRule({ param: "prop", type: rc_.V_REQUIREDIF, validator: requiredif });
 
 export const requiredIfBakkerOhe = async (pvm: any, objContext: object) => {
     debugger

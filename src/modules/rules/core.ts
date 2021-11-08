@@ -22,7 +22,8 @@ export const isCustomValidatorType = (type: string) => {
 
 // create yet another layer that will invoke the former hofRuleFnGenerator
 // (args) => makeRule(args, { startFn: rc_.V_MINVALUE, asValidator: true }),
-export const makeRule = (...args) => generateRule(...args)
+//export const makeRule = (...args) => generateRule(...args)
+export const makeRule = (additionalRuleConfig) => (overallRuleConfig) => generateRule(overallRuleConfig, additionalRuleConfig)
 
 /**
  * hofRuleFnGenerator
@@ -37,6 +38,8 @@ export const makeRule = (...args) => generateRule(...args)
  * @param args. Array.  We expect to get passed in all the necessary parametrizations. 
  * @returns a parameterized ruleFn for vuelidate, to be used as a custom rule executioner for vuelidate (as opposed to only built-in ones and only for validation purposes).
  * TODO: make async?
+    let fallBackFunction = function ruleFn(value, vm, vmx = xVM) {
+ * TODO: get rid of redundant reference if we do not use xVM explicitely, since we pass it on as is, implicitely, in probeCustomRuleFn(args) and we do not -yet- use it in 
  */
 //export const makeRule = (...args) => {
 export const generateRule = (...args) => {
@@ -44,7 +47,7 @@ export const generateRule = (...args) => {
     const xVM = { v$: p_v$ }
     // can we make sure that, if undefined, defaultRuleResult = true etc
     const { defaultRuleResult = true, doInvertRuleResult = false, asValidator = false, staticConfigProperty } = args[1]
-
+    debugger;
     const ruleType = params.type
     let hasStaticConfigProperty
     let resultFunction
@@ -334,23 +337,31 @@ export const composeRuleFeedbackMessage = (pContext) => {
     return message;
 }
 
-///////////////// HOF that generates an executioner for each builtin vuelidate validator that takes 1 paramer ....
+///////////////// HOF that generates an executioner for each builtin vuelidate validator that takes ZERO OR 1 paramer ....
 /**
  * The passed in const { value, fieldName, params, ...cfg } = objContext is augmented to support rerunning of the rule.
  * TODO: get a general defaulted from somewhere?
  * TODO: make an array of supported vuelidate builtins that have ONE param? to know when to invoke this one.
+ * 
+ * TODO: makeValidator rename to wrapRule. 
+ * Where makeRule creates the function that will implement the parsing and resolving and execution of the field validator-configuration:
+ * { type: 'maxLength', params: { bla, dependsOn: {and: { [ALL_VALID]:['a','b','c']}}}}
+ * wrapRule will wrap the relevant validator / executor such that it could dynamically run (dynamic argument, run 'delegated' on another field)
+ * which is all optional and totalley depends on the declarative 'validator-configuration'.
  * @param vm 
  * @param objParams 
  * @returns 
  */
-export const makeValidator = (objCfg) => {
+export const wrapRule = (objCfg) => {
     const { param, type, validator } = objCfg
 
     return async function (pvm: any, objContext: object) {
         //const { value, params, ...cfg } = objContext
         const { value, params, p_v$, ...cfg } = objContext
-        //now prepare the namespace for the code below to reference vm.v$.<paths> !!!
+
+        //prepare the namespace for the code below to reference vm.v$.<paths> !!!
         const vm = pvm?.v$ ? pvm : { v$: p_v$.value }
+
         debugger;
         // the runtime value against which usually a rule will be executed. If however a targetField is specified, then that field should provide the runtime comparisonValue... 
         let comparisonValue = value;
@@ -367,37 +378,40 @@ export const makeValidator = (objCfg) => {
         let probe
 
         // TODO: parse the invocation configuration in params.
+        // Does it take a param at all, formally?
         // TODO if it supports a function. Could that function have params? How?
         // Does it config to get a $model etc etc?
-        if (params?.[param]?.staticValue) {
-            condition = params[param].staticValue
-        }
-        else if (params?.[param]?.$model) {
-            sourceFieldName = params[param].$model
-            if (sourceFieldName && typeof sourceFieldName === 'string') {
-                condition = vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName]
+        if (params?.[param]) {
+            if (params?.[param]?.staticValue) {
+                condition = params[param].staticValue
             }
-        }
-        else if (params?.[param]?.ref) {
-            refName = params[param].ref
-            if (refName && typeof refName === 'string') {
-                condition = vm?.$refs?.[refName]?.value
+            else if (params?.[param]?.$model) {
+                sourceFieldName = params[param].$model
+                if (sourceFieldName && typeof sourceFieldName === 'string') {
+                    condition = vm?.v$?.[sourceFieldName]?.$model ?? vm?.fieldValues?.value?.[sourceFieldName]
+                }
             }
-        }
-        else if (params?.[param]?.fn) {
-            // is it a fn Name get the reference from either the executors or the retrievers?
-            fn = params[param].fn
-            if (fn && typeof fn === 'string') {
-                condition = cHelpers?.[fn]
+            else if (params?.[param]?.ref) {
+                refName = params[param].ref
+                if (refName && typeof refName === 'string') {
+                    condition = vm?.$refs?.[refName]?.value
+                }
             }
-            else if (typeof fn === 'function') {
-                condition = fn
-                isAsync = isAsyncFn(fn)
+            else if (params?.[param]?.fn) {
+                // is it a fn Name get the reference from either the executors or the retrievers?
+                fn = params[param].fn
+                if (fn && typeof fn === 'string') {
+                    condition = cHelpers?.[fn]
+                }
+                else if (typeof fn === 'function') {
+                    condition = fn
+                    isAsync = isAsyncFn(fn)
+                }
             }
-        }
-        else {
-            // assume we received a direct, static value, whatever it is (object, array, scalar)
-            condition = params?.[param]
+            else {
+                // assume we received a direct, static value, whatever it is (object, array, scalar)
+                condition = params?.[param]
+            }
         }
         //condition could be optional OR deliberately undefined?
         //if (condition !== undefined){
@@ -409,14 +423,14 @@ export const makeValidator = (objCfg) => {
             }
             // Note: here we are using the builtin vuelidate requiredIf -aliassed 'requiredif' in the import- validator, without having to know it's implementation
             if (isAsync) {
-                // configure the validator
-                dummyValidator = helpers.withAsync(validator(condition))
+                // configure the validator, see if we have to invoke it to set it up. Some are without params, like required, alpha, etc
+                dummyValidator = helpers.withAsync(typeof validator === 'function' ? validator(condition) : validator)
                 // run the validator against the comparisonvalue
                 result = await dummyValidator?.$validator(comparisonValue);
             }
             else {
-                // configure the validator
-                dummyValidator = validator(condition);
+                // configure the validator, see if we have to invoke it to set it up. Some are without params, like required, alpha, etc
+                dummyValidator = typeof validator === 'function' ? validator(condition) : validator
                 // run the validator against the comparisonvalue
                 result = dummyValidator?.$validator(comparisonValue);
             }

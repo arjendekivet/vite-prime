@@ -89,7 +89,8 @@ export const _between = (args) => {
     const startFn = rc_.V_BETWEEN; //this config means that said method should be invoked from allways, before probing for dependencies, 
     let resultFunction
     try {
-        resultFunction = makeRule(args, { defaultRuleResult, doInvertRuleResult, startFn, asValidator })
+        //resultFunction = makeRule(args, { defaultRuleResult, doInvertRuleResult, startFn, asValidator })
+        resultFunction = makeRule(args)({ defaultRuleResult, doInvertRuleResult, startFn, asValidator })
     } catch (error) {
         console.warn(error)
     }
