@@ -9,6 +9,7 @@ import Quill from 'quill'
 import { v4 as uuidv4 } from 'uuid'
 import { onMounted, watch } from 'vue'
 
+// Additional css needed for optional bubble theme
 import 'quill/dist/quill.bubble.css'
 
 type FormProp = {
