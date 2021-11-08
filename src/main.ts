@@ -13,6 +13,10 @@ import 'primevue/resources/primevue.min.css'            //core css
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';                     //icons
 
+// import 'quill/dist/quill.core.css'
+// import 'quill/dist/quill.bubble.css'
+// import 'quill/dist/quill.snow.css'
+
 import Button from 'primevue/button';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -44,6 +48,7 @@ import Tooltip from 'primevue/tooltip'
 import SelectButton from 'primevue/selectbutton'
 import Editor from 'primevue/editor'
 import C_Editor from '@/components/C_Editor.vue'
+import QuillEditor from '@/components/QuillEditor.vue'
 
 import primeLocaleEn from '@/locales/prime_en'
 
@@ -105,5 +110,6 @@ app.component('SplitButton', SplitButton);
 app.component('SelectButton', SelectButton);
 app.component('Editor', Editor);
 app.component('C_Editor', C_Editor);
+app.component('QuillEditor', QuillEditor);
 
 app.mount('#app')
