@@ -208,6 +208,7 @@ function getFieldsFromConfig(arr: Fieldconfig[], key: string, value: string | bo
 
 const updateFieldValue = (fieldId: string, value: any) => {
   fieldValues.value[fieldId] = value
+
   // ??????????????????
   // als we async validators in andere rules hebben, die als dependency zijn genoemd, 
   // gaan die niet af als niet heel v$.$validate() wordt gecalled????????????????????
@@ -219,8 +220,8 @@ const updateFieldValue = (fieldId: string, value: any) => {
   // Ergens in de vuelidate github staat dat alle rules async zijn by default, klopt dat ook? Dat lijkt inconsistent.
 
   //v$?.value?.$validate()
-  v$?.value?.$touch() //is genoeg om indirecte / async validators te triggeren ...
-  v$?.value?.$reset()
+  v$?.value?.$touch() // is genoeg om indirecte / async validators te triggeren ...
+  v$?.value?.$reset() // TODO: je wil niet alles resetten of juist wel? Config voor maken?
 
   if (v$.value[fieldId]) {
     // validate the field explicitely... or validate the entire rule set since we can have dependencies????

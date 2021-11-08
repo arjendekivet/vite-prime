@@ -4,12 +4,17 @@
 //const { hofRuleFnGenerator, V_CUSTOM_PREFIX } = await import('@/modules/rules/validateHelpers')
 
 import rc_ from '@/modules/rules/constants'
-import { makeRule, hofRuleFnGenerator } from '@/modules/rules/core'
+import { hofRuleFnGenerator, makeRule } from '@/modules/rules/core'
 
 // Executioner for rule of type 'setExternalResults'
-export const setExternalResults = async (vm, objContext) => {
+export const setExternalResults = async (pvm, objContext) => {
+    debugger
     let response, result
-    const { value, params, fieldName, ...cfg } = objContext
+    const { value, params, p_v$, ...cfg } = objContext
+
+    //now prepare the namespace for the code below to reference vm.v$.<paths> !!!
+    const vm = pvm?.v$ ? pvm : { v$: p_v$.value }
+
     try {
         debugger;
         //TODO: find a robust & elegant method that takes the querystring params and safely encodes and appends it to the url...
@@ -23,13 +28,13 @@ export const setExternalResults = async (vm, objContext) => {
         let response = await rawResponse.json?.()
         let arrResults = []
         arrResults.push(response) //no need to JSON.stringify(response)), although we could do so
-        // set the ref value
+        // set the ref value Is this a ref or what? Can be directly set it?
         debugger
-        let ns = vm?.v$?.[cfg.fieldCfg.id]?.$externalResults.value ?? null
+        //try { vm?.v$?.[cfg.fieldCfg.id]?.$externalResults.push(response) } catch (e) { console.warn(e) }
+        let ns = vm?.v$?.value ?? vm?.v$
         if (ns) {
-            ns = arrResults
+            try { ns[cfg.fieldCfg.id]?.$externalResults.push(response) } catch (e) { console.warn(e) }
         }
-
         result = rawResponse?.ok
     } catch (e) {
         debugger;

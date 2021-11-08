@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import rc_, { V_REQUIREDIF } from '@/modules/rules/constants'
+import rc_, { CV_TYPE_REQUIREDIF, V_REQUIREDIF } from '@/modules/rules/constants'
 import { makeRule, cHelpers, isAsyncFn, composeRuleFeedbackMessage, wrapRule } from '@/modules/rules/core'
 import { requiredIf as requiredif } from '@vuelidate/validators' // aliassed to requiredif
 
@@ -139,7 +139,7 @@ export const isRequiredIf = (vm, objContext) => {
     const { fieldNames: fieldName } = objContext
     let result, defaulted = false;
     try {
-        result = vm?.v$?.[fieldName]?.[V_REQUIREDIF]?.$invalid ?? defaulted;
+        result = vm?.v$?.[fieldName]?.[CV_TYPE_REQUIREDIF]?.$invalid ?? defaulted;
     }
     catch (e) {
         console.warn(e);

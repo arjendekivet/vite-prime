@@ -33,12 +33,14 @@ let fields = [
         icon: { type: 'right', name: 'pi-lock' },
         defaultValue: 3,
         hhhidden: true,
-        validators: [
-            '__cv__alpha',
-            //{ type: rc_.CV_TYPE_REQUIREDIF, params: { prop: { $model: 'setting1' } } },
-            //{ type: rc_.CV_TYPE_REQUIREDUNLESS, params: { prop: { $model: 'setting1' } } },
+        vvalidators: [
+            'required',
+            //'__cv__alpha',
+            //{ type: rc_.CV_TYPE_ALPHA, params: { targetField: { name: 'setting2', label: 'Setting 2 Label mannn' } } }, // meaning: run on field setting 1
+            // { type: rc_.CV_TYPE_REQUIREDIF, params: { prop: { $model: 'setting1' } } },
+            // { type: rc_.CV_TYPE_REQUIREDUNLESS, params: { prop: { $model: 'setting1' } } },
             // { type: rc_.CV_TYPE_MIN_VALUE, params: { min: 20 } },
-            // { type: rc_.CV_TYPE_MAX_VALUE, params: { max: 50 } },
+            { type: rc_.CV_TYPE_MAX_VALUE, params: { max: 50 } },
             // { type: rc_.CV_TYPE_REQUIREDIF, params: { prop: { $model: 'setting1' } } },
             // { type: rc_.CV_TYPE_BETWEEN, params: { min: 25, max: 40 } },
         ]
@@ -47,12 +49,27 @@ let fields = [
         id: 'setting1',
         isField: true,
         label: 'Setting1. Calls a dummy async validator',
-        type: 'P_InputNumber',
+        //type: 'P_InputNumber',
+        type: 'P_InputText',
         icon: { type: 'right', name: 'pi-lock' },
         defaultValue: 2,
         ddddisabled: true,
         validators: [
             'required',
+            // {
+            //     type: rc_.CV_TYPE_SET_EXTERNAL_RESULTS,
+            //     params: {
+            //         protocol: 'https',
+            //         host: 'jsonplaceholder.typicode.com',
+            //         port: '',
+            //         api: "/:entities/:id",
+            //         vars: { id: 1, entities: "todos" },
+            //         querystring: "", // {/** TODO */}, 
+            //         comparisonValue: { externalProperty: '<meaning a property or path on the fetched data...>', fallback: 'pipo' }, // means if we wanted to compare something from somewhere with something else
+            //         normValue: { useRunTimeValue: true }, //means use the passed in value, passed in by vuelidate when the rule is being invoked 
+            //         //* $model: {} or a static value: value /*
+            //     }
+            // },
             //{ type: rc_.CV_TYPE_MAX_VALUE, params: { max: 5 } },
         ]
     },
@@ -63,10 +80,10 @@ let fields = [
         type: 'P_InputText',
         icon: { type: 'right', name: 'pi-lock' },
         defaultValue: 10,
-        vvalidators: [
+        validators: [
             'required',
-            { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 5 } },
-            { type: rc_.CV_TYPE_MAX_LENGTH, params: { max: 10 } },
+            // { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 5 } },
+            // { type: rc_.CV_TYPE_MAX_LENGTH, params: { max: 10 } },
         ]
     },
     {
@@ -76,7 +93,7 @@ let fields = [
         type: 'P_InputText',
         placeholder: 'Title',
         icon: { type: 'right', name: 'pi-bookmark' },
-        vvalidators: [
+        validators: [
             //"required",
             //{ type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
             {

@@ -39,7 +39,10 @@ import display from '@/modules/rules/features/displayIf'
 import enabling from '@/modules/rules/features/disableIf'
 import validity from '@/modules/rules/features/validity'
 import empty_ from '@/modules/rules/features/empty'
+
+// Test of v$ anders wordt ingepassed als het uit de eigen import komt of hier wordt gedefinieerd of via core wordt gemaakt?
 import { setExternalResults, _setExternalResults } from '@/modules/rules/features/setExternalResults'
+// import { setExternalResults } from '@/modules/rules/features/setExternalResults'
 import inbetween from '@/modules/rules/features/between'
 import minlength from '@/modules/rules/features/minLength'
 import maxlength from '@/modules/rules/features/maxLength'
@@ -67,9 +70,16 @@ export const mapRules = {
     [rc_.CV_TYPE_ALPHA]: makeRule({ startFn: rc_.V_ALPHA, asValidator: true }),
 
     // custom cynapps validators which will use wrappers for rule-executioners for NON-validation purposes, like "display", and "disable". So these do not register in $errors etc.
-    [rc_.CV_TYPE_DISABLE_IF]: enabling.disableIf, //TODO: declare via makeRule
-    [rc_.CV_TYPE_DISPLAY_IF]: display.displayIf, //TODO: declare via makeRule
-    [rc_.CV_TYPE_SET_EXTERNAL_RESULTS]: _setExternalResults, //TODO: declare via makeRule
+
+    // no startFn, defaultRuleResult = false ...
+    [rc_.CV_TYPE_DISABLE_IF]: makeRule({ staticConfigProperty: rc_.CFG_PROP_ENTITY_DISABLE, doInvertRuleResult: rc_.CFG_PROP_ENTITY_DISABLE_INVERT, defaultRuleResult: false }), //enabling.disableIf, //TODO: declare via makeRule
+
+    //[rc_.CV_TYPE_DISPLAY_IF]: display.displayIf, //TODO: declare via makeRule
+    // no startFn, defaultRuleResult = false ...
+    [rc_.CV_TYPE_DISPLAY_IF]: makeRule({ staticConfigProperty: rc_.CFG_PROP_ENTITY_DISPLAY, doInvertRuleResult: rc_.CFG_PROP_ENTITY_DISPLAY_INVERT, defaultRuleResult: true }),
+
+    [rc_.CV_TYPE_SET_EXTERNAL_RESULTS]: _setExternalResults, //TODO: declare via makeRule ??????????????
+    //[rc_.CV_TYPE_SET_EXTERNAL_RESULTS]: makeRule({ startFn: rc_.V_SET_EXTERNAL_RESULTS, defaultRuleResult: false, asValidator: true }), //_setExternalResults, //TODO: declare via makeRule
     //['__cv__fetchedResultContainsPipo']: _fetchedResultContainsPipo,
     //[rc_.CV_TYPE_SET_EXTERNAL_RESULTS_BAK]: _setExternalResultsBak,
 }
@@ -80,12 +90,12 @@ export const cHelpers = {
     [rc_.V_MINVALUE]: wrapRule({ validator: minValue, type: rc_.CV_TYPE_MIN_VALUE, param: "min" }),
     [rc_.V_MINLENGTH]: wrapRule({ validator: minLength, type: rc_.CV_TYPE_MIN_LENGTH, param: "min" }),
     [rc_.V_MAXLENGTH]: wrapRule({ validator: maxLength, type: rc_.CV_TYPE_MAX_LENGTH, param: "max" }),
-    [rc_.V_BETWEEN]: inbetween.between, //todo via wrapRule
+    [rc_.V_BETWEEN]: inbetween.between, //todo via wrapRule, but this one has TWO parameters....
     [rc_.V_REQUIREDIF]: wrapRule({ validator: requiredIf, type: rc_.CV_TYPE_REQUIREDIF, param: "prop" }),
     [rc_.V_REQUIREDUNLESS]: wrapRule({ validator: requiredUnless, type: rc_.CV_TYPE_REQUIREDUNLESS, param: "prop" }),
     [rc_.V_ALPHA]: wrapRule({ validator: alpha, type: rc_.CV_TYPE_ALPHA }),
     // custom executioner about external api calls
-    [rc_.V_SET_EXTERNAL_RESULTS]: setExternalResults, //todo via wrapRule
+    [rc_.V_SET_EXTERNAL_RESULTS]: setExternalResults, //todo via wrapRule ?????? But this is so exotic it cannot be generalized
 
     // RETRIEVERS, these read results of the associated executioners.
     [rc_.IS_MIN_LENGTH]: minlength.isMinLength, //a retriever

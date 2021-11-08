@@ -23,7 +23,17 @@ export const isCustomValidatorType = (type: string) => {
 // create yet another layer that will invoke the former hofRuleFnGenerator
 // (args) => makeRule(args, { startFn: rc_.V_MINVALUE, asValidator: true }),
 //export const makeRule = (...args) => generateRule(...args)
-export const makeRule = (additionalRuleConfig) => (overallRuleConfig) => generateRule(overallRuleConfig, additionalRuleConfig)
+export const makeRule = (additionalRuleConfig) => {
+    debugger;
+    console.log('makeRule  additionalRuleConfig')
+    console.log(additionalRuleConfig)
+    return (overallRuleConfig) => {
+        debugger;
+        console.log('makeRule  overallRuleConfig')
+        console.log(overallRuleConfig)
+        return generateRule(overallRuleConfig, additionalRuleConfig)
+    }
+}
 
 /**
  * hofRuleFnGenerator
@@ -86,49 +96,6 @@ export const generateRule = (...args) => {
     return resultFunction
 }
 
-export const hofRuleFnGenerator = (...args) => {
-    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = args[0]
-    // can we make sure that, if undefined, defaultRuleResult = true etc
-    const { defaultRuleResult = true, doInvertRuleResult = false, asValidator = false, staticConfigProperty } = args[1]
-    debugger;
-
-    const ruleType = params.type
-    let hasStaticConfigProperty
-    let resultFunction
-    // also a simple synchronous Fn...
-    let fallBackFunction = function ruleFn(value, vm) {
-        return {
-            $valid: true, // We should never "fail" based on a total dummy function, regardless "asValidator" ???
-            extraParams: { rule_result: defaultRuleResult, fieldCfg },
-            message: `Fallback or try-catch rule. Either an error occurred or neither static config property nor any configured rule of type ${ruleType} for ${fieldCfg.label}`
-        }
-    }
-    try {
-        // 1. if we have an overruling static configuration property, use a simple & synchronous ruleFn
-        hasStaticConfigProperty = staticConfigProperty && ((fieldCfg?.[staticConfigProperty] ?? false) !== false)
-        if (hasStaticConfigProperty) {
-            resultFunction = function ruleFn(value, vm) {
-                let rule_result = doInvertRuleResult ? !!!fieldCfg?.[staticConfigProperty] : !!fieldCfg?.[staticConfigProperty]
-                return {
-                    $valid: asValidator ? rule_result : true, // when run as Validator, it should flag/register errors accordingly!
-                    extraParams: { rule_result, fieldCfg },
-                    message: `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticConfigProperty} on ${fieldCfg.label}`
-                }
-            }
-        }
-        // 2. probe for a supported custom rule function
-        else if (!resultFunction) {
-            resultFunction = probeCustomRuleFn(args)
-        }
-    } catch (error) {
-        console.warn(error);
-    }
-    // 3. make sure that if we did not have any function yet, we should return a liberal/neutral fallback function 
-    if (!resultFunction || typeof resultFunction !== 'function') {
-        resultFunction = fallBackFunction
-    }
-    return resultFunction
-}
 /**
  * Returns a vuelidate rule function, which returns a response object needed for custom vuelidate validators/rules.
  * Calls a recursive funciton.
@@ -141,7 +108,9 @@ export const probeCustomRuleFn = (arrCfg) => {
     const { defaultRuleResult, staticConfigProperty, doInvertRuleResult, asValidator = false, startFn } = arrCfg[1]
     debugger;
     //we should make sure value or vm are not shadowed here? How come in setExternalResults we appear to receive a data-object as the vm ????
-    if (fieldCfg.id === 'title') { debugger }
+    if (!fieldCfg) {
+        debugger
+    }
     // pass in xVM to be sure to have a reference to v$ ????? or this passes in via arrCfg[0] ...
     return async function ruleFn(value, vm, /**vmX = xVM*/) {
         if (fieldCfg.id === 'title') { debugger }
@@ -205,7 +174,7 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
                     if (startFn === rc_.V_SET_EXTERNAL_RESULTS) {
                         debugger
                     }
-                    const objParams = { value, fieldCfg, formData, formDefinition, p_v$, params }
+                    const objParams = { value, fieldCfg, formData, formDefinition, p_v$, params, metaParams: params }
                     // check for async and if so await it...
                     isAsync = isAsyncFn(cHelpers[fn] ?? "")
                     tmp = isAsync ? await cHelpers[fn]?.(vm, objParams) : cHelpers[fn]?.(vm, objParams)
@@ -363,6 +332,8 @@ export const wrapRule = (objCfg) => {
         const vm = pvm?.v$ ? pvm : { v$: p_v$.value }
 
         debugger;
+        // test is v$ een ref of niet? 
+
         // the runtime value against which usually a rule will be executed. If however a targetField is specified, then that field should provide the runtime comparisonValue... 
         let comparisonValue = value;
         let condition; // this param should contain the single argument for the invocation of the validator
@@ -452,3 +423,46 @@ export const wrapRule = (objCfg) => {
     }
 }
 
+export const hofRuleFnGenerator = (...args) => {
+    const { dependsOn, fieldCfg, formData, formDefinition, ...params } = args[0]
+    // can we make sure that, if undefined, defaultRuleResult = true etc
+    const { defaultRuleResult = true, doInvertRuleResult = false, asValidator = false, staticConfigProperty } = args[1]
+    debugger;
+
+    const ruleType = params.type
+    let hasStaticConfigProperty
+    let resultFunction
+    // also a simple synchronous Fn...
+    let fallBackFunction = function ruleFn(value, vm) {
+        return {
+            $valid: true, // We should never "fail" based on a total dummy function, regardless "asValidator" ???
+            extraParams: { rule_result: defaultRuleResult, fieldCfg },
+            message: `Fallback or try-catch rule. Either an error occurred or neither static config property nor any configured rule of type ${ruleType} for ${fieldCfg.label}`
+        }
+    }
+    try {
+        // 1. if we have an overruling static configuration property, use a simple & synchronous ruleFn
+        hasStaticConfigProperty = staticConfigProperty && ((fieldCfg?.[staticConfigProperty] ?? false) !== false)
+        if (hasStaticConfigProperty) {
+            resultFunction = function ruleFn(value, vm) {
+                let rule_result = doInvertRuleResult ? !!!fieldCfg?.[staticConfigProperty] : !!fieldCfg?.[staticConfigProperty]
+                return {
+                    $valid: asValidator ? rule_result : true, // when run as Validator, it should flag/register errors accordingly!
+                    extraParams: { rule_result, fieldCfg },
+                    message: `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticConfigProperty} on ${fieldCfg.label}`
+                }
+            }
+        }
+        // 2. probe for a supported custom rule function
+        else if (!resultFunction) {
+            resultFunction = probeCustomRuleFn(args)
+        }
+    } catch (error) {
+        console.warn(error);
+    }
+    // 3. make sure that if we did not have any function yet, we should return a liberal/neutral fallback function
+    if (!resultFunction || typeof resultFunction !== 'function') {
+        resultFunction = fallBackFunction
+    }
+    return resultFunction
+}

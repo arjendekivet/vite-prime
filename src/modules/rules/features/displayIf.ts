@@ -3,7 +3,7 @@
 */
 import rc_ from '@/modules/rules/constants'
 import _ from 'lodash'
-import { makeRule, cHelpers } from '@/modules/rules/core'
+import { makeRule, cHelpers, hofRuleFnGenerator } from '@/modules/rules/core'
 
 /**
  * Generates an executioner for rule of type displayIf for vuelidate.
@@ -18,7 +18,7 @@ export const displayIf = (args) => {
     const doInvertRuleResult = rc_.CFG_PROP_ENTITY_DISPLAY_INVERT
     let resultFunction
     try {
-        resultFunction = makeRule(args, { defaultRuleResult, staticConfigProperty, doInvertRuleResult })
+        resultFunction = hofRuleFnGenerator(args, { defaultRuleResult, staticConfigProperty, doInvertRuleResult })
     } catch (error) {
         console.warn(error)
     }
