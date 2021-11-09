@@ -98,7 +98,7 @@ export function setRules(formDefinition: formDefinition, pRules: Object = {}, fo
         // setting to programmatically generate rules for displayIf and disableIf when no such validators are configured in the field configuration...
         // this setting also makes each field available in the v$ map... so other rules can 'read/retrieve/query' all kinds of validator results..
         debugger; // autoMonitorDisplay_Disable should become true
-        const autoMonitorDisplay_Disable = false
+        const autoMonitorDisplay_Disable = true
         let addDisplayRule = autoMonitorDisplay_Disable
         let addDisableRule = autoMonitorDisplay_Disable
         let objParams = {}
@@ -247,7 +247,7 @@ export function setRules(formDefinition: formDefinition, pRules: Object = {}, fo
         if (addDisplayRule) {
             try {
                 tag = rc_.CV_TYPE_DISPLAY_IF
-                objParams = Object.assign({}, { type: tag, fieldCfg: field, formDefinition, formData, fieldLabel })
+                objParams = Object.assign({}, { type: tag, fieldCfg: field, formDefinition, formData, fieldLabel, p_v$ })
                 objRule[tag] = augmentValidator(objParams, mapRules[tag](objParams))
             }
             catch (e) {
@@ -258,7 +258,7 @@ export function setRules(formDefinition: formDefinition, pRules: Object = {}, fo
         if (addDisableRule) {
             try {
                 tag = rc_.CV_TYPE_DISABLE_IF
-                objParams = Object.assign({}, { type: tag, fieldCfg: field, formDefinition, formData, fieldLabel })
+                objParams = Object.assign({}, { type: tag, fieldCfg: field, formDefinition, formData, fieldLabel, p_v$ })
                 objRule[tag] = augmentValidator(objParams, mapRules[tag](objParams))
             } catch (e) {
                 console.warn(e)

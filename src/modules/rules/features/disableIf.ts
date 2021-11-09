@@ -2,6 +2,33 @@ import rc_, { SOME_ENABLED } from '@/modules/rules/constants'
 import _ from 'lodash'
 import { makeRule, cHelpers, hofRuleFnGenerator } from '@/modules/rules/core'
 
+// TODO: we could try to device an executioner for disabled, that probes for the static config property, the direction of it and wether it COULD be mitigated/overrules?
+// Executioner for rule of type 'disableIf'
+export const disableIf = async (pvm, objContext) => {
+    debugger
+    const { value, params, p_v$, fieldCfg, defaultRuleResult = true, doInvertRuleResult = false, staticConfigProperty, ...cfg } = objContext
+    debugger
+    let message
+    let defaulted = defaultRuleResult;
+    let result = defaulted
+    //now prepare the namespace for the code below to reference vm.v$.<paths> !!!
+    const vm = pvm?.v$ ? pvm : { v$: p_v$.value }
+    const ruleType = params.type
+    let hasStaticConfigProperty
+    //////////////////////
+    try {
+        message = `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticConfigProperty} on ${fieldCfg.label}`
+        // 1. if we have an overruling static configuration property, use a simple & synchronous ruleFn
+        hasStaticConfigProperty = staticConfigProperty && ((fieldCfg?.[staticConfigProperty] ?? false) !== false)
+        if (hasStaticConfigProperty) {
+            result = doInvertRuleResult ? !!!fieldCfg?.[staticConfigProperty] : !!fieldCfg?.[staticConfigProperty]
+        }
+    } catch (error) {
+        console.warn(error);
+    }
+    return { result, message };
+}
+
 /**
  * Generates a disableIf rule-function for vuelidate.
  * Supports refering to (other) field(s) regarding their visibility-state and/or disabled-state and/or validity-state or their value ...
@@ -9,7 +36,7 @@ import { makeRule, cHelpers, hofRuleFnGenerator } from '@/modules/rules/core'
  * @param args. Array.  We expect to pass in one object containing all the necessary parametrizations. 
  * @returns a parameterized ruleFn for vuelidateto be used as a custom validator for vuelidate (as opposed to not a built-in one).
  */
-export const disableIf = (args) => {
+export const _disableIf = (args) => {
     const defaultRuleResult = false;
     const staticConfigProperty = rc_.CFG_PROP_ENTITY_DISABLE
     const doInvertRuleResult = rc_.CFG_PROP_ENTITY_DISABLE_INVERT
@@ -134,6 +161,7 @@ export const getDisabledMessage = (vm, objContext) => {
 }
 
 export default {
+    //_disableIf,
     disableIf,
     isEnabled,
     someEnabled,

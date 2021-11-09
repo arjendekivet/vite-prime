@@ -120,12 +120,14 @@ export const SUPPORTED_RETRIEVERS = [
  * Helpers which are able to execute an actual validator. These can take a proper rule execution configuration for dynamic parametrization AND dynamic targeting.
  */
 export const SUPPORTED_EXECUTIONERS = [
+    V_DISABLEIF,
+    V_DISPLAYIF,
+    V_SET_EXTERNAL_RESULTS,
     V_MINLENGTH,
     V_MAXLENGTH,
     V_BETWEEN,
     V_REQUIREDIF,
     V_REQUIREDUNLESS,
-    V_SET_EXTERNAL_RESULTS,
     V_MINVALUE,
     V_MAXVALUE,
     V_ALPHA

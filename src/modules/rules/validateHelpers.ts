@@ -71,12 +71,12 @@ export const mapRules = {
 
     // custom cynapps validators which will use wrappers for rule-executioners for NON-validation purposes, like "display", and "disable". So these do not register in $errors etc.
 
-    // no startFn, defaultRuleResult = false ...
-    [rc_.CV_TYPE_DISABLE_IF]: makeRule({ staticConfigProperty: rc_.CFG_PROP_ENTITY_DISABLE, doInvertRuleResult: rc_.CFG_PROP_ENTITY_DISABLE_INVERT, defaultRuleResult: false }), //enabling.disableIf, //TODO: declare via makeRule
+    // no startFn????????, defaultRuleResult = false ...
+    [rc_.CV_TYPE_DISABLE_IF]: makeRule({ startFn: rc_.V_DISABLEIF, staticConfigProperty: rc_.CFG_PROP_ENTITY_DISABLE, doInvertRuleResult: rc_.CFG_PROP_ENTITY_DISABLE_INVERT, defaultRuleResult: false }), //enabling.disableIf, //TODO: declare via makeRule
 
     //[rc_.CV_TYPE_DISPLAY_IF]: display.displayIf, //TODO: declare via makeRule
-    // no startFn, defaultRuleResult = false ...
-    [rc_.CV_TYPE_DISPLAY_IF]: makeRule({ staticConfigProperty: rc_.CFG_PROP_ENTITY_DISPLAY, doInvertRuleResult: rc_.CFG_PROP_ENTITY_DISPLAY_INVERT, defaultRuleResult: true }),
+    // no startFn: either staticConfigProp or 'calculating 'dependency result on other fields
+    [rc_.CV_TYPE_DISPLAY_IF]: makeRule({ startFn: rc_.V_DISPLAYIF, staticConfigProperty: rc_.CFG_PROP_ENTITY_DISPLAY, doInvertRuleResult: rc_.CFG_PROP_ENTITY_DISPLAY_INVERT }),
 
     [rc_.CV_TYPE_SET_EXTERNAL_RESULTS]: _setExternalResults, //TODO: declare via makeRule ??????????????
     //[rc_.CV_TYPE_SET_EXTERNAL_RESULTS]: makeRule({ startFn: rc_.V_SET_EXTERNAL_RESULTS, defaultRuleResult: false, asValidator: true }), //_setExternalResults, //TODO: declare via makeRule
@@ -94,13 +94,16 @@ export const cHelpers = {
     [rc_.V_REQUIREDIF]: wrapRule({ validator: requiredIf, type: rc_.CV_TYPE_REQUIREDIF, param: "prop" }),
     [rc_.V_REQUIREDUNLESS]: wrapRule({ validator: requiredUnless, type: rc_.CV_TYPE_REQUIREDUNLESS, param: "prop" }),
     [rc_.V_ALPHA]: wrapRule({ validator: alpha, type: rc_.CV_TYPE_ALPHA }),
+
     // custom executioner about external api calls
-    [rc_.V_SET_EXTERNAL_RESULTS]: setExternalResults, //todo via wrapRule ?????? But this is so exotic it cannot be generalized
+    [rc_.V_SET_EXTERNAL_RESULTS]: setExternalResults, //todo via wrapRule ?????? But this is so exotic/custom it cannot be generalized and it is ok to import them from their own module!!!
 
     // RETRIEVERS, these read results of the associated executioners.
     [rc_.IS_MIN_LENGTH]: minlength.isMinLength, //a retriever
     [rc_.IS_MAX_LENGTH]: maxlength.isMaxLength, //a retriever
     // retrievers of custom executioners about 'show/hide', non-validation
+    //the executioner
+    [rc_.V_DISPLAYIF]: display.displayIf, //todo via wrapRule ?????? But we need the actual/proper rule executioner, so that cannot be generalized.  and it is ok to import them from their own module!!!
     [rc_.IS_VISIBLE]: display.isVisible,
     [rc_.SOME_VISIBLE]: display.someVisible,
     [rc_.ALL_VISIBLE]: display.allVisible,
@@ -108,6 +111,9 @@ export const cHelpers = {
     [rc_.SOME_HIDDEN]: display.someHidden,
     [rc_.ALL_HIDDEN]: display.allHidden,
     // custom, about 'enabling/disabling', non-validation
+    //the executioner
+    [rc_.V_DISABLEIF]: enabling.disableIf, //todo via wrapRule ?????? But this is so exotic it cannot be generalized  and it is ok to import them from their own module!!!
+    //the retrievers
     [rc_.IS_ENABLED]: enabling.isEnabled,
     [rc_.SOME_ENABLED]: enabling.someEnabled,
     [rc_.ALL_ENABLED]: enabling.allEnabled,

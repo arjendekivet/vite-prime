@@ -73,6 +73,11 @@ export const generateRule = (...args) => {
         // 1. if we have an overruling static configuration property, use a simple & synchronous ruleFn
         hasStaticConfigProperty = staticConfigProperty && ((fieldCfg?.[staticConfigProperty] ?? false) !== false)
         if (hasStaticConfigProperty) {
+            debugger
+            //for test purposes set to false...
+            hasStaticConfigProperty = false
+        }
+        if (hasStaticConfigProperty) {
             resultFunction = function ruleFn(value, vm, vmx = xVM) {
                 let rule_result = doInvertRuleResult ? !!!fieldCfg?.[staticConfigProperty] : !!fieldCfg?.[staticConfigProperty]
                 return {
@@ -114,7 +119,8 @@ export const probeCustomRuleFn = (arrCfg) => {
     // pass in xVM to be sure to have a reference to v$ ????? or this passes in via arrCfg[0] ...
     return async function ruleFn(value, vm, /**vmX = xVM*/) {
         if (fieldCfg.id === 'title') { debugger }
-        let rule_result = await probeCustomRuleFnRecursor(value, vm, arrCfg[0], asLogical, startFn) // ??  defaultRuleResult
+        //let rule_result = await probeCustomRuleFnRecursor(value, vm, arrCfg[0], asLogical, startFn, arrCfg[1]) // ??  defaultRuleResult
+        let rule_result = await probeCustomRuleFnRecursor(value, vm, arrCfg, asLogical, startFn) // pass through arrCfg, not onlt arrCfg[0], so that we can use function for disableIf and displayIf just like any other feature...
         rule_result = rule_result ?? defaultRuleResult
         const boolRuleResult = rule_result?.result ?? rule_result
         const valid = asValidator ? boolRuleResult : true;
@@ -144,7 +150,9 @@ export const probeCustomRuleFn = (arrCfg) => {
  * @returns {Object | Boolean} rule_result. If the return value contains o message, will compose an object with the boolean result and the message, else just the booelan.
  */
 export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = rc_.AND, startFn = null) => {
-    const { dependsOn, fieldCfg, formData, formDefinition, p_v$, ...params } = objCfg
+    const { dependsOn, fieldCfg, formData, formDefinition, p_v$, ...params } = objCfg[0] ?? objCfg //this can be an array on the first level of invocation, but will be a scalar in recursion...
+    // let { startFn } = objCfg[1] 
+
     debugger // for now we can do without this ...
     //const xVM = { v$: p_v$ }
     //const vm = pvm?.v$ ? pvm : xVM
@@ -174,7 +182,8 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
                     if (startFn === rc_.V_SET_EXTERNAL_RESULTS) {
                         debugger
                     }
-                    const objParams = { value, fieldCfg, formData, formDefinition, p_v$, params, metaParams: params }
+                    const { defaultRuleResult, staticConfigProperty, doInvertRuleResult } = objCfg[1]
+                    const objParams = { value, fieldCfg, formData, formDefinition, p_v$, params, metaParams: params, defaultRuleResult, staticConfigProperty, doInvertRuleResult }
                     // check for async and if so await it...
                     isAsync = isAsyncFn(cHelpers[fn] ?? "")
                     tmp = isAsync ? await cHelpers[fn]?.(vm, objParams) : cHelpers[fn]?.(vm, objParams)

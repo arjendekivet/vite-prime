@@ -5,25 +5,52 @@ import rc_ from '@/modules/rules/constants'
 import _ from 'lodash'
 import { makeRule, cHelpers, hofRuleFnGenerator } from '@/modules/rules/core'
 
+// TODO: we could try to device an executioner for hidden, that probes for the static config property, the direction of it and wether it COULD be mitigated/overrules?
+// Executioner for rule of type 'displayIf'
+export const displayIf = async (pvm, objContext) => {
+    const { value, params, p_v$, fieldCfg, defaultRuleResult = true, doInvertRuleResult = false, staticConfigProperty, ...cfg } = objContext
+    debugger
+    let message
+    let defaulted = defaultRuleResult;
+    let result = defaulted
+    //now prepare the namespace for the code below to reference vm.v$.<paths> !!!
+    const vm = pvm?.v$ ? pvm : { v$: p_v$.value }
+    const ruleType = params.type
+    let hasStaticConfigProperty
+    //////////////////////
+    try {
+        message = `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticConfigProperty} on ${fieldCfg.label}`
+        // 1. if we have an overruling static configuration property, use a simple & synchronous ruleFn
+        hasStaticConfigProperty = staticConfigProperty && ((fieldCfg?.[staticConfigProperty] ?? false) !== false)
+        if (hasStaticConfigProperty) {
+            result = doInvertRuleResult ? !!!fieldCfg?.[staticConfigProperty] : !!fieldCfg?.[staticConfigProperty]
+        }
+    } catch (error) {
+        console.warn(error);
+    }
+    return { result, message };
+}
+
 /**
  * Generates an executioner for rule of type displayIf for vuelidate.
  * Supports refering to (other) field(s) regarding their visibility-state and/or disabled-state and/or validity-state or their value ...
  * Configures a part of the arguments to call a Higher Order Function for that.
  * @param args 
  * @returns 
+ * 
  */
-export const displayIf = (args) => {
-    const defaultRuleResult = true;
-    const staticConfigProperty = rc_.CFG_PROP_ENTITY_DISPLAY
-    const doInvertRuleResult = rc_.CFG_PROP_ENTITY_DISPLAY_INVERT
-    let resultFunction
-    try {
-        resultFunction = hofRuleFnGenerator(args, { defaultRuleResult, staticConfigProperty, doInvertRuleResult })
-    } catch (error) {
-        console.warn(error)
-    }
-    return resultFunction
-}
+// export const _displayIf = (args) => {
+//     const defaultRuleResult = true;
+//     const staticConfigProperty = rc_.CFG_PROP_ENTITY_DISPLAY
+//     const doInvertRuleResult = rc_.CFG_PROP_ENTITY_DISPLAY_INVERT
+//     let resultFunction
+//     try {
+//         resultFunction = hofRuleFnGenerator(args, { defaultRuleResult, staticConfigProperty, doInvertRuleResult })
+//     } catch (error) {
+//         console.warn(error)
+//     }
+//     return resultFunction
+// }
 
 /**
  * Checks if two types of rules for display resulted in true.
@@ -142,7 +169,7 @@ export const allHidden = (vm, objContext) => {
 }
 
 export default {
-    // the executioner, can serve as a validator type.
+    // the executioner, can serve as a rule type.
     displayIf,
     // helpers/retrievers, can be used within other validators.
     isVisible,
