@@ -1,6 +1,7 @@
 <template>
   <div class="questionaire">
-    <h3>Questionnaire ({{ category }})</h3>
+    <!-- <h1>Questionnaire ({{ category }})</h1> -->
+    <Button :label="'Questionnaire - ' + category" class="p-mb-4 p-button-outlined title__button" />
     <div class="questions p-grid">
       <QuestionCard v-for="question in questions" :question="question"></QuestionCard>
     </div>
@@ -33,3 +34,11 @@ EventService.getDataByFilterType('questions', 'cat_1', props.category)
   })
 
 </script>
+
+<style lang="scss">
+.questionaire {
+  .title__button {
+    font-size: xx-large;
+  }
+}
+</style>

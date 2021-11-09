@@ -13,7 +13,7 @@
     </Card>
     <Card v-else style="margin-bottom: 2em" class="card">
       <template #header>
-        <div class="header p-pr-2 p-pt-2">
+        <div class="header p-pr-4 p-pt-4">
           <Button icon="pi pi-replay" label="Back" @click="flip = !flip" />
         </div>
       </template>
@@ -61,8 +61,13 @@ async function answer(correct: boolean) {
 
 <style lang="scss">
 .question__card {
+  .p-card {
+    color: #2c3e50;
+  }
   .card {
-    background-color: #07bdf4;
+    background-color: #a6daf7;
+    border: solid var(--blue-800) 2px;
+    border-radius: 3em;
     .header {
       text-align: end;
     }
@@ -70,7 +75,7 @@ async function answer(correct: boolean) {
   &.flip {
     .card {
       // background-color: #a6f7c3;
-      border: solid var(--blue-800) 3px;
+      border: solid var(--blue-800) 4px;
     }
   }
 }
