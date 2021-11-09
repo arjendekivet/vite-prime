@@ -1,13 +1,12 @@
 <template>
     <div class="quill__editor">
-        <div :id="uuid" class="quill__editor__container"></div>
+        <div ref="quillRootDiv" class="quill__editor__container"></div>
     </div>
 </template>
 
 <script setup lang="ts">
 import Quill from 'quill'
-import { v4 as uuidv4 } from 'uuid'
-import { onMounted, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 
 // Additional css needed for optional bubble theme
 import 'quill/dist/quill.bubble.css'
@@ -17,6 +16,9 @@ type FormProp = {
     theme?: 'snow' | 'bubble',
     toolbarOptions?: any
 }
+
+const quillRootDiv = ref(null)
+
 const props = withDefaults(defineProps<FormProp>(), {
     modelValue: undefined,
     theme: 'snow',
@@ -40,12 +42,12 @@ const props = withDefaults(defineProps<FormProp>(), {
 
 const emit = defineEmits(['update:modelValue'])
 const quill: any = {}
-const uuid = uuidv4()
 
 // As data comes in async, watch the modelValue change and update editor if needed
 const stop = watch(
     () => props.modelValue,
     (value, prevValue) => {
+        // check
         if (quill.editor) {
             if (quill.editor.root.innerHTML !== props.modelValue) {
                 quill.editor.root.innerHTML = props.modelValue
@@ -65,7 +67,7 @@ onMounted(() => {
         }
     }
 
-    const container = document.getElementById(uuid)
+    const container = quillRootDiv.value
     if (container) {
         quill.editor = new Quill(container, options)
         // Set initial value of editor
