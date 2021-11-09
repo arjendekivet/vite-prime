@@ -3,6 +3,9 @@ import { getUser } from '@/modules/globalState'
 import Welcome from "@/pages/Welcome.vue";
 import Start from "@/pages/Start.vue";
 import Admin from "@/pages/Admin.vue";
+import Pick from "@/pages/Pick.vue";
+import Questionnaire from "@/pages/Questionnaire.vue"
+
 import Table from "@/components/Table.vue";
 import Form from "@/components/Form.vue";
 import AppSignUp from "@/components/AppSignUp.vue";
@@ -40,6 +43,27 @@ const router = createRouter({
       path: "/home",
       name: "home",
       component: Start,
+      redirect: { name: "home_welcome" },
+      children: [
+        {
+          path: 'welcome',
+          name: "home_welcome",
+          component: Welcome
+        },
+        {
+          path: 'pick',
+          name: "home_pick",
+          component: Pick
+        },
+        {
+          path: 'questionnaire/:category',
+          name: "questionnaire",
+          component: Questionnaire,
+          props: route => ({
+            category: route.params.category
+          })
+        },
+      ]
     },
     {
       path: "/admin",

@@ -47,6 +47,8 @@ import SplitButton from 'primevue/splitbutton'
 import Tooltip from 'primevue/tooltip'
 import SelectButton from 'primevue/selectbutton'
 import Editor from 'primevue/editor'
+import Card from 'primevue/card'
+
 import C_Editor from '@/components/C_Editor.vue'
 import QuillEditor from '@/components/QuillEditor.vue'
 
@@ -109,6 +111,8 @@ app.component('Checkbox', Checkbox);
 app.component('SplitButton', SplitButton);
 app.component('SelectButton', SelectButton);
 app.component('Editor', Editor);
+app.component('Card', Card);
+
 app.component('C_Editor', C_Editor);
 app.component('QuillEditor', QuillEditor);
 

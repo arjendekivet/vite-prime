@@ -46,5 +46,8 @@ export default {
     },
     async getDataByFilter(type: string, filter: string | string[], perPage: boolean = false, page: number = 0) {
         return await apiClient.get('/' + type + '/filter/' + filter + '?_limit=' + perPage + '&_page=' + page, { headers: authHeader() })
+    },
+    async getDataByFilterType(type: string, filterType: string, filter: string | string[], perPage: boolean = false, page: number = 0) {
+        return await apiClient.get('/' + type + '/filter/' + filterType + '/' + filter + '?_limit=' + perPage + '&_page=' + page, { headers: authHeader() })
     }
 }
