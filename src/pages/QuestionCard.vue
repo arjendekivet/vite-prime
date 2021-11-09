@@ -1,6 +1,6 @@
 <template>
   <div class="question__card p-col-12 p-md-6 p-lg-3" :class="flip ? 'flip' : ''">
-    <Card style="margin-bottom: 2em" v-if="!flip">
+    <Card style="margin-bottom: 2em" v-if="!flip" class="card">
       <!-- <template #header></template> -->
       <template #title>{{ question?.title }}</template>
       <!-- <template #subtitle>{{ question?.title }}</template> -->
@@ -11,16 +11,18 @@
         <Button icon="pi pi-check" label="Show Answer" @click="flip = !flip" />
       </template>
     </Card>
-    <Card style="margin-bottom: 2em" v-else>
+    <Card v-else style="margin-bottom: 2em" class="card">
       <template #header>
-        <Button icon="pi pi-replay" label="Back" @click="flip = !flip" />
+        <div class="header p-pr-2 p-pt-2">
+          <Button icon="pi pi-replay" label="Back" @click="flip = !flip" />
+        </div>
       </template>
       <template #title>
         <div v-html="question?.answer"></div>
       </template>
       <template #footer>
-        <Button icon="pi pi-thumbs-up" label="Correct" class="p-mr-2" />
-        <Button icon="pi pi-thumbs-down" label="False" />
+        <Button icon="pi pi-thumbs-up" label="Correct" class="p-mr-2" @click="answer(true)" />
+        <Button icon="pi pi-thumbs-down" label="False" @click="answer(false)" />
       </template>
     </Card>
   </div>
@@ -28,7 +30,9 @@
 
 <script setup lang="ts">
 import Question from '@/types/question'
-import { ref } from 'vue';
+import { inject, ref } from 'vue';
+
+const EventService: any = inject('EventService')
 
 type FormProp = {
   question: Question
@@ -39,4 +43,35 @@ const props = withDefaults(defineProps<FormProp>(), {
 
 const flip = ref(false)
 
+async function answer(correct: boolean) {
+  const submitValue = {
+    question_id: props.question._id,
+    answer: 'dummy answer ...',
+    correct: correct
+  }
+  EventService.postForm('answer', submitValue).then((response: any) => {
+    console.info(response)
+  })
+    .catch((error: any) => {
+      console.error(error)
+    })
+}
+
 </script>
+
+<style lang="scss">
+.question__card {
+  .card {
+    background-color: #07bdf4;
+    .header {
+      text-align: end;
+    }
+  }
+  &.flip {
+    .card {
+      // background-color: #a6f7c3;
+      border: solid var(--blue-800) 3px;
+    }
+  }
+}
+</style>
