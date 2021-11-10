@@ -1,3 +1,4 @@
+import { unref } from 'vue'
 import _ from 'lodash'
 import { helpers } from '@vuelidate/validators'
 import rc_ from '@/modules/rules/constants'
@@ -184,6 +185,7 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
                 startFnUnqualified = true
             }
             if (startFnUnqualified) { // && asLogical === rc_.AND
+                debugger;
                 // when called as a logical AND operator, the end result at this level can never become true anymore, so bail out...
                 arrPartials.push(undefined)
                 arrMessages.push(`Flawed or errored startFn ${startFn} for 'conjunctive' invocation. Aborted.`)
@@ -257,7 +259,8 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
         rule_result = asLogical === rc_.AND ? _.every(arrPartials, Boolean) : asLogical === rc_.OR ? _.some(arrPartials, Boolean) : !(_.some(arrPartials, Boolean))
     }
     else {
-        console.log("probeCustomRuleFnRecursor defaulted due to no relevant evaluation results. And ignore was: ", ignore)
+        debugger;
+        console.log(`For field ${fieldCfg.label} probeCustomRuleFnRecursor defaulted at no relevant evaluation results. The 'ignore' was: ${ignore}. For rule ${params.type}`)
         rule_result = defaultTo
     }
     if (arrMessages.length > 0) {
@@ -538,4 +541,118 @@ export const generateRuleBAK = (...args) => {
         resultFunction = fallBackFunction
     }
     return resultFunction
+}
+
+/**
+ * makeHelper method for RETRIEVERS
+ * generates RETRIEVER helpers for all rule-types for the patterns: IS/HAS vs NOT combined for ONE, SOME/ANY, ALL/NONE
+ * the use case: ONE-IS/HAS is considered a "base" helper, and it will be aligned with the direction/connotation of the rule type / feature, monitored by a vuelidate for one specific "field".
+ *  
+ * E.g. for the rule type "disableIf", the base would be to rule wether a specific field should be DISABLED. The base can have a default of true or false. 
+ * If it has a default of false, the base is considered a negatively connotated base.
+ * When a "negative" feature cannot be retrieved, we do not want to consider the feature to be "verified", because that would mean a field could be disabled by default.
+ * 
+ * E.g. for the rule type: displayIf, the base is wether a specific field IS DISPLAYED, and it has a "positive" connotation. 
+ * Any positive base will have a default of true. Because if a positive feature cannot be retrieved, we DO want to consider the feature to be "verified", because that would mean a field could be displayed by default.
+ * 
+  
+* to create a base RETRIEVER Fn,  we need on object as argument containing: 
+EITHER:
+    1) the associated rule type,
+    2) the "arity" or "N" (ONE<SOME<ALL) as "ONE/SINGLE/SCALAR" or which ever constant we choose, 
+    3) the "direction"/connotation/sign (+,-, pos/neg,affirmative or disaffirmative) and 
+    4) the path to get to the result on the vuelidate v$ namespace, put in in an array so that we can walk the array to get down to the endpoint using the optional chaining "?."
+    5) the default
+OR: 
+    6) the intended base helper.
+
+* Once we have created a base retriever, the base retriever should be used directly for the other retrievers in the sextet of RETRIEVERS for that rule type.
+* So to create the other RETRIEVERS in that sextet, we should pass in the relevant base helper in the Context argument.
+* 
+
+    // if baseFn singleHelperFn is passed in, we only need the arity and the connotation to generate functions for the other X flavours of helpers RETRIEVERS for this rule type, for now these are 5 other flavours.
+    // so only by passing in the baseFn singleHelperFn can we create the pother 5 flavours.
+    // we need to make sure the helpers are correctly matched to some tag on the helpers object! 
+    // we need some validation for that....
+
+    // if baseFn is not passed in, the function will only create a baseFn, and thereforre we NEED the ruletype, the path, the sign and the defaultTo. The arity will be set to SINGLE.
+
+    
+ isRequiredIf = (vm, objContext) => {
+    const { fieldNames: fieldName } = objContext
+    let result, defaulted = false;
+    try {
+        result = vm?.v$?.[fieldName]?.[CV_TYPE_REQUIREDIF]?.$invalid ?? defaulted;
+    }
+    catch (e) {
+        console.warn(e);
+        result = defaulted;
+    }
+    return result
+}
+*/
+export const makeHelper = ({ singleHelperFn = null, ruleType, sign = rc_.POS, N = rc_.SINGLE, defaultTo = true, p_vm }) => {
+    debugger
+    let helper;
+    let message;
+    if (!singleHelperFn) {
+        // validate the arguments for the creation of a base Fn
+        if (ruleType && sign && (defaultTo !== undefined && defaultTo !== null)) {
+            helper = makeBaseHelper({ ruleType, sign, defaultTo, p_vm })
+            return helper
+        }
+        else {
+            message = `makeHelper: Invalid input for the generation of a base helper function for ruleType ${ruleType}, sign ${sign}, N ${N}, default ${defaultTo} }` //path ${[].join(path)
+            console.warn(message)
+        }
+    }
+    else {
+        // we have a singleHelperFn, so we should invoke the correct logic to create an associated helper... 
+
+    }
+}
+/**
+ * 0 This one will be invoked to create and return a baseHelper
+ * The logic needs ruletype, the sign and the defaultTo. 
+ * The N arity will be set to SINGLE.
+ * @param param
+ */
+export const makeBaseHelper = ({ ruleType, sign = rc_.POS, N = rc_.SINGLE, defaultTo = true, p_vm }) => {
+    debugger
+    const isValidator = rc_.RULE_TYPES_VALIDATORS.includes(ruleType)
+    const isExternal = !isValidator ? rc_.RULE_TYPES_EXTERNAL_RESULTS.includes(ruleType) : false
+    const isOther = !isValidator && !isExternal ? rc_.RULE_TYPES_OTHER.includes(ruleType) : false
+
+    let helper = function (vm, objContext) {
+        debugger
+        const { fieldNames: fieldName } = objContext
+        let defaulted = defaultTo;
+        let result = defaulted;
+        let ns = unref(vm?.v$) ?? unref(p_vm?.v$);
+        try {
+            if (isValidator) {
+                result = ns?.[fieldName]?.[ruleType]?.$invalid ?? defaulted;
+            }
+            else if (isExternal) {
+                result = ns?.[fieldName]?.[ruleType]?.$externalResults?.length ?? defaulted;
+            }
+            else if (isOther) {
+                result = ns?.[fieldName]?.[ruleType]?.$response?.extraParams?.rule_result ?? defaulted;
+            }
+            else {
+                debugger;
+                //unmapped rule type ... we can not create helpers for this unknown rule type
+            }
+        }
+        catch (e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    }
+    //for test purposes invoke the helper... we could pass in test_vm for that purpose
+    debugger;
+    //let test = helper(p_vm, { fieldNames: 'setting1' })
+
+    return helper
 }

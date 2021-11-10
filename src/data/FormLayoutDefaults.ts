@@ -15,16 +15,16 @@ type FormConfig = {
   "title": "het pak",
  */
 // use the same fields as in storybook for a test ..
-let fieldszak = [
-    {
-        id: '_id',
-        isField: true,
-        label: 'Id',
-        type: 'P_InputText',
-        defaultValue: "6666666666666",
-        disabled: true,
-        icon: { type: 'right', name: 'pi-lock' }
-    },
+let fields = [
+    // {
+    //     id: '_id',
+    //     isField: true,
+    //     label: 'Id',
+    //     type: 'P_InputText',
+    //     defaultValue: "6666666666666",
+    //     disabled: true,
+    //     icon: { type: 'right', name: 'pi-lock' }
+    // },
     {
         id: 'setting0',
         isField: true,
@@ -45,34 +45,34 @@ let fieldszak = [
             // { type: rc_.CV_TYPE_BETWEEN, params: { min: 25, max: 40 } },
         ]
     },
-    {
-        id: 'setting1',
-        isField: true,
-        label: 'Setting1. Calls a dummy async validator',
-        //type: 'P_InputNumber',
-        type: 'P_InputText',
-        icon: { type: 'right', name: 'pi-lock' },
-        defaultValue: 2,
-        disabled: false,
-        vvalidators: [
-            'required',
-            // {
-            //     type: rc_.CV_TYPE_SET_EXTERNAL_RESULTS,
-            //     params: {
-            //         protocol: 'https',
-            //         host: 'jsonplaceholder.typicode.com',
-            //         port: '',
-            //         api: "/:entities/:id",
-            //         vars: { id: 1, entities: "todos" },
-            //         querystring: "", // {/** TODO */}, 
-            //         comparisonValue: { externalProperty: '<meaning a property or path on the fetched data...>', fallback: 'pipo' }, // means if we wanted to compare something from somewhere with something else
-            //         normValue: { useRunTimeValue: true }, //means use the passed in value, passed in by vuelidate when the rule is being invoked 
-            //         //* $model: {} or a static value: value /*
-            //     }
-            // },
-            //{ type: rc_.CV_TYPE_MAX_VALUE, params: { max: 5 } },
-        ]
-    },
+    // {
+    //     id: 'setting1',
+    //     isField: true,
+    //     label: 'Setting1. Calls a dummy async validator',
+    //     //type: 'P_InputNumber',
+    //     type: 'P_InputText',
+    //     icon: { type: 'right', name: 'pi-lock' },
+    //     defaultValue: 2,
+    //     disabled: false,
+    //     vvalidators: [
+    //         'required',
+    //         // {
+    //         //     type: rc_.CV_TYPE_SET_EXTERNAL_RESULTS,
+    //         //     params: {
+    //         //         protocol: 'https',
+    //         //         host: 'jsonplaceholder.typicode.com',
+    //         //         port: '',
+    //         //         api: "/:entities/:id",
+    //         //         vars: { id: 1, entities: "todos" },
+    //         //         querystring: "", // {/** TODO */}, 
+    //         //         comparisonValue: { externalProperty: '<meaning a property or path on the fetched data...>', fallback: 'pipo' }, // means if we wanted to compare something from somewhere with something else
+    //         //         normValue: { useRunTimeValue: true }, //means use the passed in value, passed in by vuelidate when the rule is being invoked 
+    //         //         //* $model: {} or a static value: value /*
+    //         //     }
+    //         // },
+    //         //{ type: rc_.CV_TYPE_MAX_VALUE, params: { max: 5 } },
+    //     ]
+    // },
     {
         id: 'setting2',
         isField: true,
@@ -80,69 +80,77 @@ let fieldszak = [
         type: 'P_InputText',
         icon: { type: 'right', name: 'pi-lock' },
         defaultValue: 10,
-        vvalidators: [
+        validators: [
+            {
+                type: rc_.CV_TYPE_DISABLE_IF,
+                params: {
+                    dependsOn: {
+                        [rc_.IS_VISIBLE]: ['setting0'],
+                    }
+                }
+            },
             'required',
             // { type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 5 } },
             // { type: rc_.CV_TYPE_MAX_LENGTH, params: { max: 10 } },
         ]
     },
-    {
-        id: 'title',
-        isField: true,
-        label: 'Title, disableIf rule with complex indirect async executioners...',
-        type: 'P_InputText',
-        placeholder: 'Title',
-        icon: { type: 'right', name: 'pi-bookmark' },
-        ddisabled: true,
-        validators: [
-            //"required",
-            //{ type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
-            {
-                type: rc_.CV_TYPE_DISABLE_IF,
-                params: {
-                    dependsOn: {
-                        // [rc_.IS_HIDDEN]: ['setting0'],  
-                        // [rc_.IS_DISABLED]: ['setting1'], 
-                        // 'fetchedResultContainsPipo': { 
-                        //     protocol: 'https', 
-                        //     host: 'jsonplaceholder.typicode.com', 
-                        //     port: '',
-                        //     api: "/:entities/:id", 
-                        //     // TODO TODO
-                        //     vars: { 
-                        //         id: 1,          //{ $model: 'setting0', fallback:'pipo' } //id should be dynamiclly invocable too etc etc 
-                        //         entities: "albums" ,
-                        //     } , // { $model: 'setting0', fallback:'pipo' } //entities should be dynamiclly invocable too etc etc
-                        // },
-                        //[rc_.V_REQUIREDIF]: { prop: { $model: 'setting1' } }, // meaning: retrieve the runtime value of setting0 and if that is true field title becomes required ...
-                        //[rc_.V_REQUIREDIF]: { prop: { $model: 'setting0' , targetField: 'setting1'} }, // meaning: retrieve the runtime value of setting0, and if that is true field title becomes required ...
-                        [rc_.V_SET_EXTERNAL_RESULTS]: {
-                            protocol: 'https',
-                            host: 'jsonplaceholder.typicode.com',
-                            port: '',
-                            api: "/:entities/:id",
-                            vars: { id: 1, entities: "todos" },
-                            querystring: "", // {/** TODO */}, 
-                            comparisonValue: { externalProperty: '<meaning a property or path on the fetched data...>', fallback: 'pipo' }, // means if we wanted to compare something from somewhere with something else
-                            normValue: { useRunTimeValue: true }, //means use the passed in value, passed in by vuelidate when the rule is being invoked 
-                            //* $model: {} or a static value: value /*
-                        },
-                        [rc_.V_MAXLENGTH]: {
-                            max: 5,
-                            targetField: { name: 'setting1', label: 'Setting1' },
-                        },
-                        [rc_.V_MINLENGTH]: {
-                            min: 3,
-                            targetField: { name: 'setting2', label: 'Setting2' },
-                        },
-                    }
-                }
-            },
-        ],
-    },
+    // {
+    //     id: 'title',
+    //     isField: true,
+    //     label: 'Title, disableIf rule with complex indirect async executioners...',
+    //     type: 'P_InputText',
+    //     placeholder: 'Title',
+    //     icon: { type: 'right', name: 'pi-bookmark' },
+    //     ddisabled: true,
+    //     validators: [
+    //         //"required",
+    //         //{ type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
+    //         {
+    //             type: rc_.CV_TYPE_DISABLE_IF,
+    //             params: {
+    //                 dependsOn: {
+    //                     // [rc_.IS_HIDDEN]: ['setting0'],  
+    //                     // [rc_.IS_DISABLED]: ['setting1'], 
+    //                     // 'fetchedResultContainsPipo': { 
+    //                     //     protocol: 'https', 
+    //                     //     host: 'jsonplaceholder.typicode.com', 
+    //                     //     port: '',
+    //                     //     api: "/:entities/:id", 
+    //                     //     // TODO TODO
+    //                     //     vars: { 
+    //                     //         id: 1,          //{ $model: 'setting0', fallback:'pipo' } //id should be dynamiclly invocable too etc etc 
+    //                     //         entities: "albums" ,
+    //                     //     } , // { $model: 'setting0', fallback:'pipo' } //entities should be dynamiclly invocable too etc etc
+    //                     // },
+    //                     //[rc_.V_REQUIREDIF]: { prop: { $model: 'setting1' } }, // meaning: retrieve the runtime value of setting0 and if that is true field title becomes required ...
+    //                     //[rc_.V_REQUIREDIF]: { prop: { $model: 'setting0' , targetField: 'setting1'} }, // meaning: retrieve the runtime value of setting0, and if that is true field title becomes required ...
+    //                     [rc_.V_SET_EXTERNAL_RESULTS]: {
+    //                         protocol: 'https',
+    //                         host: 'jsonplaceholder.typicode.com',
+    //                         port: '',
+    //                         api: "/:entities/:id",
+    //                         vars: { id: 1, entities: "todos" },
+    //                         querystring: "", // {/** TODO */}, 
+    //                         comparisonValue: { externalProperty: '<meaning a property or path on the fetched data...>', fallback: 'pipo' }, // means if we wanted to compare something from somewhere with something else
+    //                         normValue: { useRunTimeValue: true }, //means use the passed in value, passed in by vuelidate when the rule is being invoked 
+    //                         //* $model: {} or a static value: value /*
+    //                     },
+    //                     [rc_.V_MAXLENGTH]: {
+    //                         max: 5,
+    //                         targetField: { name: 'setting1', label: 'Setting1' },
+    //                     },
+    //                     [rc_.V_MINLENGTH]: {
+    //                         min: 3,
+    //                         targetField: { name: 'setting2', label: 'Setting2' },
+    //                     },
+    //                 }
+    //             }
+    //         },
+    //     ],
+    // },
 ];
 
-let fields = [
+let fieldsbak = [
     {
         id: '_id',
         isField: true,
@@ -153,7 +161,7 @@ let fields = [
         icon: { type: 'right', name: 'pi-lock' }
     },
 ];
-let fieldsbak = [
+let fieldslak = [
     {
         id: '_id',
         isField: true,
@@ -164,6 +172,26 @@ let fieldsbak = [
         icon: { type: 'right', name: 'pi-lock' }
     },
     {
+        id: 'setting0',
+        isField: true,
+        label: 'Setting0. Structurally hidden.',
+        type: 'P_InputText',
+        icon: { type: 'right', name: 'pi-lock' },
+        defaultValue: 3,
+        hidden: true,
+        vvalidators: [
+            //'required',
+            //'__cv__alpha',
+            //{ type: rc_.CV_TYPE_ALPHA, params: { targetField: { name: 'setting2', label: 'Setting 2 Label mannn' } } }, // meaning: run on field setting 1
+            // { type: rc_.CV_TYPE_REQUIREDIF, params: { prop: { $model: 'setting1' } } },
+            // { type: rc_.CV_TYPE_REQUIREDUNLESS, params: { prop: { $model: 'setting1' } } },
+            // { type: rc_.CV_TYPE_MIN_VALUE, params: { min: 20 } },
+            //{ type: rc_.CV_TYPE_MAX_VALUE, params: { max: 50 } },
+            // { type: rc_.CV_TYPE_REQUIREDIF, params: { prop: { $model: 'setting1' } } },
+            // { type: rc_.CV_TYPE_BETWEEN, params: { min: 25, max: 40 } },
+        ]
+    },
+    {
         id: 'setting1',
         isField: true,
         label: 'Setting1. Calls a dummy async validator',
@@ -171,7 +199,7 @@ let fieldsbak = [
         type: 'P_InputText',
         icon: { type: 'right', name: 'pi-lock' },
         defaultValue: 2,
-        ddisabled: false,
+        disabled: false,
         validators: [
             'required',
             {

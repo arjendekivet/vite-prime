@@ -71,6 +71,23 @@ export const mapRules = {
     [rc_.CV_TYPE_SET_EXTERNAL_RESULTS]: _setExternalResults, //TODO: declare via makeRule ??????????????
 }
 
+/**
+ * Note: we should first populate cHelpers with 
+ * 1) all the wrapped validators & 
+ * 2) custom executors and 
+ * 3) all the base (= SINGLE CONNOTATED) RETRIEVER Helpers: like so: 
+ * cHelpers[rc_.IS_DISABLED]=makeHelper({ruleType: rc_.CV_TYPE_DISABLE_IF, arity: rc_.SINGLE, })
+ * 
+ * 4) some odd importedhelpers.
+ * 
+ * Then we could/should augment cHelpers using the base RETRIEVER helpers like so:
+ * 
+ * cHelpers[rc_.SOME_HIDDEN] = makeHelper({singleHelperFn: cHelpers[rc_.IS_VISIBLE], etc etc })
+ * Note: maybe because of passing in the correct refrence to v$ we want to do this in validate.ts instead of over here?
+ * So augment cHelpers on the fly in validate calling a series of 
+ * cHelpers[rc_.SOME_HIDDEN] = makeHelper({singleHelperFn: cHelpers[rc_.IS_VISIBLE], N: rc_.SOME, sign: rc_.NEG }) for each necessary helper
+ * cHelpers[rc_.ALL_HIDDEN] = makeHelper({singleHelperFn: cHelpers[rc_.IS_VISIBLE], N: rc_.ALL, sign: rc_.NEG })
+ */
 export const cHelpers = {
     // EXECUTIONERS. These re-use vuelidate builtin validators, like MaxValue, minValue, etc.
     [rc_.V_MAXVALUE]: wrapRule({ validator: maxValue, type: rc_.CV_TYPE_MAX_VALUE, param: "max" }),
@@ -96,7 +113,7 @@ export const cHelpers = {
     [rc_.IS_MIN_LENGTH]: minlength.isMinLength, //a retriever
     [rc_.IS_MAX_LENGTH]: maxlength.isMaxLength, //a retriever
     // RETRIEVERS of custom executioners about 'show/hide', non-validation
-    [rc_.IS_VISIBLE]: display.isVisible,
+    //[rc_.IS_VISIBLE]: display.isVisible,  //toevoegen in validate.ts ... eenmalig via setRules for now ...
     [rc_.SOME_VISIBLE]: display.someVisible,
     [rc_.ALL_VISIBLE]: display.allVisible,
     [rc_.IS_HIDDEN]: display.isHidden,
@@ -106,7 +123,7 @@ export const cHelpers = {
     [rc_.IS_ENABLED]: enabling.isEnabled,
     [rc_.SOME_ENABLED]: enabling.someEnabled,
     [rc_.ALL_ENABLED]: enabling.allEnabled,
-    [rc_.IS_DISABLED]: enabling.isDisabled,
+    // [rc_.IS_DISABLED]: enabling.isDisabled, //toevoegen in validate.ts ... eenmalig via setRules for now ...
     [rc_.SOME_DISABLED]: enabling.someDisabled,
     [rc_.ALL_DISABLED]: enabling.allDisabled,
     // about 'eager' validity
@@ -137,4 +154,5 @@ export const cHelpers = {
     [rc_.GET_INVALID_MESSAGE]: validity.getInvalidMessage,
     [rc_.GET_DISABLED_MESSAGE]: enabling.getDisabledMessage,
 }
+
 export default { mapRules, cHelpers };

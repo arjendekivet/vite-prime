@@ -3,11 +3,12 @@ import Validator from '@/types/validator'
 import Fieldconfig from '@/types/fieldconfig'
 import { useVuelidate, ValidationRule, ValidationRuleWithParams, ValidatorFn } from '@vuelidate/core'
 import { helpers } from '@vuelidate/validators'
-import { isAsyncFn, isCustomValidatorType } from '@/modules/rules/core'
+import { isAsyncFn, isCustomValidatorType, makeHelper, makeBaseHelper } from '@/modules/rules/core'
 import rc_ from '@/modules/rules/constants'
 import cvh from '@/modules/rules/validateHelpers' // imports the default export as namespace cvh...
 
 const mapRules = cvh.mapRules;
+
 /**
  * Alias for useVuelidate such that the form does not have to know which validator package we are using. We would only have to know the signature ...
  */
@@ -88,6 +89,22 @@ interface formDefinition {
 // Note: if we never pass in the existing rules, we do not need the pValidatorRules either...
 export function setRules(formDefinition: formDefinition, pRules: Object = {}, formData: Object = {}, p_v$) {
     const rules = Object.assign({}, pRules)
+
+    //before we generate rules which will invoke helpers, augment the cvh.cHelpers
+    //test! 
+    debugger;
+    try {
+        debugger;
+        //do this only once
+        if (!cvh.cHelpers.didCreateHelpers) {
+            cvh.cHelpers[rc_.IS_DISABLED] = makeHelper({ ruleType: rc_.CV_TYPE_DISABLE_IF, defaultTo: false, sign: rc_.NEG, p_vm: { v$: p_v$ } })
+            cvh.cHelpers[rc_.IS_VISIBLE] = makeHelper({ ruleType: rc_.CV_TYPE_DISPLAY_IF, p_vm: { v$: p_v$ } })
+            cvh.cHelpers.didCreateHelpers = true
+        }
+    } catch (e) {
+        debugger
+    }
+
     _.forEach(formDefinition, function (field) {
         let mappedValidator
         let fieldName = field.id
@@ -274,5 +291,6 @@ export function setRules(formDefinition: formDefinition, pRules: Object = {}, fo
             rules[fieldName] = objRule
         }
     })
+
     return rules
 }

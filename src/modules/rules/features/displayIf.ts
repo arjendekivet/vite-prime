@@ -8,7 +8,9 @@ import { makeRule, cHelpers, hofRuleFnGenerator } from '@/modules/rules/core'
 // TODO: we could try to device an executioner for hidden, that probes for the static config property, the direction of it and wether it COULD be mitigated/overrules?
 // Executioner for rule of type 'displayIf'
 export const displayIf = async (pvm, objContext) => {
-    const { value, params, p_v$, fieldCfg, defaultTo = true, doInvertRuleResult = false, staticCfg, ...cfg } = objContext
+    const { value, params, p_v$, fieldCfg, defaultTo = true, staticCfg, ...cfg } = objContext
+    const doInvertRuleResult = cfg.invert ?? true // the thing is called displayIf, but the property is hidden: true/false
+    //so if hidden: true we should invert it so displayIf will return false 
 
     let message
     let defaulted = defaultTo;
@@ -23,11 +25,13 @@ export const displayIf = async (pvm, objContext) => {
         // 1. if we have an overruling static configuration property, use a simple & synchronous ruleFn
         hasStaticConfigProperty = staticCfg && ((fieldCfg?.[staticCfg] ?? false) !== false)
         if (hasStaticConfigProperty) {
+            debugger
             result = doInvertRuleResult ? !!!fieldCfg?.[staticCfg] : !!fieldCfg?.[staticCfg]
         }
     } catch (error) {
         console.warn(error);
     }
+    debugger;
     return { result, message };
 }
 
@@ -59,6 +63,7 @@ export const displayIf = async (pvm, objContext) => {
  * @returns 
  */
 export const isVisible = (vm, objContext) => {
+    debugger
     const { fieldNames: fieldName } = objContext
     let defaulted = true;
     let result, result_1, result_2;
@@ -66,6 +71,7 @@ export const isVisible = (vm, objContext) => {
         // custom rule based on a FUNCTION in the field validators configuration. We do not expect this frequently though.... Functions from external JSON into Javascript Object literal configs is rare. 
         // temporarily, as long as we also use the displayIf with spawned external functions :-)
         result_1 = (vm?.v$?.[fieldName]?.[rc_.V_DISPLAYIF]?.$response?.extraParams?.rule_result ?? true)
+
         // for now we surely have to take into account CV_TYPE_DISPLAY_IF!!!!
         result_2 = (vm?.v$?.[fieldName]?.[rc_.CV_TYPE_DISPLAY_IF]?.$response?.extraParams?.rule_result ?? true)
 

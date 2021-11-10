@@ -5,6 +5,12 @@ const AND = "and";
 const OR = "or";
 const NOT = "not";
 
+const POS = "positive"
+const NEG = "negative"
+const SINGLE = "single" // or scalar? one?
+const SOME = "some"
+const ALL = "all"
+
 const RULE_GENERATOR = "RULE_GENERATOR";
 const VISIBILITY = 'displayIf';
 const SILENTVALIDITY = '$silentErrors'
@@ -125,10 +131,7 @@ export const SUPPORTED_RETRIEVERS = [
 /**
  * Helpers which are able to execute an actual validator. These can take a proper rule execution configuration for dynamic parametrization AND dynamic targeting.
  */
-export const SUPPORTED_EXECUTIONERS = [
-    V_DISABLEIF,
-    V_DISPLAYIF,
-    V_SET_EXTERNAL_RESULTS,
+export const EXECUTIONERS_VALIDATORS = [
     V_MINLENGTH,
     V_MAXLENGTH,
     V_BETWEEN,
@@ -141,7 +144,34 @@ export const SUPPORTED_EXECUTIONERS = [
     V_EMAIL
 ]
 
+export const RULE_TYPES_VALIDATORS = [
+    CV_TYPE_MIN_LENGTH,
+    CV_TYPE_MAX_LENGTH,
+    CV_TYPE_BETWEEN,
+    CV_TYPE_REQUIRED,
+    CV_TYPE_REQUIREDIF,
+    CV_TYPE_REQUIREDUNLESS,
+    CV_TYPE_MIN_VALUE,
+    CV_TYPE_MAX_VALUE,
+    CV_TYPE_ALPHA,
+    CV_TYPE_EMAIL
+]
+// knowing which executors are NOT validators can help composing the path to use in the generated RETRIEVER helpers...
+export const RULE_TYPES_OTHER = [
+    CV_TYPE_DISABLE_IF,
+    CV_TYPE_DISPLAY_IF,
+]
+export const RULE_TYPES_EXTERNAL_RESULTS = [
+    CV_TYPE_SET_EXTERNAL_RESULTS,
+]
+
+export const SUPPORTED_EXECUTIONERS = EXECUTIONERS_VALIDATORS.concat([V_DISPLAYIF, V_DISABLEIF]).concat(V_SET_EXTERNAL_RESULTS)
+
 export default {
+    AND, OR, NOT, SINGLE, SOME, ALL, POS, NEG,
+    RULE_TYPES_VALIDATORS,
+    RULE_TYPES_OTHER,
+    RULE_TYPES_EXTERNAL_RESULTS,
     SUPPORTED_RETRIEVERS,
     SUPPORTED_EXECUTIONERS,
     CFG_DISPLAY,
@@ -190,9 +220,6 @@ export default {
     IS_INVALID_LAZY, SOME_INVALID_LAZY, ALL_INVALID_LAZY,
     IS_DISABLED, SOME_DISABLED, ALL_DISABLED,
     IS_ENABLED, SOME_ENABLED, ALL_ENABLED,
-    AND,
-    OR,
-    NOT,
     IS_EMPTY, SOME_EMPTY, ALL_EMPTY,
     NOT_EMPTY, SOME_NOT_EMPTY, NONE_EMPTY,
     IS_REQUIRED_IF, NOT_REQUIRED_IF,
