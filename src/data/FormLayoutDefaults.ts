@@ -15,13 +15,13 @@ type FormConfig = {
   "title": "het pak",
  */
 // use the same fields as in storybook for a test ..
-let fieldsbak = [
+let fieldszak = [
     {
         id: '_id',
         isField: true,
         label: 'Id',
         type: 'P_InputText',
-        dddefaultValue: "6666666666666",
+        defaultValue: "6666666666666",
         disabled: true,
         icon: { type: 'right', name: 'pi-lock' }
     },
@@ -32,7 +32,7 @@ let fieldsbak = [
         type: 'P_InputText',
         icon: { type: 'right', name: 'pi-lock' },
         defaultValue: 3,
-        hhhidden: true,
+        hidden: true,
         vvalidators: [
             'required',
             //'__cv__alpha',
@@ -53,8 +53,8 @@ let fieldsbak = [
         type: 'P_InputText',
         icon: { type: 'right', name: 'pi-lock' },
         defaultValue: 2,
-        disabled: true,
-        validators: [
+        disabled: false,
+        vvalidators: [
             'required',
             // {
             //     type: rc_.CV_TYPE_SET_EXTERNAL_RESULTS,
@@ -93,7 +93,8 @@ let fieldsbak = [
         type: 'P_InputText',
         placeholder: 'Title',
         icon: { type: 'right', name: 'pi-bookmark' },
-        vvalidators: [
+        ddisabled: true,
+        validators: [
             //"required",
             //{ type: rc_.CV_TYPE_MIN_LENGTH, params: { min: 10 } }, 
             {
@@ -147,6 +148,17 @@ let fields = [
         isField: true,
         label: 'Id',
         type: 'P_InputText',
+        defaultValue: "6666666666666",
+        disabled: true,
+        icon: { type: 'right', name: 'pi-lock' }
+    },
+];
+let fieldsbak = [
+    {
+        id: '_id',
+        isField: true,
+        label: 'Id',
+        type: 'P_InputText',
         dddefaultValue: "6666666666666",
         disabled: true,
         icon: { type: 'right', name: 'pi-lock' }
@@ -159,24 +171,24 @@ let fields = [
         type: 'P_InputText',
         icon: { type: 'right', name: 'pi-lock' },
         defaultValue: 2,
-        disabled: true,
+        ddisabled: false,
         validators: [
             'required',
-            // {
-            //     type: rc_.CV_TYPE_SET_EXTERNAL_RESULTS,
-            //     params: {
-            //         protocol: 'https',
-            //         host: 'jsonplaceholder.typicode.com',
-            //         port: '',
-            //         api: "/:entities/:id",
-            //         vars: { id: 1, entities: "todos" },
-            //         querystring: "", // {/** TODO */}, 
-            //         comparisonValue: { externalProperty: '<meaning a property or path on the fetched data...>', fallback: 'pipo' }, // means if we wanted to compare something from somewhere with something else
-            //         normValue: { useRunTimeValue: true }, //means use the passed in value, passed in by vuelidate when the rule is being invoked 
-            //         //* $model: {} or a static value: value /*
-            //     }
-            // },
-            //{ type: rc_.CV_TYPE_MAX_VALUE, params: { max: 5 } },
+            {
+                type: rc_.CV_TYPE_SET_EXTERNAL_RESULTS,
+                params: {
+                    protocol: 'https',
+                    host: 'jsonplaceholder.typicode.com',
+                    port: '',
+                    api: "/:entities/:id",
+                    vars: { id: 1, entities: "todos" },
+                    querystring: "", // {/** TODO */}, 
+                    comparisonValue: { externalProperty: '<meaning a property or path on the fetched data...>', fallback: 'pipo' }, // means if we wanted to compare something from somewhere with something else
+                    normValue: { useRunTimeValue: true }, //means use the passed in value, passed in by vuelidate when the rule is being invoked 
+                    //* $model: {} or a static value: value /*
+                }
+            },
+            { type: rc_.CV_TYPE_MAX_VALUE, params: { max: 5 } },
         ]
     },
 ];

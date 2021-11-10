@@ -8,10 +8,10 @@ import { makeRule, cHelpers, hofRuleFnGenerator } from '@/modules/rules/core'
 // TODO: we could try to device an executioner for hidden, that probes for the static config property, the direction of it and wether it COULD be mitigated/overrules?
 // Executioner for rule of type 'displayIf'
 export const displayIf = async (pvm, objContext) => {
-    const { value, params, p_v$, fieldCfg, defaultRuleResult = true, doInvertRuleResult = false, staticConfigProperty, ...cfg } = objContext
-    debugger
+    const { value, params, p_v$, fieldCfg, defaultTo = true, doInvertRuleResult = false, staticCfg, ...cfg } = objContext
+
     let message
-    let defaulted = defaultRuleResult;
+    let defaulted = defaultTo;
     let result = defaulted
     //now prepare the namespace for the code below to reference vm.v$.<paths> !!!
     const vm = pvm?.v$ ? pvm : { v$: p_v$.value }
@@ -19,11 +19,11 @@ export const displayIf = async (pvm, objContext) => {
     let hasStaticConfigProperty
     //////////////////////
     try {
-        message = `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticConfigProperty} on ${fieldCfg.label}`
+        message = `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticCfg} on ${fieldCfg.label}`
         // 1. if we have an overruling static configuration property, use a simple & synchronous ruleFn
-        hasStaticConfigProperty = staticConfigProperty && ((fieldCfg?.[staticConfigProperty] ?? false) !== false)
+        hasStaticConfigProperty = staticCfg && ((fieldCfg?.[staticCfg] ?? false) !== false)
         if (hasStaticConfigProperty) {
-            result = doInvertRuleResult ? !!!fieldCfg?.[staticConfigProperty] : !!fieldCfg?.[staticConfigProperty]
+            result = doInvertRuleResult ? !!!fieldCfg?.[staticCfg] : !!fieldCfg?.[staticCfg]
         }
     } catch (error) {
         console.warn(error);
@@ -40,12 +40,12 @@ export const displayIf = async (pvm, objContext) => {
  * 
  */
 // export const _displayIf = (args) => {
-//     const defaultRuleResult = true;
-//     const staticConfigProperty = rc_.CFG_PROP_ENTITY_DISPLAY
+//     const defaultTo = true;
+//     const staticCfg = rc_.CFG_PROP_ENTITY_DISPLAY
 //     const doInvertRuleResult = rc_.CFG_PROP_ENTITY_DISPLAY_INVERT
 //     let resultFunction
 //     try {
-//         resultFunction = hofRuleFnGenerator(args, { defaultRuleResult, staticConfigProperty, doInvertRuleResult })
+//         resultFunction = hofRuleFnGenerator(args, { defaultTo, staticCfg, doInvertRuleResult })
 //     } catch (error) {
 //         console.warn(error)
 //     }

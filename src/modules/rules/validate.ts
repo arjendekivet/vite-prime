@@ -97,8 +97,9 @@ export function setRules(formDefinition: formDefinition, pRules: Object = {}, fo
         let hasCustomPrefix = false
         // setting to programmatically generate rules for displayIf and disableIf when no such validators are configured in the field configuration...
         // this setting also makes each field available in the v$ map... so other rules can 'read/retrieve/query' all kinds of validator results..
-        debugger; // autoMonitorDisplay_Disable should become true
-        const autoMonitorDisplay_Disable = true
+        // autoMonitorDisplay_Disable should become true
+
+        const autoMonitorDisplay_Disable = rc_.AUTO_MONITOR_DISPLAY_DISABLE ?? true
         let addDisplayRule = autoMonitorDisplay_Disable
         let addDisableRule = autoMonitorDisplay_Disable
         let objParams = {}
@@ -128,6 +129,10 @@ export function setRules(formDefinition: formDefinition, pRules: Object = {}, fo
             // Deze skip / ignore feature bewaren we voor later, als performance reasons dat vereisen.
             if (hasCustomPrefix) {
                 if (mapRules[tag]) {
+                    // 1. We decided hard coded for now that if we have a disableIf rule, we model it over here. 
+                    // it can be conflicting with the concept that the staticConfigProperty decides everything. 
+                    // Since over here we may encounter dependsOn etc etc. Should we skip this rule IF that static property is there? 
+                    // OR should we inside the displayIf executor calculate an abort flag?????
                     //register the state about having to addDisplayRule or addDisableRule or ... Once false, it should remain false
                     addDisableRule = (addDisableRule === false || tag === rc_.CV_TYPE_DISABLE_IF) ? false : true
                     addDisplayRule = (addDisplayRule === false || tag === rc_.CV_TYPE_DISPLAY_IF) ? false : true

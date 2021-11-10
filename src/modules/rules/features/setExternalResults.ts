@@ -46,13 +46,13 @@ export const setExternalResults = async (pvm, objContext) => {
 
 // hof to compose a function to return as executioner for a rule of type setExternalResults
 export const _setExternalResults = (args) => {
-    const defaultRuleResult = false;
+    const defaultTo = false;
     const doInvertRuleResult = false
     const asValidator = true; // !!!!!!!!!! true to be able to run it as a proper validator, so that failing will flag the field etc, apart from also running it as a helper/executor
     const startFn = rc_.V_SET_EXTERNAL_RESULTS; //this config means that said method should be invoked FIRST 
     let resultFunction
     try {
-        resultFunction = hofRuleFnGenerator(args, { defaultRuleResult, doInvertRuleResult, startFn, asValidator })
+        resultFunction = hofRuleFnGenerator(args, { defaultTo, doInvertRuleResult, startFn, asValidator })
     } catch (error) {
         console.warn(error)
     }

@@ -20,17 +20,9 @@ export const isCustomValidatorType = (type: string) => {
     return result
 }
 
-// create yet another layer that will invoke the former hofRuleFnGenerator
-// (args) => makeRule(args, { startFn: rc_.V_MINVALUE, asValidator: true }),
-//export const makeRule = (...args) => generateRule(...args)
+// create yet another layer that will invoke generateRule with arguments collected in two steps
 export const makeRule = (additionalRuleConfig) => {
-    debugger;
-    console.log('makeRule  additionalRuleConfig')
-    console.log(additionalRuleConfig)
     return (overallRuleConfig) => {
-        debugger;
-        console.log('makeRule  overallRuleConfig')
-        console.log(overallRuleConfig)
         return generateRule(overallRuleConfig, additionalRuleConfig)
     }
 }
@@ -55,46 +47,30 @@ export const makeRule = (additionalRuleConfig) => {
 export const generateRule = (...args) => {
     const { dependsOn, fieldCfg, formData, formDefinition, p_v$, ...params } = args[0]
     const xVM = { v$: p_v$ }
-    // can we make sure that, if undefined, defaultRuleResult = true etc
-    const { defaultRuleResult = true, doInvertRuleResult = false, asValidator = false, staticConfigProperty } = args[1]
-    debugger;
-    const ruleType = params.type
-    let hasStaticConfigProperty
+    const { defaultTo = true } = args[1]
+    const ruleType = params?.type
     let resultFunction
     // also a simple synchronous Fn... but add in xVM too always to get a reference to v$ 
     let fallBackFunction = function ruleFn(value, vm, vmx = xVM) {
+        debugger;
+        try {
+            let lvm = vmx || xVM
+        } catch (e) {
+            debugger
+        }
         return {
-            $valid: true, // We should never "fail" based on a total dummy function, regardless "asValidator" ???
-            extraParams: { rule_result: defaultRuleResult, fieldCfg },
+            $valid: true, // We should NEVER "fail" based on a dummy  fallback function, regardless "asValidator" ???
+            extraParams: { rule_result: defaultTo, fieldCfg, params, dependsOn, },
             message: `Fallback or try-catch rule. Either an error occurred or neither static config property nor any configured rule of type ${ruleType} for ${fieldCfg.label}`
         }
     }
     try {
-        // 1. if we have an overruling static configuration property, use a simple & synchronous ruleFn
-        hasStaticConfigProperty = staticConfigProperty && ((fieldCfg?.[staticConfigProperty] ?? false) !== false)
-        if (hasStaticConfigProperty) {
-            debugger
-            //for test purposes set to false...
-            hasStaticConfigProperty = false
-        }
-        if (hasStaticConfigProperty) {
-            resultFunction = function ruleFn(value, vm, vmx = xVM) {
-                let rule_result = doInvertRuleResult ? !!!fieldCfg?.[staticConfigProperty] : !!fieldCfg?.[staticConfigProperty]
-                return {
-                    $valid: asValidator ? rule_result : true, // when run as Validator, it should flag/register errors accordingly!
-                    extraParams: { rule_result, fieldCfg },
-                    message: `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticConfigProperty} on ${fieldCfg.label}`
-                }
-            }
-        }
-        // 2. probe for a supported custom rule function
-        else if (!resultFunction) {
-            resultFunction = probeCustomRuleFn(args)
-        }
+        // 1. probe for a supported rule function
+        resultFunction = probeCustomRuleFn(args)
     } catch (error) {
         console.warn(error);
     }
-    // 3. make sure that if we did not have any function yet, we should return a liberal/neutral fallback function 
+    // 2. make sure that if we did not have any function yet, we should return a liberal/neutral fallback function 
     if (!resultFunction || typeof resultFunction !== 'function') {
         resultFunction = fallBackFunction
     }
@@ -110,27 +86,25 @@ export const generateRule = (...args) => {
 export const probeCustomRuleFn = (arrCfg) => {
     const { dependsOn, asLogical, fieldCfg, formData, formDefinition, p_v$, ...params } = arrCfg[0]
     const xVM = { v$: p_v$ }
-    const { defaultRuleResult, staticConfigProperty, doInvertRuleResult, asValidator = false, startFn } = arrCfg[1]
+    const { defaultTo = true, staticCfg, invert, asValidator = false, startFn } = arrCfg[1]
     debugger;
-    //we should make sure value or vm are not shadowed here? How come in setExternalResults we appear to receive a data-object as the vm ????
-    if (!fieldCfg) {
-        debugger
-    }
     // pass in xVM to be sure to have a reference to v$ ????? or this passes in via arrCfg[0] ...
     return async function ruleFn(value, vm, /**vmX = xVM*/) {
-        if (fieldCfg.id === 'title') { debugger }
-        //let rule_result = await probeCustomRuleFnRecursor(value, vm, arrCfg[0], asLogical, startFn, arrCfg[1]) // ??  defaultRuleResult
+        //let rule_result = await probeCustomRuleFnRecursor(value, vm, arrCfg[0], asLogical, startFn, arrCfg[1]) // ??  defaultTo
         let rule_result = await probeCustomRuleFnRecursor(value, vm, arrCfg, asLogical, startFn) // pass through arrCfg, not onlt arrCfg[0], so that we can use function for disableIf and displayIf just like any other feature...
-        rule_result = rule_result ?? defaultRuleResult
+        rule_result = rule_result ?? defaultTo
+        if (fieldCfg.id === 'title' && params.type === rc_.CV_TYPE_DISABLE_IF) {
+            debugger
+        }
         const boolRuleResult = rule_result?.result ?? rule_result
-        const valid = asValidator ? boolRuleResult : true;
+        const valid = !asValidator ? true : boolRuleResult; // if we do NOT run as validator, we should NOT fail and flag stuff as failed, because we do not want to cause any 'invalid markings' anywhere!
         let message = `Rule of type ${params?.type} for field ${fieldCfg?.label} returned: ${boolRuleResult}.`
         if (rule_result?.message) {
             message = rule_result?.message ?? message //${message} 
         }
         return Promise.resolve({
             $valid: valid,
-            extraParams: { rule_result: boolRuleResult, fieldCfg },
+            extraParams: { rule_result: boolRuleResult, fieldCfg, raw_result: rule_result },
             message: message
         })
     }
@@ -150,10 +124,11 @@ export const probeCustomRuleFn = (arrCfg) => {
  * @returns {Object | Boolean} rule_result. If the return value contains o message, will compose an object with the boolean result and the message, else just the booelan.
  */
 export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = rc_.AND, startFn = null) => {
-    const { dependsOn, fieldCfg, formData, formDefinition, p_v$, ...params } = objCfg[0] ?? objCfg //this can be an array on the first level of invocation, but will be a scalar in recursion...
-    // let { startFn } = objCfg[1] 
+    const { dependsOn, fieldCfg, formData, formDefinition, p_v$, ...params } = objCfg?.[0] ?? objCfg //this can be an array on the first level of invocation, but will be a scalar in recursion...
+    const { defaultTo = true, staticCfg, invert } = objCfg?.[1] ?? {}
 
-    debugger // for now we can do without this ...
+    // let { startFn } = objCfg[1] 
+    // for now we can do without this ...
     //const xVM = { v$: p_v$ }
     //const vm = pvm?.v$ ? pvm : xVM
     const arrRetrievers = rc_.SUPPORTED_RETRIEVERS;
@@ -165,9 +140,15 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
     let arrPartials = [];
     let arrMessages = [];
     let tmp
+
+    // TODO: should we always/also search for and/or/not iterators first ?
+    // if we have a disableIf rule that says false due to an absent config property or due to a present one... 
+    // should we "imputate" an "or" and look for more dependencies or what????
+
     let iterator = dependsOn && typeof dependsOn === 'object' ? Object.entries(dependsOn) : {}
     let doIterate = Object.keys(iterator).length > 0
-    let breakout = false;
+    let abort = false;
+    let ignore = false;
     let startFnUnqualified = false;
     let isExecutioner = false;
     let isRetriever = false;
@@ -179,18 +160,19 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
             if (arrExecutioners.includes(startFn)) {
                 let fn = startFn;
                 try {
-                    if (startFn === rc_.V_SET_EXTERNAL_RESULTS) {
-                        debugger
-                    }
-                    const { defaultRuleResult, staticConfigProperty, doInvertRuleResult } = objCfg[1]
-                    const objParams = { value, fieldCfg, formData, formDefinition, p_v$, params, metaParams: params, defaultRuleResult, staticConfigProperty, doInvertRuleResult }
+                    const objParams = { value, fieldCfg, formData, formDefinition, p_v$, params, metaParams: params, defaultTo, staticCfg, invert }
                     // check for async and if so await it...
                     isAsync = isAsyncFn(cHelpers[fn] ?? "")
                     tmp = isAsync ? await cHelpers[fn]?.(vm, objParams) : cHelpers[fn]?.(vm, objParams)
-                    countAsResult++
-                    arrPartials.push(tmp?.result ?? tmp) // if we have tmp.result grab that, else grab tmp
-                    if (tmp?.message) {
-                        arrMessages.push(tmp.message)
+                    ignore = tmp?.ignore ?? false;
+                    debugger
+                    if (!ignore) {
+                        countAsResult++
+                        arrPartials.push(tmp?.result ?? tmp)
+                        if (tmp?.message) {
+                            arrMessages.push(tmp.message)
+                        }
+                        abort = tmp?.abort ?? false;
                     }
                 }
                 catch (e) {
@@ -201,18 +183,19 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
             else {
                 startFnUnqualified = true
             }
-            if (startFnUnqualified && asLogical === rc_.AND) {
+            if (startFnUnqualified) { // && asLogical === rc_.AND
                 // when called as a logical AND operator, the end result at this level can never become true anymore, so bail out...
                 arrPartials.push(undefined)
                 arrMessages.push(`Flawed or errored startFn ${startFn} for 'conjunctive' invocation. Aborted.`)
                 countAsResult++
                 if (asLogical === rc_.AND) {
-                    breakout = true;
+                    abort = true;
                 }
             }
         }
-        // should we invoke the recursion iterator
-        if (!breakout && doIterate) {
+        // should we invoke the recursion iterator 
+        // TODO: we could go for promise.all / promise.allSettled ???
+        if (!abort && doIterate) {
             for (const [key, entryValue] of iterator) {
                 tmp = null
                 if (arrToRecurse.includes(key)) {
@@ -222,10 +205,10 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
                         tmp = await probeCustomRuleFnRecursor(value, vm, objCfg2, key) //always await?????
                         //arrPartials.push(tmp)
                         arrPartials.push(tmp?.result ?? tmp)
+                        countAsResult++
                         if (tmp?.message) {
                             arrMessages.push(tmp.message)
                         }
-                        countAsResult++
                     }
                     catch (e) {
                         console.warn(e)
@@ -249,13 +232,10 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
                             }
                             // check for async and if so await it...
                             isAsync = isAsyncFn(cHelpers[fn] ?? "")
-                            if (isAsync) {
-                                debugger
-                            }
                             tmp = isAsync ? await cHelpers[fn]?.(vm, objParams) : cHelpers[fn]?.(vm, objParams)
                             //tmp = cHelpers[fn]?.(vm, objParams)
-                            countAsResult++
                             arrPartials.push(tmp?.result ?? tmp)
+                            countAsResult++
                             if (tmp?.message) {
                                 arrMessages.push(tmp.message)
                             }
@@ -275,6 +255,10 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
     // depending upon asLogicalOperator, we reduce arrPartials to a boolean via _.some. _.every or !_.every
     if (countAsResult) {
         rule_result = asLogical === rc_.AND ? _.every(arrPartials, Boolean) : asLogical === rc_.OR ? _.some(arrPartials, Boolean) : !(_.some(arrPartials, Boolean))
+    }
+    else {
+        console.log("probeCustomRuleFnRecursor defaulted due to no relevant evaluation results. And ignore was: ", ignore)
+        rule_result = defaultTo
     }
     if (arrMessages.length > 0) {
         return { result: rule_result, message: arrMessages.join("; ") }
@@ -326,11 +310,20 @@ export const composeRuleFeedbackMessage = (pContext) => {
  * { type: 'maxLength', params: { bla, dependsOn: {and: { [ALL_VALID]:['a','b','c']}}}}
  * wrapRule will wrap the relevant validator / executor such that it could dynamically run (dynamic argument, run 'delegated' on another field)
  * which is all optional and totalley depends on the declarative 'validator-configuration'.
+ * 
+ * TODO: compareDelegatedNullish
+ * if we have targetField !== source field (so delegated rule) AND comparisonValue is undefined should we first do helpers.req(comparisonValue) ?
+ * If we do not, and we do minValue(4) or url() or maxLength(100) against an undefined/null optional or non-touched comparison value, it returns true.... Which could be erroneous in the strict sense!
+ * On the other hand, we do not want to know how other executors/validators are implemented, so if the vuelidate minlegth(5) on undefined returns true, the user could configure
+ * required() and minLength(5) etc etc which is the more flexible option...
+ * But for now, let's implement it..
+ * 
  * @param vm 
  * @param objParams 
  * @returns 
  */
 export const wrapRule = (objCfg) => {
+    const compareDelegatedNullish = false; // only consequential when false ...!!!!!
     const { param, type, validator } = objCfg
 
     return async function (pvm: any, objContext: object) {
@@ -340,7 +333,9 @@ export const wrapRule = (objCfg) => {
         //prepare the namespace for the code below to reference vm.v$.<paths> !!!
         const vm = pvm?.v$ ? pvm : { v$: p_v$.value }
 
-        debugger;
+        if (cfg.fieldCfg?.id === 'setting2') {
+            debugger;
+        }
         // test is v$ een ref of niet? 
 
         // the runtime value against which usually a rule will be executed. If however a targetField is specified, then that field should provide the runtime comparisonValue... 
@@ -401,23 +396,44 @@ export const wrapRule = (objCfg) => {
             if (targetFieldName && typeof targetFieldName === 'string') {
                 comparisonValue = vm?.v$?.[targetFieldName]?.$model ?? vm?.fieldValues?.value?.[targetFieldName]
             }
+
             // Note: here we are using the builtin vuelidate requiredIf -aliassed 'requiredif' in the import- validator, without having to know it's implementation
-            if (isAsync) {
-                // configure the validator, see if we have to invoke it to set it up. Some are without params, like required, alpha, etc
-                dummyValidator = helpers.withAsync(typeof validator === 'function' ? validator(condition) : validator)
-                // run the validator against the comparisonvalue
-                result = await dummyValidator?.$validator(comparisonValue);
-            }
-            else {
-                // configure the validator, see if we have to invoke it to set it up. Some are without params, like required, alpha, etc
-                dummyValidator = typeof validator === 'function' ? validator(condition) : validator
-                // run the validator against the comparisonvalue
-                result = dummyValidator?.$validator(comparisonValue);
+            // if (isAsync) {
+            //     // configure the validator, see if we have to invoke it to set it up. Some are without params, like required, alpha, etc
+            //     dummyValidator = helpers.withAsync(typeof validator === 'function' ? validator(condition) : validator)
+            //     // run the validator against the comparisonvalue or first against req()
+            //     if ( !compareDelegatedNullish && _.isEmpty(comparisonValue) ){
+            //         result = helpers.req(comparisonValue) && await dummyValidator?.$validator(comparisonValue);
+            //     } else {
+            //         result = await dummyValidator?.$validator(comparisonValue);
+            //     }
+            // }
+            // else {
+            //     // configure the validator, see if we have to invoke it to set it up. Some are without params, like required, alpha, etc
+            //     dummyValidator = typeof validator === 'function' ? validator(condition) : validator
+
+            //     // run the validator against the comparisonvalue or first against req()
+            //     if ( !compareDelegatedNullish && _.isEmpty(comparisonValue) ){
+            //         result = helpers.req(comparisonValue) && dummyValidator?.$validator(comparisonValue);
+            //     } else {
+            //         result = dummyValidator?.$validator(comparisonValue);
+            //     }
+            // }
+
+            // shorter notation. configure the validator, see if we have to invoke it to set it up. Some are without params, like required, alpha, etc. And See if we have to do helpers.req() first.
+            dummyValidator = isAsync ?
+                helpers.withAsync(typeof validator === 'function' ? validator(condition) : validator) :
+                typeof validator === 'function' ? validator(condition) : validator
+
+            // run the validator against the comparisonvalue or first against req()
+            if (!compareDelegatedNullish && _.isEmpty(comparisonValue)) {
+                result = helpers.req(comparisonValue) && (isAsync ? await dummyValidator?.$validator(comparisonValue) : dummyValidator?.$validator(comparisonValue))
+            } else {
+                result = isAsync ? await dummyValidator?.$validator(comparisonValue) : dummyValidator?.$validator(comparisonValue)
             }
 
             // Only when resulted in the opposite of the norm result (defaulted), should we compose the feedback message
             if (result !== defaulted) {
-                debugger;
                 let cfgMessage = { dummyValidator, targetFieldName, params, cfg, comparisonValue, type, criteria: [condition] };
                 message = composeRuleFeedbackMessage(cfgMessage)
             }
@@ -434,9 +450,8 @@ export const wrapRule = (objCfg) => {
 
 export const hofRuleFnGenerator = (...args) => {
     const { dependsOn, fieldCfg, formData, formDefinition, ...params } = args[0]
-    // can we make sure that, if undefined, defaultRuleResult = true etc
-    const { defaultRuleResult = true, doInvertRuleResult = false, asValidator = false, staticConfigProperty } = args[1]
-    debugger;
+    // can we make sure that, if undefined, defaultTo = true etc
+    const { defaultTo = true, invert = false, asValidator = false, staticCfg } = args[1]
 
     const ruleType = params.type
     let hasStaticConfigProperty
@@ -445,20 +460,20 @@ export const hofRuleFnGenerator = (...args) => {
     let fallBackFunction = function ruleFn(value, vm) {
         return {
             $valid: true, // We should never "fail" based on a total dummy function, regardless "asValidator" ???
-            extraParams: { rule_result: defaultRuleResult, fieldCfg },
+            extraParams: { rule_result: defaultTo, fieldCfg },
             message: `Fallback or try-catch rule. Either an error occurred or neither static config property nor any configured rule of type ${ruleType} for ${fieldCfg.label}`
         }
     }
     try {
         // 1. if we have an overruling static configuration property, use a simple & synchronous ruleFn
-        hasStaticConfigProperty = staticConfigProperty && ((fieldCfg?.[staticConfigProperty] ?? false) !== false)
+        hasStaticConfigProperty = staticCfg && ((fieldCfg?.[staticCfg] ?? false) !== false)
         if (hasStaticConfigProperty) {
             resultFunction = function ruleFn(value, vm) {
-                let rule_result = doInvertRuleResult ? !!!fieldCfg?.[staticConfigProperty] : !!fieldCfg?.[staticConfigProperty]
+                let rule_result = invert ? !!!fieldCfg?.[staticCfg] : !!fieldCfg?.[staticCfg]
                 return {
                     $valid: asValidator ? rule_result : true, // when run as Validator, it should flag/register errors accordingly!
                     extraParams: { rule_result, fieldCfg },
-                    message: `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticConfigProperty} on ${fieldCfg.label}`
+                    message: `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticCfg} on ${fieldCfg.label}`
                 }
             }
         }
@@ -470,6 +485,55 @@ export const hofRuleFnGenerator = (...args) => {
         console.warn(error);
     }
     // 3. make sure that if we did not have any function yet, we should return a liberal/neutral fallback function
+    if (!resultFunction || typeof resultFunction !== 'function') {
+        resultFunction = fallBackFunction
+    }
+    return resultFunction
+}
+
+export const generateRuleBAK = (...args) => {
+    const { dependsOn, fieldCfg, formData, formDefinition, p_v$, ...params } = args[0]
+    const xVM = { v$: p_v$ }
+    // can we make sure that, if undefined, defaultTo = true etc
+    const { defaultTo = true, invert = false, asValidator = false, staticCfg } = args[1]
+    debugger;
+    const ruleType = params.type
+    let hasStaticConfigProperty
+    let resultFunction
+    // also a simple synchronous Fn... but add in xVM too always to get a reference to v$ 
+    let fallBackFunction = function ruleFn(value, vm, vmx = xVM) {
+        return {
+            $valid: true, // We should never "fail" based on a total dummy function, regardless "asValidator" ???
+            extraParams: { rule_result: defaultTo, fieldCfg },
+            message: `Fallback or try-catch rule. Either an error occurred or neither static config property nor any configured rule of type ${ruleType} for ${fieldCfg.label}`
+        }
+    }
+    try {
+        // 1. if we have an overruling static configuration property, use a simple & synchronous ruleFn
+        hasStaticConfigProperty = staticCfg && ((fieldCfg?.[staticCfg] ?? false) !== false)
+        if (hasStaticConfigProperty) {
+            debugger
+            //for test purposes set to false...
+            hasStaticConfigProperty = false
+        }
+        if (hasStaticConfigProperty) {
+            resultFunction = function ruleFn(value, vm, vmx = xVM) {
+                let rule_result = invert ? !!!fieldCfg?.[staticCfg] : !!fieldCfg?.[staticCfg]
+                return {
+                    $valid: asValidator ? rule_result : true, // when run as Validator, it should flag/register errors accordingly!
+                    extraParams: { rule_result, fieldCfg },
+                    message: `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticCfg} on ${fieldCfg.label}`
+                }
+            }
+        }
+        // 2. probe for a supported custom rule function
+        else if (!resultFunction) {
+            resultFunction = probeCustomRuleFn(args)
+        }
+    } catch (error) {
+        console.warn(error);
+    }
+    // 3. make sure that if we did not have any function yet, we should return a liberal/neutral fallback function 
     if (!resultFunction || typeof resultFunction !== 'function') {
         resultFunction = fallBackFunction
     }

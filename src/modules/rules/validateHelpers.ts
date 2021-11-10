@@ -42,7 +42,6 @@ import empty_ from '@/modules/rules/features/empty'
 
 // Test of v$ anders wordt ingepassed als het uit de eigen import komt of hier wordt gedefinieerd of via core wordt gemaakt?
 import { setExternalResults, _setExternalResults } from '@/modules/rules/features/setExternalResults'
-// import { setExternalResults } from '@/modules/rules/features/setExternalResults'
 import inbetween from '@/modules/rules/features/between'
 import minlength from '@/modules/rules/features/minLength'
 import maxlength from '@/modules/rules/features/maxLength'
@@ -53,57 +52,50 @@ export * from './core';
 
 // create a map to be able to dynamically refer to the rules we need, like builtin vuelidate validators and custom validators
 export const mapRules = {
-    // builtin vuelidate validators...
-    required,
-    //requiredUnless,
-    //alpha,
-    email,
     // custom rules which are validator wrappers that substitute but re-use vuelidate builtins. 
     // These are rule-executioners for validation purposes, so they run when $validate() is called AND they show up in v$ as regular validator results in $errors, $silenterrors, etc
+    [rc_.CV_TYPE_REQUIRED]: makeRule({ startFn: rc_.V_REQUIRED, asValidator: true }),
+    [rc_.CV_TYPE_REQUIREDIF]: makeRule({ startFn: rc_.V_REQUIREDIF, asValidator: true }),//requiredif._requiredIf,
+    [rc_.CV_TYPE_REQUIREDUNLESS]: makeRule({ startFn: rc_.V_REQUIREDUNLESS, asValidator: true }),
     [rc_.CV_TYPE_MIN_LENGTH]: makeRule({ startFn: rc_.V_MINLENGTH, asValidator: true }),//minlength._minLength,
     [rc_.CV_TYPE_MAX_LENGTH]: makeRule({ startFn: rc_.V_MAXLENGTH, asValidator: true }),//maxlength._maxLength,
     [rc_.CV_TYPE_BETWEEN]: makeRule({ startFn: rc_.V_BETWEEN, asValidator: true }),//inbetween._between,
-    [rc_.CV_TYPE_REQUIREDIF]: makeRule({ startFn: rc_.V_REQUIREDIF, asValidator: true }),//requiredif._requiredIf,
-    [rc_.CV_TYPE_REQUIREDUNLESS]: makeRule({ startFn: rc_.V_REQUIREDUNLESS, asValidator: true }),
     [rc_.CV_TYPE_MIN_VALUE]: makeRule({ startFn: rc_.V_MINVALUE, asValidator: true }),
     [rc_.CV_TYPE_MAX_VALUE]: makeRule({ startFn: rc_.V_MAXVALUE, asValidator: true }),
     [rc_.CV_TYPE_ALPHA]: makeRule({ startFn: rc_.V_ALPHA, asValidator: true }),
+    [rc_.CV_TYPE_EMAIL]: makeRule({ startFn: rc_.V_EMAIL, asValidator: true }),
 
     // custom cynapps validators which will use wrappers for rule-executioners for NON-validation purposes, like "display", and "disable". So these do not register in $errors etc.
-
-    // no startFn????????, defaultRuleResult = false ...
-    [rc_.CV_TYPE_DISABLE_IF]: makeRule({ startFn: rc_.V_DISABLEIF, staticConfigProperty: rc_.CFG_PROP_ENTITY_DISABLE, doInvertRuleResult: rc_.CFG_PROP_ENTITY_DISABLE_INVERT, defaultRuleResult: false }), //enabling.disableIf, //TODO: declare via makeRule
-
-    //[rc_.CV_TYPE_DISPLAY_IF]: display.displayIf, //TODO: declare via makeRule
-    // no startFn: either staticConfigProp or 'calculating 'dependency result on other fields
-    [rc_.CV_TYPE_DISPLAY_IF]: makeRule({ startFn: rc_.V_DISPLAYIF, staticConfigProperty: rc_.CFG_PROP_ENTITY_DISPLAY, doInvertRuleResult: rc_.CFG_PROP_ENTITY_DISPLAY_INVERT }),
-
+    [rc_.CV_TYPE_DISABLE_IF]: makeRule({ startFn: rc_.V_DISABLEIF, staticCfg: rc_.CFG_DISABLE, invert: rc_.CFG_DISABLE_INVERT, defaultTo: false }), //enabling.disableIf, //TODO: declare via makeRule
+    [rc_.CV_TYPE_DISPLAY_IF]: makeRule({ startFn: rc_.V_DISPLAYIF, staticCfg: rc_.CFG_DISPLAY, invert: rc_.CFG_DISPLAY_INVERT }),
     [rc_.CV_TYPE_SET_EXTERNAL_RESULTS]: _setExternalResults, //TODO: declare via makeRule ??????????????
-    //[rc_.CV_TYPE_SET_EXTERNAL_RESULTS]: makeRule({ startFn: rc_.V_SET_EXTERNAL_RESULTS, defaultRuleResult: false, asValidator: true }), //_setExternalResults, //TODO: declare via makeRule
-    //['__cv__fetchedResultContainsPipo']: _fetchedResultContainsPipo,
-    //[rc_.CV_TYPE_SET_EXTERNAL_RESULTS_BAK]: _setExternalResultsBak,
 }
 
 export const cHelpers = {
-    // EXECUTIONERS. These re-use vuelidate builtin validators, like MaxValue, minValue, etc. or are custom validators.
+    // EXECUTIONERS. These re-use vuelidate builtin validators, like MaxValue, minValue, etc.
     [rc_.V_MAXVALUE]: wrapRule({ validator: maxValue, type: rc_.CV_TYPE_MAX_VALUE, param: "max" }),
     [rc_.V_MINVALUE]: wrapRule({ validator: minValue, type: rc_.CV_TYPE_MIN_VALUE, param: "min" }),
     [rc_.V_MINLENGTH]: wrapRule({ validator: minLength, type: rc_.CV_TYPE_MIN_LENGTH, param: "min" }),
     [rc_.V_MAXLENGTH]: wrapRule({ validator: maxLength, type: rc_.CV_TYPE_MAX_LENGTH, param: "max" }),
     [rc_.V_BETWEEN]: inbetween.between, //todo via wrapRule, but this one has TWO parameters....
+    [rc_.V_REQUIRED]: wrapRule({ validator: required, type: rc_.CV_TYPE_REQUIRED }),
     [rc_.V_REQUIREDIF]: wrapRule({ validator: requiredIf, type: rc_.CV_TYPE_REQUIREDIF, param: "prop" }),
     [rc_.V_REQUIREDUNLESS]: wrapRule({ validator: requiredUnless, type: rc_.CV_TYPE_REQUIREDUNLESS, param: "prop" }),
     [rc_.V_ALPHA]: wrapRule({ validator: alpha, type: rc_.CV_TYPE_ALPHA }),
+    [rc_.V_EMAIL]: wrapRule({ validator: email, type: rc_.CV_TYPE_EMAIL }),
 
-    // custom executioner about external api calls
+    // EXECUTIONERS. Custom! 
+    // about display/show/hide
+    [rc_.V_DISPLAYIF]: display.displayIf, //todo via wrapRule ?????? But we need the actual/proper rule executioner, so that cannot be generalized.  and it is ok to import them from their own module!!!
+    // about external api call
     [rc_.V_SET_EXTERNAL_RESULTS]: setExternalResults, //todo via wrapRule ?????? But this is so exotic/custom it cannot be generalized and it is ok to import them from their own module!!!
+    // about disable/enable
+    [rc_.V_DISABLEIF]: enabling.disableIf, //todo via wrapRule ?????? But this is so exotic it cannot be generalized  and it is ok to import them from their own module!!!
 
     // RETRIEVERS, these read results of the associated executioners.
     [rc_.IS_MIN_LENGTH]: minlength.isMinLength, //a retriever
     [rc_.IS_MAX_LENGTH]: maxlength.isMaxLength, //a retriever
-    // retrievers of custom executioners about 'show/hide', non-validation
-    //the executioner
-    [rc_.V_DISPLAYIF]: display.displayIf, //todo via wrapRule ?????? But we need the actual/proper rule executioner, so that cannot be generalized.  and it is ok to import them from their own module!!!
+    // RETRIEVERS of custom executioners about 'show/hide', non-validation
     [rc_.IS_VISIBLE]: display.isVisible,
     [rc_.SOME_VISIBLE]: display.someVisible,
     [rc_.ALL_VISIBLE]: display.allVisible,
@@ -111,9 +103,6 @@ export const cHelpers = {
     [rc_.SOME_HIDDEN]: display.someHidden,
     [rc_.ALL_HIDDEN]: display.allHidden,
     // custom, about 'enabling/disabling', non-validation
-    //the executioner
-    [rc_.V_DISABLEIF]: enabling.disableIf, //todo via wrapRule ?????? But this is so exotic it cannot be generalized  and it is ok to import them from their own module!!!
-    //the retrievers
     [rc_.IS_ENABLED]: enabling.isEnabled,
     [rc_.SOME_ENABLED]: enabling.someEnabled,
     [rc_.ALL_ENABLED]: enabling.allEnabled,

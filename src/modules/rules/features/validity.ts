@@ -1,7 +1,6 @@
 import rc_, { SOME_ENABLED } from '@/modules/rules/constants'
 import _ from 'lodash'
 import { cHelpers } from '@/modules/rules/core'
-debugger;
 
 /**
  * Note: this module does not yet export an "executioner" rule

@@ -118,15 +118,15 @@ export const isMinLength = (vm, objContext: object) => {
  * @returns 
  */
 export const _minLength = (args) => {
-    const defaultRuleResult = true;
+    const defaultTo = true;
     // const staticConfigProperty; // absent, we do support any static config property to set minlength statically to true / false. That would be incomprehensible.
     const doInvertRuleResult = false
     const asValidator = true; // !!!!!!!!!! Since this one is to replace the builtin vuelidate validator, it should act as a proper validator.
     const startFn = rc_.V_MINLENGTH; //this config means that said method should be invoked FIRSTLY, from allways, before probing for dependencies, 
     let resultFunction
     try {
-        //resultFunction = makeRule(args, { defaultRuleResult, doInvertRuleResult, startFn, asValidator })
-        resultFunction = makeRule(args)({ defaultRuleResult, doInvertRuleResult, startFn, asValidator })
+        //resultFunction = makeRule(args, { defaultTo, doInvertRuleResult, startFn, asValidator })
+        resultFunction = makeRule(args)({ defaultTo, doInvertRuleResult, startFn, asValidator })
     } catch (error) {
         console.warn(error)
     }
