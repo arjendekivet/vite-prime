@@ -67,7 +67,7 @@ export const mapRules = {
 
     // custom cynapps validators which will use wrappers for rule-executioners for NON-validation purposes, like "display", and "disable". So these do not register in $errors etc.
     [rc_.CV_TYPE_DISABLE_IF]: makeRule({ startFn: rc_.V_DISABLEIF, staticCfg: rc_.CFG_DISABLE, invert: rc_.CFG_DISABLE_INVERT, defaultTo: false }), //enabling.disableIf, //TODO: declare via makeRule
-    [rc_.CV_TYPE_DISPLAY_IF]: makeRule({ startFn: rc_.V_DISPLAYIF, staticCfg: rc_.CFG_DISPLAY, invert: rc_.CFG_DISPLAY_INVERT }),
+    [rc_.CV_TYPE_DISPLAY_IF]: makeRule({ startFn: rc_.V_DISPLAYIF, staticCfg: rc_.CFG_DISPLAY, invert: rc_.CFG_DISPLAY_INVERT, defaultTo: true /* defaultTo is redundant */ }),
     [rc_.CV_TYPE_SET_EXTERNAL_RESULTS]: _setExternalResults, //TODO: declare via makeRule ??????????????
 }
 
@@ -114,7 +114,7 @@ export const cHelpers = {
     [rc_.IS_MAX_LENGTH]: maxlength.isMaxLength, //a retriever
     // RETRIEVERS of custom executioners about 'show/hide', non-validation
     //[rc_.IS_VISIBLE]: display.isVisible,  //toevoegen in validate.ts ... eenmalig via setRules for now ...
-    [rc_.SOME_VISIBLE]: display.someVisible,
+    //[rc_.SOME_VISIBLE]: display.someVisible, //toevoegen in validate.ts ... eenmalig via setRules for now ...TODO: move it to core or so or validateHelpers, because vm will be passed in correctly runtime???
     [rc_.ALL_VISIBLE]: display.allVisible,
     [rc_.IS_HIDDEN]: display.isHidden,
     [rc_.SOME_HIDDEN]: display.someHidden,

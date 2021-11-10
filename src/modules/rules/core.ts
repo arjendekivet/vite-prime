@@ -591,7 +591,7 @@ OR:
     return result
 }
 */
-export const makeHelper = ({ singleHelperFn = null, ruleType, sign = rc_.POS, N = rc_.SINGLE, defaultTo = true, p_vm }) => {
+export const makeHelper = ({ singleHelperFn = null, ruleType = "", sign = rc_.POS, N = rc_.SINGLE, defaultTo = true, relate = {}, p_vm = {} }) => {
     debugger
     let helper;
     let message;
@@ -608,9 +608,143 @@ export const makeHelper = ({ singleHelperFn = null, ruleType, sign = rc_.POS, N 
     }
     else {
         // we have a singleHelperFn, so we should invoke the correct logic to create an associated helper... 
-
+        // validate the arguments for the creation of a base Fn
+        // for SOME & ALL we NEED to know HOW the singleHelper was set up: it's sign / connaotation & it's default
+        // because we have to able to invert the result and the default correctly 
+        if (sign && N) {
+            if (N !== rc_.SINGLE && (!relate || !relate.sign || relate.defaultTo === null || relate.defaultTo === undefined)) {
+                message = `makeHelper: Missing 'relate' input for the generation of a "unary" helper function for sign ${sign} and N ${N} regarding .... (function name???) }` //path ${[].join(path)
+                console.warn(message)
+                debugger
+                //let relate = sign === rc_.POS ? { sign: rc_.NEG, defaultTo: false } : { sign: rc_.POS, defaultTo: true }
+            }
+            helper = makeHelperPermutation({ singleHelperFn, sign, N, relate, p_vm })
+            return helper
+        }
     }
 }
+
+// TODO: we have to know if the baseHelperFn was POSITIVE or not, to deduce what to do here. 
+// IS_VISIBLE associated to displayIf ??? is aligned in the sense: if the rule_result === true, the field is displayed and aligned with the connotation
+// IS_DISABLED the same.
+
+export const makeHelperPermutation = ({ singleHelperFn, sign, N, relate = { sign: null, defaultTo: null }, p_vm }) => {
+    debugger
+    let helper;
+    let defaulted;
+    if (relate.sign !== sign) {
+        defaulted = !!!relate.defaultTo;
+        if (N === rc_.SINGLE) {
+            helper = (vm, objContext) => {
+                let result;
+                try {
+                    result = !singleHelperFn(vm, objContext)
+                }
+                catch (e) {
+                    console.warn(e);
+                    result = defaulted;
+                }
+                return result
+            }
+        }
+        else if (N === rc_.SOME) {
+            helper = (vm, objContext) => {
+                const { fieldNames } = objContext
+                let result;
+                let arrResults = [];
+                try {
+                    _.forEach(fieldNames, function (fieldName) {
+                        result = !singleHelperFn(vm, { fieldNames: fieldName })
+                        arrResults.push(result)
+                    })
+                    result = _.some(arrResults, Boolean);
+                }
+                catch (e) {
+                    console.warn(e);
+                    result = defaulted;
+                }
+                return result
+            }
+        }
+        else if (N === rc_.ALL) {
+            helper = (vm, objContext) => {
+                const { fieldNames } = objContext
+                let result;
+                let arrResults = [];
+                try {
+                    _.forEach(fieldNames, function (fieldName) {
+                        result = !singleHelperFn(vm, { fieldNames: fieldName })
+                        arrResults.push(result)
+                    })
+                    result = _.every(arrResults, Boolean);
+                }
+                catch (e) {
+                    console.warn(e);
+                    result = defaulted;
+                }
+                return result
+            }
+        }
+    }
+    else { // if (relate.sign === sign)
+        defaulted = !!relate.defaultTo; //should be aligned
+        // SINGLE for the same sign as the baseFn is REDUNDANT and not allowed ...
+        // if (N === rc_.SINGLE) {
+        //     helper = (vm, objContext) => {
+        //         let result;
+        //         try {
+        //             result = !baseHelperFn(vm, objContext)
+        //         }
+        //         catch (e) {
+        //             console.warn(e);
+        //             result = defaulted;
+        //         }
+        //         return result
+        //     }
+        // }
+        if (N === rc_.SOME) {
+            helper = (vm, objContext) => {
+                debugger;
+                const { fieldNames } = objContext
+                let result;
+                let arrResults = [];
+                try {
+                    _.forEach(fieldNames, function (fieldName) {
+                        result = singleHelperFn(vm, { fieldNames: fieldName })
+                        arrResults.push(result)
+                    })
+                    result = _.some(arrResults, Boolean);
+                }
+                catch (e) {
+                    console.warn(e);
+                    result = defaulted;
+                }
+                return result
+            }
+        }
+        else if (N === rc_.ALL) {
+            helper = (vm, objContext) => {
+                const { fieldNames } = objContext
+                let result;
+                let arrResults = [];
+                try {
+                    _.forEach(fieldNames, function (fieldName) {
+                        result = singleHelperFn(vm, { fieldNames: fieldName })
+                        arrResults.push(result)
+                    })
+                    result = _.every(arrResults, Boolean);
+                }
+                catch (e) {
+                    console.warn(e);
+                    result = defaulted;
+                }
+                return result
+            }
+        }
+    }
+    return helper
+}
+
 /**
  * 0 This one will be invoked to create and return a baseHelper
  * The logic needs ruletype, the sign and the defaultTo. 

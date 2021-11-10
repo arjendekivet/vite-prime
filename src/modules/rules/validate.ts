@@ -92,13 +92,17 @@ export function setRules(formDefinition: formDefinition, pRules: Object = {}, fo
 
     //before we generate rules which will invoke helpers, augment the cvh.cHelpers
     //test! 
-    debugger;
+
     try {
-        debugger;
+
         //do this only once
         if (!cvh.cHelpers.didCreateHelpers) {
             cvh.cHelpers[rc_.IS_DISABLED] = makeHelper({ ruleType: rc_.CV_TYPE_DISABLE_IF, defaultTo: false, sign: rc_.NEG, p_vm: { v$: p_v$ } })
             cvh.cHelpers[rc_.IS_VISIBLE] = makeHelper({ ruleType: rc_.CV_TYPE_DISPLAY_IF, p_vm: { v$: p_v$ } })
+
+            // test if we can also create the SOME & ALL variant this way
+            debugger
+            cvh.cHelpers[rc_.SOME_VISIBLE] = makeHelper({ singleHelperFn: cvh.cHelpers[rc_.IS_VISIBLE], sign: rc_.POS, N: rc_.SOME, relate: { sign: rc_.POS, defaultTo: true }, p_vm: { v$: p_v$ } })
             cvh.cHelpers.didCreateHelpers = true
         }
     } catch (e) {

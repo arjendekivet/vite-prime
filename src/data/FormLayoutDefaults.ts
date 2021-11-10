@@ -86,6 +86,7 @@ let fields = [
                 params: {
                     dependsOn: {
                         [rc_.IS_VISIBLE]: ['setting0'],
+                        [rc_.SOME_VISIBLE]: ['setting0'],
                     }
                 }
             },
