@@ -41,6 +41,7 @@ import { computed, ref, watch } from 'vue';
 import { indexOf } from 'lodash';
 import { usePrimeVue } from "primevue/config";
 import { useStore } from 'vuex'
+import User from '@/types/user'
 
 import Avatar from '@/components/Avatar.vue';
 import logo from '@/assets/harry.jpeg'
@@ -69,7 +70,7 @@ const changePrimeLocale = async (locale: any) => {
 
 const items = ref()
 // const user = computed(() => getUser())
-const user = computed(
+const user = computed<User>(
     () => store.getters['user/getUser']
 )
 
