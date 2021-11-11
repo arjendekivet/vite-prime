@@ -25,13 +25,11 @@ export const displayIf = async (pvm, objContext) => {
         // 1. if we have an overruling static configuration property, use a simple & synchronous ruleFn
         hasStaticConfigProperty = staticCfg && ((fieldCfg?.[staticCfg] ?? false) !== false)
         if (hasStaticConfigProperty) {
-            debugger
             result = doInvertRuleResult ? !!!fieldCfg?.[staticCfg] : !!fieldCfg?.[staticCfg]
         }
     } catch (error) {
         console.warn(error);
     }
-    debugger;
     return { result, message };
 }
 
@@ -63,7 +61,6 @@ export const displayIf = async (pvm, objContext) => {
  * @returns 
  */
 export const isVisible = (vm, objContext) => {
-    debugger
     const { fieldNames: fieldName } = objContext
     let defaulted = true;
     let result, result_1, result_2;

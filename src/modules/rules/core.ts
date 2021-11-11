@@ -47,18 +47,11 @@ export const makeRule = (additionalRuleConfig) => {
 //export const makeRule = (...args) => {
 export const generateRule = (...args) => {
     const { dependsOn, fieldCfg, formData, formDefinition, p_v$, ...params } = args[0]
-    const xVM = { v$: p_v$ }
     const { defaultTo = true } = args[1]
     const ruleType = params?.type
     let resultFunction
     // also a simple synchronous Fn... but add in xVM too always to get a reference to v$ 
-    let fallBackFunction = function ruleFn(value, vm, vmx = xVM) {
-        debugger;
-        try {
-            let lvm = vmx || xVM
-        } catch (e) {
-            debugger
-        }
+    let fallBackFunction = function ruleFn(value, vm) {
         return {
             $valid: true, // We should NEVER "fail" based on a dummy  fallback function, regardless "asValidator" ???
             extraParams: { rule_result: defaultTo, fieldCfg, params, dependsOn, },
@@ -88,15 +81,12 @@ export const probeCustomRuleFn = (arrCfg) => {
     const { dependsOn, asLogical, fieldCfg, formData, formDefinition, p_v$, ...params } = arrCfg[0]
     const xVM = { v$: p_v$ }
     const { defaultTo = true, staticCfg, invert, asValidator = false, startFn } = arrCfg[1]
-    debugger;
+
     // pass in xVM to be sure to have a reference to v$ ????? or this passes in via arrCfg[0] ...
-    return async function ruleFn(value, vm, /**vmX = xVM*/) {
+    return async function ruleFn(value, vm) {
         //let rule_result = await probeCustomRuleFnRecursor(value, vm, arrCfg[0], asLogical, startFn, arrCfg[1]) // ??  defaultTo
         let rule_result = await probeCustomRuleFnRecursor(value, vm, arrCfg, asLogical, startFn) // pass through arrCfg, not onlt arrCfg[0], so that we can use function for disableIf and displayIf just like any other feature...
         rule_result = rule_result ?? defaultTo
-        if (fieldCfg.id === 'title' && params.type === rc_.CV_TYPE_DISABLE_IF) {
-            debugger
-        }
         const boolRuleResult = rule_result?.result ?? rule_result
         const valid = !asValidator ? true : boolRuleResult; // if we do NOT run as validator, we should NOT fail and flag stuff as failed, because we do not want to cause any 'invalid markings' anywhere!
         let message = `Rule of type ${params?.type} for field ${fieldCfg?.label} returned: ${boolRuleResult}.`
@@ -166,7 +156,6 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
                     isAsync = isAsyncFn(cHelpers[fn] ?? "")
                     tmp = isAsync ? await cHelpers[fn]?.(vm, objParams) : cHelpers[fn]?.(vm, objParams)
                     ignore = tmp?.ignore ?? false;
-                    debugger
                     if (!ignore) {
                         countAsResult++
                         arrPartials.push(tmp?.result ?? tmp)
@@ -259,7 +248,6 @@ export const probeCustomRuleFnRecursor = async (value, vm, objCfg, asLogical = r
         rule_result = asLogical === rc_.AND ? _.every(arrPartials, Boolean) : asLogical === rc_.OR ? _.some(arrPartials, Boolean) : !(_.some(arrPartials, Boolean))
     }
     else {
-        debugger;
         console.log(`For field ${fieldCfg.label} probeCustomRuleFnRecursor defaulted at no relevant evaluation results. The 'ignore' was: ${ignore}. For rule ${params.type}`)
         rule_result = defaultTo
     }
@@ -335,10 +323,6 @@ export const wrapRule = (objCfg) => {
 
         //prepare the namespace for the code below to reference vm.v$.<paths> !!!
         const vm = pvm?.v$ ? pvm : { v$: p_v$.value }
-
-        if (cfg.fieldCfg?.id === 'setting2') {
-            debugger;
-        }
         // test is v$ een ref of niet? 
 
         // the runtime value against which usually a rule will be executed. If however a targetField is specified, then that field should provide the runtime comparisonValue... 
@@ -494,55 +478,6 @@ export const hofRuleFnGenerator = (...args) => {
     return resultFunction
 }
 
-export const generateRuleBAK = (...args) => {
-    const { dependsOn, fieldCfg, formData, formDefinition, p_v$, ...params } = args[0]
-    const xVM = { v$: p_v$ }
-    // can we make sure that, if undefined, defaultTo = true etc
-    const { defaultTo = true, invert = false, asValidator = false, staticCfg } = args[1]
-    debugger;
-    const ruleType = params.type
-    let hasStaticConfigProperty
-    let resultFunction
-    // also a simple synchronous Fn... but add in xVM too always to get a reference to v$ 
-    let fallBackFunction = function ruleFn(value, vm, vmx = xVM) {
-        return {
-            $valid: true, // We should never "fail" based on a total dummy function, regardless "asValidator" ???
-            extraParams: { rule_result: defaultTo, fieldCfg },
-            message: `Fallback or try-catch rule. Either an error occurred or neither static config property nor any configured rule of type ${ruleType} for ${fieldCfg.label}`
-        }
-    }
-    try {
-        // 1. if we have an overruling static configuration property, use a simple & synchronous ruleFn
-        hasStaticConfigProperty = staticCfg && ((fieldCfg?.[staticCfg] ?? false) !== false)
-        if (hasStaticConfigProperty) {
-            debugger
-            //for test purposes set to false...
-            hasStaticConfigProperty = false
-        }
-        if (hasStaticConfigProperty) {
-            resultFunction = function ruleFn(value, vm, vmx = xVM) {
-                let rule_result = invert ? !!!fieldCfg?.[staticCfg] : !!fieldCfg?.[staticCfg]
-                return {
-                    $valid: asValidator ? rule_result : true, // when run as Validator, it should flag/register errors accordingly!
-                    extraParams: { rule_result, fieldCfg },
-                    message: `Message for rule of type ${ruleType} based to static configuration property (metadata) ${staticCfg} on ${fieldCfg.label}`
-                }
-            }
-        }
-        // 2. probe for a supported custom rule function
-        else if (!resultFunction) {
-            resultFunction = probeCustomRuleFn(args)
-        }
-    } catch (error) {
-        console.warn(error);
-    }
-    // 3. make sure that if we did not have any function yet, we should return a liberal/neutral fallback function 
-    if (!resultFunction || typeof resultFunction !== 'function') {
-        resultFunction = fallBackFunction
-    }
-    return resultFunction
-}
-
 /**
  * makeHelper method for RETRIEVERS
  * generates RETRIEVER helpers for all rule-types for the patterns: IS/HAS vs NOT combined for ONE, SOME/ANY, ALL/NONE
@@ -591,38 +526,22 @@ OR:
     return result
 }
 */
-export const makeHelper = ({ baseFn = null, ruleType = "", sign = rc_.POS, N = rc_.SINGLE, defaultTo = true, relate = {}, p_vm = {} }) => {
-    debugger
-    let helper;
-    let message;
+export const makeHelper = ({ baseFn = null, ruleType = null, sign = rc_.POS, defaultTo = true, N = rc_.SINGLE, relate = {}, p_vm = {} }) => {
+    let helper, message;
     if (!baseFn) {
-        // validate the arguments for the creation of a base Fn!
-        if (ruleType && sign && (defaultTo !== undefined && defaultTo !== null)) {
+        if (ruleType) {
             helper = makeBaseHelper({ ruleType, sign, defaultTo, p_vm })
-            return helper
         }
         else {
             message = `makeHelper: Invalid input for the generation of a base helper function for ruleType ${ruleType}, sign ${sign}, N ${N}, default ${defaultTo} }` //path ${[].join(path)
             console.warn(message)
+            return
         }
     }
     else {
-        // we have a singleHelperFn, so we should invoke the correct logic to create an associated helper... 
-        // validate the arguments for the creation of a base Fn
-        // for SOME & ALL we NEED to know HOW the singleHelper was set up: it's sign/connotation/inclination & it's default
-        // because we have to able to invert the result and the default correctly 
-        if (sign && N) {
-            if (N !== rc_.SINGLE && (!relate || !relate.sign || relate.defaultTo === null || relate.defaultTo === undefined)) {
-                message = `makeHelper: Imputating missing 'relate' input for the generation of a "unary" helper function for sign ${sign} and N ${N} regarding .... (function name???) }` //path ${[].join(path)
-                console.warn(message)
-                debugger
-                //relate = sign === rc_.POS ? { sign: rc_.POS, defaultTo: true } : { sign: rc_.NEG, defaultTo: false }
-                //relate = sign === rc_.POS ? { sign: rc_.POS, defaultTo: true } : { sign: rc_.NEG, defaultTo: false }
-            }
-            helper = makeHelperPermutation({ baseFn, sign, N, relate, p_vm })
-            return helper
-        }
+        helper = makeHelperPermutation({ baseFn, sign, N, relate, p_vm })
     }
+    return helper
 }
 
 // TODO: we have to know if the baseHelperFn was POSITIVE or not, to deduce what to do here. 
@@ -630,7 +549,6 @@ export const makeHelper = ({ baseFn = null, ruleType = "", sign = rc_.POS, N = r
 // IS_DISABLED the same.
 
 export const makeHelperPermutation = ({ baseFn, sign, N, relate = { sign: rc_.POS, defaultTo: true } }) => { // , p_vm 
-    debugger
     let helper;
     let defaulted;
 
@@ -639,12 +557,10 @@ export const makeHelperPermutation = ({ baseFn, sign, N, relate = { sign: rc_.PO
         defaulted = relate.defaultTo
         // SINGLE for the same sign as the singleHelperFn is REDUNDANT and not allowed ...
         if (N === rc_.SINGLE) {
-            debugger
             console.warn('Unallowed attempt to create a helper for the same use case as the already existing baseFn')
         }
         else if (N === rc_.SOME) {
             helper = (vm, objContext) => {
-                debugger;
                 const { fieldNames } = objContext
                 let result;
                 let arrResults = [];
@@ -700,7 +616,6 @@ export const makeHelperPermutation = ({ baseFn, sign, N, relate = { sign: rc_.PO
         }
         else if (N === rc_.SOME) {
             helper = (vm, objContext) => {
-                debugger
                 const { fieldNames } = objContext
                 let result;
                 let arrResults = [];
@@ -742,41 +657,23 @@ export const makeHelperPermutation = ({ baseFn, sign, N, relate = { sign: rc_.PO
 }
 
 /**
- * 0 This one will be invoked to create and return a baseHelper
- * The logic needs ruletype, the sign and the defaultTo. 
+ * This one will be invoked to create and return a baseHelper
+ * The logic needs ruletype, the sign and the defaultTo and the reference to v$ inside p_vm. 
  * The N arity will be set to SINGLE.
  * @param param
  */
 export const makeBaseHelper = ({ ruleType, sign = rc_.POS, N = rc_.SINGLE, defaultTo = true, p_vm }) => {
-    debugger
     const isValidator = rc_.RULE_TYPES_VALIDATORS.includes(ruleType)
     const isExternal = !isValidator ? rc_.RULE_TYPES_EXTERNAL_RESULTS.includes(ruleType) : false
-    const isOther = !isValidator && !isExternal ? rc_.RULE_TYPES_OTHER.includes(ruleType) : false
+    const isOther = !(isValidator || isExternal) ? rc_.RULE_TYPES_OTHER.includes(ruleType) : false
 
-    let helper = function (vm, objContext) {
-        debugger
-        const { fieldNames: fieldName } = objContext
+    const helperForValidator = function (vm, objContext) {
+        const { fieldNames: fieldName, p_v$ } = objContext
         let defaulted = defaultTo;
         let result = defaulted;
-        //test the vm if we do not pass it in when defining this helper!!!!
-        // let test = unref(vm?.v$)
-        // console.log('makeBaseHelper test on unref(vm?.v$) from the passed in vm')
-        // console.log(test)
-        let ns = unref(vm?.v$) ?? unref(p_vm?.v$);
+        let ns = vm?.v$ ? unref(vm.v$) : p_v$ ? unref(p_v$) : unref(p_vm?.v$);
         try {
-            if (isValidator) {
-                result = ns?.[fieldName]?.[ruleType]?.$invalid ?? defaulted;
-            }
-            else if (isExternal) {
-                result = ns?.[fieldName]?.[ruleType]?.$externalResults?.length ?? defaulted;
-            }
-            else if (isOther) {
-                result = ns?.[fieldName]?.[ruleType]?.$response?.extraParams?.rule_result ?? defaulted;
-            }
-            else {
-                debugger;
-                console.warn(`Unmapped rule type ... we can not create a base helper for an unknown rule type: ${ruleType}`)
-            }
+            result = ns?.[fieldName]?.[ruleType]?.$invalid ?? defaulted;
         }
         catch (e) {
             console.warn(e);
@@ -784,6 +681,126 @@ export const makeBaseHelper = ({ ruleType, sign = rc_.POS, N = rc_.SINGLE, defau
         }
         return result
     }
-    debugger;
-    return helper
+    const helperForExternal = function (vm, objContext) {
+        const { fieldNames: fieldName, p_v$ } = objContext
+        let defaulted = defaultTo;
+        let result = defaulted;
+        let ns = vm?.v$ ? unref(vm.v$) : p_v$ ? unref(p_v$) : unref(p_vm?.v$);
+        try {
+            result = ns?.[fieldName]?.[ruleType]?.$externalResults?.length ?? defaulted;
+        }
+        catch (e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    }
+    const helperForOther = function (vm, objContext) {
+        const { fieldNames: fieldName, p_v$ } = objContext
+        let defaulted = defaultTo;
+        let result = defaulted;
+        let ns = vm?.v$ ? unref(vm.v$) : p_v$ ? unref(p_v$) : unref(p_vm?.v$);
+        try {
+            result = ns?.[fieldName]?.[ruleType]?.$response?.extraParams?.rule_result ?? defaulted
+        }
+        catch (e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    }
+
+    return isValidator ? helperForValidator : isExternal ? helperForExternal : helperForOther
+}
+
+export const makeBaseHelperBak = ({ ruleType, sign = rc_.POS, N = rc_.SINGLE, defaultTo = true, p_vm }) => {
+    const isValidator = rc_.RULE_TYPES_VALIDATORS.includes(ruleType)
+    const isExternal = !isValidator ? rc_.RULE_TYPES_EXTERNAL_RESULTS.includes(ruleType) : false
+    const isOther = !isValidator && !isExternal ? rc_.RULE_TYPES_OTHER.includes(ruleType) : false
+
+    const helperForValidator = function (vm, objContext) {
+        const { fieldNames: fieldName, p_v$ } = objContext
+        let defaulted = defaultTo;
+        let result = defaulted;
+        let ns = vm?.v$ ? unref(vm.v$) : p_v$ ? unref(p_v$) : unref(p_vm?.v$);
+        try {
+            result = ns?.[fieldName]?.[ruleType]?.$invalid ?? defaulted;
+        }
+        catch (e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    }
+    const helperForExternal = function (vm, objContext) {
+        const { fieldNames: fieldName, p_v$ } = objContext
+        let defaulted = defaultTo;
+        let result = defaulted;
+        let ns = vm?.v$ ? unref(vm.v$) : p_v$ ? unref(p_v$) : unref(p_vm?.v$);
+        try {
+            result = ns?.[fieldName]?.[ruleType]?.$externalResults?.length ?? defaulted;
+        }
+        catch (e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    }
+    const helperForOther = function (vm, objContext) {
+        const { fieldNames: fieldName, p_v$ } = objContext
+        let defaulted = defaultTo;
+        let result = defaulted;
+        let ns = vm?.v$ ? unref(vm.v$) : p_v$ ? unref(p_v$) : unref(p_vm?.v$);
+        try {
+            result = ns?.[fieldName]?.[ruleType]?.$response?.extraParams?.rule_result ?? defaulted
+        }
+        catch (e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        return result
+    }
+    return isValidator ? helperForValidator : isExternal ? helperForExternal : helperForOther
+
+    const helper = (vm, objContext) => {
+
+        const lexicallyScopedRuleType = _.clone(ruleType)
+        const { fieldNames: fieldName, p_v$ } = objContext
+        let defaulted = defaultTo;
+        let result = defaulted;
+        //test the vm if we do not pass it in when defining this helper!!!!
+        // let test = unref(vm?.v$)
+        // console.log('makeBaseHelper test on unref(vm?.v$) from the passed in vm')
+        // console.log(test)
+        //prepare the namespace for the code below to reference vm.v$.<paths> !!!
+        //const vm = pvm?.v$ ? pvm : { v$: p_v$.value }
+        let ns = vm?.v$ ? unref(vm.v$) : p_v$ ? unref(p_v$) : unref(p_vm?.v$); // this is dependent upon the passed in p_vm which we do not like ... we only need it when help itelf is being invoked ...
+        try {
+            if (isValidator) {
+                result = ns?.[fieldName]?.[ruleType]?.$invalid // ?? defaulted;
+            }
+            else if (isExternal) {
+                result = ns?.[fieldName]?.[ruleType]?.$externalResults?.length // ?? defaulted;
+            }
+            else if (isOther) {
+                result = ns?.[fieldName]?.[ruleType]?.$response?.extraParams?.rule_result // ?? defaulted
+            }
+            else {
+                console.warn(`Unmapped rule type ... we can not create a base helper for an unknown rule type: ${ruleType}`)
+            }
+        }
+        catch (e) {
+            console.warn(e);
+            result = defaulted;
+        }
+        if (result === undefined || result === null) {
+            //console.log(`initial result ${result} from defaulting ${defaulted} for ${fieldName} for rule ${lexicallyScopedRuleType}`)
+            result = defaulted
+        }
+        else {
+            console.log(`FINAL result ${result} NOT from defaulting ${defaulted} for ${fieldName} for rule ${lexicallyScopedRuleType}`)
+        }
+        return result
+    }
+    // return helper
 }

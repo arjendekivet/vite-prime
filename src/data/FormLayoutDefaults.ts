@@ -28,11 +28,12 @@ let fields = [
     {
         id: 'setting0',
         isField: true,
-        label: 'Setting0. Structurally hidden.',
+        label: 'Setting0',
         type: 'P_InputText',
         icon: { type: 'right', name: 'pi-lock' },
         defaultValue: 3,
         hidden: true,
+        disabled: false,
         vvalidators: [
             'required',
             //'__cv__alpha',
@@ -48,13 +49,13 @@ let fields = [
     {
         id: 'setting1',
         isField: true,
-        label: 'Setting1. Calls a dummy async validator',
+        label: 'Setting1',
         //type: 'P_InputNumber',
         type: 'P_InputText',
         icon: { type: 'right', name: 'pi-lock' },
         defaultValue: 2,
         hidden: false,
-        disabled: false,
+        disabled: true,
         vvalidators: [
             'required',
             // {
@@ -77,7 +78,7 @@ let fields = [
     {
         id: 'setting2',
         isField: true,
-        label: 'Setting2. Required & minLength 5 & maxLength 10, both async.',
+        label: 'Setting2',
         type: 'P_InputText',
         icon: { type: 'right', name: 'pi-lock' },
         defaultValue: 10,
@@ -87,10 +88,22 @@ let fields = [
                 params: {
                     dependsOn: {
                         //not: {
+                        //[rc_.IS_HIDDEN]: ['setting0'],
                         //[rc_.IS_VISIBLE]: ['setting1'],
-                        //[rc_.SOME_VISIBLE]: ['setting1'],
+                        //[rc_.IS_HIDDEN]: ['setting0'],
+                        //[rc_.SOME_VISIBLE]: ['setting0', 'setting1'],
                         //[rc_.ALL_VISIBLE]: ['setting0', 'setting1'],
-                        [rc_.ALL_HIDDEN]: ['setting0'],
+                        [rc_.SOME_HIDDEN]: ['setting0', 'setting1'],
+                        //[rc_.ALL_HIDDEN]: ['setting0', 'setting1'],
+
+                        //[rc_.IS_DISABLED]: ['setting1'],
+                        //[rc_.SOME_DISABLED]: ['setting0', 'setting1'],
+                        //[rc_.ALL_DISABLED]: ['setting0', 'setting1'],
+                        // not: { [rc_.ALL_DISABLED]: ['setting0', 'setting1'] },
+                        //[rc_.IS_ENABLED]: ['setting0'],
+                        //[rc_.IS_ENABLED]: ['setting1'],
+                        //[rc_.SOME_ENABLED]: ['setting0', 'setting1'],
+                        //[rc_.ALL_ENABLED]: ['setting0', 'setting1'],
                         //}
                     }
                 }

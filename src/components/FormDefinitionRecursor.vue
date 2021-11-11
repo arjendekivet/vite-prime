@@ -57,14 +57,12 @@
                         v-show="showInvalidMsg(config, v$)"
                         :id="`${config.id}-help`"
                         class="p-error"
-                    >{{ getInvalidMsg(config, v$) }}
-                    </small>
+                    >{{ getInvalidMsg(config, v$) }}</small>
                     <div v-show="showDisabledMsg(config, v$)">
                         <small
                             :id="`${config.id}-disabled-msg`"
                             class="p-info"
-                        >{{ getDisabledMsg(config, v$) }}
-                        </small>
+                        >{{ getDisabledMsg(config, v$) }}</small>
                     </div>
                 </template>
             </div>
@@ -121,27 +119,28 @@ const updateFormFieldValue: any = inject('updateFieldValue')
 export const CFG_PROP_ENTITY_DISPLAY_INVERT = true; // indicates a display rule will have to negate the config prop
 
  */
-function showField(config, pv$){
+function showField(config, pv$) {
+    console.log(`Template ... calls showField will call cHelpers.isVisible for ${config.id}`)
     return cHelpers.isVisible({ v$: pv$ }, { fieldNames: config.id })
 }
 
-async function onBlur(config, pv$){
+async function onBlur(config, pv$) {
     return await pv$?.[config?.id]?.$validate?.()
 }
 
-function showInvalidMsg(config, pv$){
-    return cHelpers.isInvalid({ v$: pv$  }, { fieldNames: config.id }) 
+function showInvalidMsg(config, pv$) {
+    return cHelpers.isInvalid({ v$: pv$ }, { fieldNames: config.id })
 }
 
-function getInvalidMsg(config, pv$){
+function getInvalidMsg(config, pv$) {
     return cHelpers.getInvalidMessage({ v$: pv$ }, { fieldNames: config.id });
 }
 
-function showDisabledMsg(config, pv$){
+function showDisabledMsg(config, pv$) {
     return cHelpers.isDisabled({ v$: pv$ }, { fieldNames: config.id })
 }
 
-function getDisabledMsg(config, pv$){
+function getDisabledMsg(config, pv$) {
     return cHelpers.getDisabledMessage({ v$: pv$ }, { fieldNames: config.id })
 }
 
@@ -150,7 +149,8 @@ function getDisabledMsg(config, pv$){
  * Needs to pass in a dummy object to hold v$ ... in order to comply to the signature of isDisabled, which expects some kind of vm as the first argument.
  * Based on the retrieval of the rule execution result for vuelidate (custom validator) rule of type CV_TYPE_DISABLE_IF via cHelpers to get to it.
  */
-function getDisabled(config, pv$){
+function getDisabled(config, pv$) {
+    console.log(`Template ... calls getDisabled will call cHelpers.isDisabled for ${config.id}`)
     return cHelpers.isDisabled({ v$: pv$ }, { fieldNames: config.id })
 }
 

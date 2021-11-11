@@ -85,40 +85,13 @@ interface formDefinition {
     [key: string]: Fieldconfig
 }
 
-function createRulesHelpers(p_v$) {
-    //before we generate rules which will invoke helpers, augment the cvh.cHelpers
-    //test! 
-    try {
-        debugger
-        let ns = cvh.cHelpers
-        //do this only once
-        if (!ns.didCreateHelpers) {
-            ns[rc_.IS_DISABLED] = makeHelper({ ruleType: rc_.CV_TYPE_DISABLE_IF, defaultTo: false, sign: rc_.NEG, p_vm: { v$: p_v$ } })
-
-            // make the sextet of visibility helpers
-            // 1. First create the baseFn
-            ns[rc_.IS_VISIBLE] = makeHelper({ ruleType: rc_.CV_TYPE_DISPLAY_IF, p_vm: { v$: p_v$ } }) //baseFn
-            // 2. then create the 5 derived helpers, passing in the baseFn ...
-            ns[rc_.SOME_VISIBLE] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.POS, N: rc_.SOME })
-            ns[rc_.ALL_VISIBLE] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.POS, N: rc_.ALL }) //relate: { sign: rc_.POS, defaultTo: true }, p_vm: { v$: p_v$ } 
-            ns[rc_.IS_HIDDEN] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.NEG, N: rc_.SINGLE })
-            ns[rc_.SOME_HIDDEN] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.NEG, N: rc_.SOME })
-            ns[rc_.ALL_HIDDEN] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.NEG, N: rc_.ALL }) //relate: { sign: rc_.POS, defaultTo: true }, p_vm: { v$: p_v$ } 
-
-            ns.didCreateHelpers = true
-        }
-    } catch (e) {
-        debugger
-    }
-
-}
 // TODO: should we remove all rules every time on invocation or pass in all exisiting rules so the thing will notice which rules did change and refire these? or such?
 // Note: if we never pass in the existing rules, we do not need the pValidatorRules either...
 export function setRules(formDefinition: formDefinition, pRules: Object = {}, formData: Object = {}, p_v$) {
     const rules = Object.assign({}, pRules)
     try {
         // before we generate rules which will invoke helpers, augment the cvh.cHelpers
-        createRulesHelpers(p_v$)
+        cvh.createRulesHelpers(cvh.cHelpers, p_v$)
 
         _.forEach(formDefinition, function (field) {
             let mappedValidator

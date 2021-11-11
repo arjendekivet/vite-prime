@@ -6,9 +6,7 @@ import { makeRule, cHelpers, hofRuleFnGenerator } from '@/modules/rules/core'
 // Executioner for rule of type 'disableIf'
 export const disableIf = async (pvm, objContext) => {
     const { value, params, p_v$, fieldCfg, defaultTo = false, doInvertRuleResult = false, staticCfg, ...cfg } = objContext
-    if (fieldCfg.id === 'title' || fieldCfg.id === 'setting2') {
-        debugger
-    }
+
     let defaulted = defaultTo;
     let result = defaulted
     let abort = false
@@ -21,7 +19,6 @@ export const disableIf = async (pvm, objContext) => {
     try {
         // 1. if we have a static configuration property, that decides it all.
         hasStaticConfigProperty = fieldCfg?.[staticCfg]
-        debugger
         if (hasStaticConfigProperty !== undefined) {
             result = doInvertRuleResult ? !!!fieldCfg[staticCfg] : !!fieldCfg[staticCfg]
             // since we want this static config property to be leading & decisive & overruling, we flag the result to abort.
@@ -71,7 +68,6 @@ export const _disableIf = (args) => {
      */
 export const isDisabled = (vm, objContext) => {
     const { fieldNames: fieldName } = objContext
-    if (fieldName === 'setting2') { debugger }
     const defaulted = false
     let result
     try {

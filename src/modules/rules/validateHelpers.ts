@@ -33,7 +33,7 @@ import _ from 'lodash'
 import rc_ from '@/modules/rules/constants'
 //import { isAsyncFn, isCustomValidatorType, hofRuleFnGenerator, probeCustomRuleFn, probeCustomRuleFnRecursor } from '@/modules/rules/core' 
 import '@/modules/rules/core'
-import { makeRule, wrapRule } from '@/modules/rules/core'
+import { makeRule, wrapRule, makeHelper } from '@/modules/rules/core'
 import { helpers, required, requiredIf, requiredUnless, email, minLength, maxLength, between, maxValue, minValue, alpha, alphaNum, numeric, integer, decimal, ipAddress, macAddress, url, sameAs } from '@vuelidate/validators'
 import display from '@/modules/rules/features/displayIf'
 import enabling from '@/modules/rules/features/disableIf'
@@ -89,6 +89,7 @@ export const mapRules = {
  * cHelpers[rc_.ALL_HIDDEN] = makeHelper({singleHelperFn: cHelpers[rc_.IS_VISIBLE], N: rc_.ALL, sign: rc_.NEG })
  */
 export const cHelpers = {
+    //createRulesHelpers: createRulesHelpers,
     // EXECUTIONERS. These re-use vuelidate builtin validators, like MaxValue, minValue, etc.
     [rc_.V_MAXVALUE]: wrapRule({ validator: maxValue, type: rc_.CV_TYPE_MAX_VALUE, param: "max" }),
     [rc_.V_MINVALUE]: wrapRule({ validator: minValue, type: rc_.CV_TYPE_MIN_VALUE, param: "min" }),
@@ -104,10 +105,10 @@ export const cHelpers = {
     // EXECUTIONERS. Custom! 
     // about display/show/hide
     [rc_.V_DISPLAYIF]: display.displayIf, //todo via wrapRule ?????? But we need the actual/proper rule executioner, so that cannot be generalized.  and it is ok to import them from their own module!!!
-    // about external api call
-    [rc_.V_SET_EXTERNAL_RESULTS]: setExternalResults, //todo via wrapRule ?????? But this is so exotic/custom it cannot be generalized and it is ok to import them from their own module!!!
     // about disable/enable
     [rc_.V_DISABLEIF]: enabling.disableIf, //todo via wrapRule ?????? But this is so exotic it cannot be generalized  and it is ok to import them from their own module!!!
+    // about external api call
+    [rc_.V_SET_EXTERNAL_RESULTS]: setExternalResults, //todo via wrapRule ?????? But this is so exotic/custom it cannot be generalized and it is ok to import them from their own module!!!
 
     // RETRIEVERS, these read results of the associated executioners.
     [rc_.IS_MIN_LENGTH]: minlength.isMinLength, //a retriever
@@ -120,12 +121,12 @@ export const cHelpers = {
     //[rc_.SOME_HIDDEN]: display.someHidden,
     //[rc_.ALL_HIDDEN]: display.allHidden,
     // custom, about 'enabling/disabling', non-validation
-    [rc_.IS_ENABLED]: enabling.isEnabled,
-    [rc_.SOME_ENABLED]: enabling.someEnabled,
-    [rc_.ALL_ENABLED]: enabling.allEnabled,
+    //[rc_.IS_ENABLED]: enabling.isEnabled,
+    //[rc_.SOME_ENABLED]: enabling.someEnabled,
+    //[rc_.ALL_ENABLED]: enabling.allEnabled,
     // [rc_.IS_DISABLED]: enabling.isDisabled, //toevoegen in validate.ts ... eenmalig via setRules for now ...
-    [rc_.SOME_DISABLED]: enabling.someDisabled,
-    [rc_.ALL_DISABLED]: enabling.allDisabled,
+    //[rc_.SOME_DISABLED]: enabling.someDisabled,
+    //[rc_.ALL_DISABLED]: enabling.allDisabled,
     // about 'eager' validity
     [rc_.IS_VALID]: validity.isValidSilent,
     [rc_.SOME_VALID]: validity.someValidSilent,
@@ -155,25 +156,28 @@ export const cHelpers = {
     [rc_.GET_DISABLED_MESSAGE]: enabling.getDisabledMessage,
 }
 
-
-function createRulesHelpers(p_v$) {
-    //before we generate rules which will invoke helpers, augment the cvh.cHelpers
-    //test! 
+export function createRulesHelpers(ns, p_v$) {
     try {
         debugger
-        let ns = cvh.cHelpers
         //do this only once
         if (!ns.didCreateHelpers) {
-            ns[rc_.IS_DISABLED] = makeHelper({ ruleType: rc_.CV_TYPE_DISABLE_IF, defaultTo: false, sign: rc_.NEG, p_vm: { v$: p_v$ } })
 
-            // make the sextet of visibility helpers
+            ns[rc_.IS_DISABLED] = makeHelper({ ruleType: rc_.CV_TYPE_DISABLE_IF, defaultTo: false, sign: rc_.NEG, p_vm: { v$: p_v$ } })
+            // 2. then create the 5 derived helpers, passing in the baseFn ...
+            ns[rc_.SOME_DISABLED] = makeHelper({ baseFn: ns[rc_.IS_DISABLED], sign: rc_.NEG, N: rc_.SOME, relate: { sign: rc_.NEG, defaultTo: false } })
+            ns[rc_.ALL_DISABLED] = makeHelper({ baseFn: ns[rc_.IS_DISABLED], sign: rc_.NEG, N: rc_.ALL, relate: { sign: rc_.NEG, defaultTo: false } }) //relate: { sign: rc_.POS, defaultTo: true }, p_vm: { v$: p_v$ } 
+            ns[rc_.IS_ENABLED] = makeHelper({ baseFn: ns[rc_.IS_DISABLED], sign: rc_.POS, N: rc_.SINGLE, relate: { sign: rc_.NEG, defaultTo: false } })
+            ns[rc_.SOME_ENABLED] = makeHelper({ baseFn: ns[rc_.IS_DISABLED], sign: rc_.POS, N: rc_.SOME, relate: { sign: rc_.NEG, defaultTo: false } })
+            ns[rc_.ALL_ENABLED] = makeHelper({ baseFn: ns[rc_.IS_DISABLED], sign: rc_.POS, N: rc_.ALL, relate: { sign: rc_.NEG, defaultTo: false } }) //relate: { sign: rc_.POS, defaultTo: true }, p_vm: { v$: p_v$ } 
+
+            // make the sextet of visibility helpers, which are RETRIEVERS of a custom rule/executioner result, and which is about 'show/hide', running as non-validation
             // 1. First create the baseFn
-            ns[rc_.IS_VISIBLE] = makeHelper({ ruleType: rc_.CV_TYPE_DISPLAY_IF, p_vm: { v$: p_v$ } }) //baseFn
+            ns[rc_.IS_VISIBLE] = makeHelper({ ruleType: rc_.CV_TYPE_DISPLAY_IF, p_vm: { v$: p_v$ } }) // the base helper. sign and defaultTo will default as POS and true. Needs: p_vm: { v$: p_v$ } ?????????????????????????????
             // 2. then create the 5 derived helpers, passing in the baseFn ...
             ns[rc_.SOME_VISIBLE] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.POS, N: rc_.SOME })
             ns[rc_.ALL_VISIBLE] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.POS, N: rc_.ALL }) //relate: { sign: rc_.POS, defaultTo: true }, p_vm: { v$: p_v$ } 
             ns[rc_.IS_HIDDEN] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.NEG, N: rc_.SINGLE })
-            ns[rc_.SOME_HIDDEN] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.NEG, N: rc_.SOME })
+            ns[rc_.SOME_HIDDEN] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.NEG, N: rc_.SOME }) //relate: { sign: rc_.POS, defaultTo: true }
             ns[rc_.ALL_HIDDEN] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.NEG, N: rc_.ALL }) //relate: { sign: rc_.POS, defaultTo: true }, p_vm: { v$: p_v$ } 
 
             ns.didCreateHelpers = true
@@ -183,4 +187,4 @@ function createRulesHelpers(p_v$) {
     }
 }
 
-export default { mapRules, cHelpers };
+export default { mapRules, cHelpers, createRulesHelpers };
