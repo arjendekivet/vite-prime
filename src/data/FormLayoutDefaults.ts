@@ -45,34 +45,35 @@ let fields = [
             // { type: rc_.CV_TYPE_BETWEEN, params: { min: 25, max: 40 } },
         ]
     },
-    // {
-    //     id: 'setting1',
-    //     isField: true,
-    //     label: 'Setting1. Calls a dummy async validator',
-    //     //type: 'P_InputNumber',
-    //     type: 'P_InputText',
-    //     icon: { type: 'right', name: 'pi-lock' },
-    //     defaultValue: 2,
-    //     disabled: false,
-    //     vvalidators: [
-    //         'required',
-    //         // {
-    //         //     type: rc_.CV_TYPE_SET_EXTERNAL_RESULTS,
-    //         //     params: {
-    //         //         protocol: 'https',
-    //         //         host: 'jsonplaceholder.typicode.com',
-    //         //         port: '',
-    //         //         api: "/:entities/:id",
-    //         //         vars: { id: 1, entities: "todos" },
-    //         //         querystring: "", // {/** TODO */}, 
-    //         //         comparisonValue: { externalProperty: '<meaning a property or path on the fetched data...>', fallback: 'pipo' }, // means if we wanted to compare something from somewhere with something else
-    //         //         normValue: { useRunTimeValue: true }, //means use the passed in value, passed in by vuelidate when the rule is being invoked 
-    //         //         //* $model: {} or a static value: value /*
-    //         //     }
-    //         // },
-    //         //{ type: rc_.CV_TYPE_MAX_VALUE, params: { max: 5 } },
-    //     ]
-    // },
+    {
+        id: 'setting1',
+        isField: true,
+        label: 'Setting1. Calls a dummy async validator',
+        //type: 'P_InputNumber',
+        type: 'P_InputText',
+        icon: { type: 'right', name: 'pi-lock' },
+        defaultValue: 2,
+        hidden: false,
+        disabled: false,
+        vvalidators: [
+            'required',
+            // {
+            //     type: rc_.CV_TYPE_SET_EXTERNAL_RESULTS,
+            //     params: {
+            //         protocol: 'https',
+            //         host: 'jsonplaceholder.typicode.com',
+            //         port: '',
+            //         api: "/:entities/:id",
+            //         vars: { id: 1, entities: "todos" },
+            //         querystring: "", // {/** TODO */}, 
+            //         comparisonValue: { externalProperty: '<meaning a property or path on the fetched data...>', fallback: 'pipo' }, // means if we wanted to compare something from somewhere with something else
+            //         normValue: { useRunTimeValue: true }, //means use the passed in value, passed in by vuelidate when the rule is being invoked 
+            //         //* $model: {} or a static value: value /*
+            //     }
+            // },
+            //{ type: rc_.CV_TYPE_MAX_VALUE, params: { max: 5 } },
+        ]
+    },
     {
         id: 'setting2',
         isField: true,
@@ -85,8 +86,12 @@ let fields = [
                 type: rc_.CV_TYPE_DISABLE_IF,
                 params: {
                     dependsOn: {
-                        [rc_.IS_VISIBLE]: ['setting0'],
-                        [rc_.SOME_VISIBLE]: ['setting0'],
+                        //not: {
+                        //[rc_.IS_VISIBLE]: ['setting1'],
+                        //[rc_.SOME_VISIBLE]: ['setting1'],
+                        //[rc_.ALL_VISIBLE]: ['setting0', 'setting1'],
+                        [rc_.ALL_HIDDEN]: ['setting0'],
+                        //}
                     }
                 }
             },

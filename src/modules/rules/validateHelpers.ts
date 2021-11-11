@@ -115,10 +115,10 @@ export const cHelpers = {
     // RETRIEVERS of custom executioners about 'show/hide', non-validation
     //[rc_.IS_VISIBLE]: display.isVisible,  //toevoegen in validate.ts ... eenmalig via setRules for now ...
     //[rc_.SOME_VISIBLE]: display.someVisible, //toevoegen in validate.ts ... eenmalig via setRules for now ...TODO: move it to core or so or validateHelpers, because vm will be passed in correctly runtime???
-    [rc_.ALL_VISIBLE]: display.allVisible,
-    [rc_.IS_HIDDEN]: display.isHidden,
-    [rc_.SOME_HIDDEN]: display.someHidden,
-    [rc_.ALL_HIDDEN]: display.allHidden,
+    //[rc_.ALL_VISIBLE]: display.allVisible, ////toevoegen in validate.ts ... eenmalig via setRules for now ...TODO: move it to core or so or validateHelpers, because vm will be passed in correctly runtime???
+    //[rc_.IS_HIDDEN]: display.isHidden,
+    //[rc_.SOME_HIDDEN]: display.someHidden,
+    //[rc_.ALL_HIDDEN]: display.allHidden,
     // custom, about 'enabling/disabling', non-validation
     [rc_.IS_ENABLED]: enabling.isEnabled,
     [rc_.SOME_ENABLED]: enabling.someEnabled,
@@ -153,6 +153,34 @@ export const cHelpers = {
     // TODO: two odd helpers ...
     [rc_.GET_INVALID_MESSAGE]: validity.getInvalidMessage,
     [rc_.GET_DISABLED_MESSAGE]: enabling.getDisabledMessage,
+}
+
+
+function createRulesHelpers(p_v$) {
+    //before we generate rules which will invoke helpers, augment the cvh.cHelpers
+    //test! 
+    try {
+        debugger
+        let ns = cvh.cHelpers
+        //do this only once
+        if (!ns.didCreateHelpers) {
+            ns[rc_.IS_DISABLED] = makeHelper({ ruleType: rc_.CV_TYPE_DISABLE_IF, defaultTo: false, sign: rc_.NEG, p_vm: { v$: p_v$ } })
+
+            // make the sextet of visibility helpers
+            // 1. First create the baseFn
+            ns[rc_.IS_VISIBLE] = makeHelper({ ruleType: rc_.CV_TYPE_DISPLAY_IF, p_vm: { v$: p_v$ } }) //baseFn
+            // 2. then create the 5 derived helpers, passing in the baseFn ...
+            ns[rc_.SOME_VISIBLE] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.POS, N: rc_.SOME })
+            ns[rc_.ALL_VISIBLE] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.POS, N: rc_.ALL }) //relate: { sign: rc_.POS, defaultTo: true }, p_vm: { v$: p_v$ } 
+            ns[rc_.IS_HIDDEN] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.NEG, N: rc_.SINGLE })
+            ns[rc_.SOME_HIDDEN] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.NEG, N: rc_.SOME })
+            ns[rc_.ALL_HIDDEN] = makeHelper({ baseFn: ns[rc_.IS_VISIBLE], sign: rc_.NEG, N: rc_.ALL }) //relate: { sign: rc_.POS, defaultTo: true }, p_vm: { v$: p_v$ } 
+
+            ns.didCreateHelpers = true
+        }
+    } catch (e) {
+        debugger
+    }
 }
 
 export default { mapRules, cHelpers };
