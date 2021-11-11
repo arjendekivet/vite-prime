@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { getUser } from '@/modules/globalState'
+// import { getUser } from '@/modules/globalState'
 import Welcome from "@/pages/Welcome.vue";
 import Start from "@/pages/Start.vue";
 import Admin from "@/pages/Admin.vue";
@@ -16,6 +16,8 @@ import ExampleForm from "@/components/forms/ExampleForm.vue";
 import ExampleFormTwo from "@/components/forms/ExampleFormTwo.vue";
 import AnswerForm from "@/components/forms/AnswerForm.vue";
 import Test from "@/pages/Test.vue";
+
+import Store from '@/store'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -124,7 +126,9 @@ const router = createRouter({
 
 // If not logged in route to signin page
 router.beforeEach((to, from, next) => {
-  if (!(to.name === 'signin' || to.name === 'signup') && !getUser()) {
+  // if (!(to.name === 'signin' || to.name === 'signup') && !getUser()) {
+  const user = Store?.getters['user/getUser']
+  if (!(to.name === 'signin' || to.name === 'signup' || to.name === 'signout') && !user) {
     next({ name: 'signin' })
   } else {
     next()

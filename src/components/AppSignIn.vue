@@ -36,12 +36,15 @@
 import { onBeforeUnmount, ref } from 'vue'
 import router from '@/router/routes'
 import EventService from '@/services/ApiService'
-import { setUser } from '@/modules/globalState'
-import Constants from '@/modules/constants'
+// import { setUser } from '@/modules/globalState'
+// import Constants from '@/modules/constants'
 import { messages, addSuccesMessage, addErrorMessage } from '@/modules/UseFormMessages'
 import AppTopbar from '@/components/AppTopbar.vue'
 import Utils from '@/modules/utils'
 import _ from 'lodash'
+import { useStore } from 'vuex'
+
+const store = useStore()
 
 onBeforeUnmount(() => {
   messages.value = []
@@ -64,8 +67,9 @@ function submitForm() {
   EventService.postForm('auth/signin', submitValue)
     .then((response) => {
       if (response.data.accessToken) {
-        Utils.addToLocalStorage(Constants.LOCALSTORAGEUSERKEY, JSON.stringify(response.data))
-        setUser(response.data)
+        store.dispatch('user/updateUser', response.data)
+        // Utils.addToLocalStorage(Constants.LOCALSTORAGEUSERKEY, JSON.stringify(response.data))
+        // setUser(response.data)
         addSuccesMessage('Successfully logged in ...')
         router.push({ name: 'home' })
       }

@@ -36,10 +36,12 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import router from '@/router/routes';
-import { getUser } from '@/modules/globalState'
+// import { getUser } from '@/modules/globalState'
 import { computed, ref, watch } from 'vue';
 import { indexOf } from 'lodash';
 import { usePrimeVue } from "primevue/config";
+import { useStore } from 'vuex'
+import User from '@/types/user'
 
 import Avatar from '@/components/Avatar.vue';
 import logo from '@/assets/harry.jpeg'
@@ -48,6 +50,7 @@ const primevue = usePrimeVue()
 const { t, locale, availableLocales } = useI18n({
     inheritLocale: true, useScope: 'global'
 })
+const store = useStore()
 
 watch(
     () => locale.value,
@@ -66,7 +69,10 @@ const changePrimeLocale = async (locale: any) => {
 }
 
 const items = ref()
-const user = computed(() => getUser())
+// const user = computed(() => getUser())
+const user = computed<User>(
+    () => store.getters['user/getUser']
+)
 
 const emit = defineEmits<{
     (event: 'menuToggle'): void

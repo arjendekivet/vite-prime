@@ -3,6 +3,7 @@ import { createI18n } from 'vue-i18n'
 import en from "@/locales/en.json";
 import ne from "@/locales/ne.json";
 import router from '@/router/routes'
+import store from '@/store'
 import App from '@/App.vue'
 import PrimeVue from 'primevue/config'
 
@@ -73,6 +74,7 @@ const i18n = createI18n({
 })
 const app = createApp(App)
 
+app.use(store)
 app.use(router)
 app.use(i18n)
 

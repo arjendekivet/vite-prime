@@ -22,20 +22,24 @@
 
 <script setup lang="ts">
 import router from '@/router/routes'
-import { setUser } from '@/modules/globalState'
-import Constants from '@/modules/constants'
+// import { setUser } from '@/modules/globalState'
+// import Constants from '@/modules/constants'
 import { messages, addSuccesMessage } from '@/modules/UseFormMessages'
 import AppTopbar from '@/components/AppTopbar.vue'
 import Utils from '@/modules/utils'
 import _ from 'lodash'
 import { onBeforeUnmount } from 'vue'
+import { useStore } from 'vuex'
+
+const store = useStore()
 
 onBeforeUnmount(() => {
   messages.value = []
 })
 
-Utils.removeFromLocalStorage(Constants.LOCALSTORAGEUSERKEY)
-setUser(null)
+// Utils.removeFromLocalStorage(Constants.LOCALSTORAGEUSERKEY)
+// setUser(null)
+store.dispatch('user/removeUser')
 addSuccesMessage('You have been signed out ...')
 
 setTimeout(() => router.push({ name: 'signin' }), 2000)
