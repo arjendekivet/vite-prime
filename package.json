@@ -10,6 +10,7 @@
     "storybook-build-preview": "serve storybook-static"
   },
   "dependencies": {
+    "@tiptap/extension-text-align": "^2.0.0-beta.28",
     "@tiptap/starter-kit": "^2.0.0-beta.140",
     "@tiptap/vue-3": "^2.0.0-beta.80",
     "@vuelidate/core": "^2.0.0-alpha.32",

@@ -14,6 +14,18 @@
                 :class="{ 'p-button-outlined': !editor.isActive('strike') }"
             >strike</Button>
             <Button
+                @click="editor.isActive({ textAlign: 'right' }) ?
+                editor.chain().focus().unsetTextAlign().run() :
+                editor.chain().focus().setTextAlign('right').run()"
+                :class="{ 'p-button-outlined': !editor.isActive({ textAlign: 'right' }) }"
+            >align right</Button>
+            <Button
+                @click="editor.isActive({ textAlign: 'center' }) ?
+                editor.chain().focus().unsetTextAlign().run() :
+                editor.chain().focus().setTextAlign('center').run()"
+                :class="{ 'p-button-outlined': !editor.isActive({ textAlign: 'center' }) }"
+            >align center</Button>
+            <Button
                 @click="editor.chain().focus().toggleCode().run()"
                 :class="{ 'p-button-outlined': !editor.isActive('code') }"
             >code</Button>
@@ -80,13 +92,14 @@
             <Button @click="editor.chain().focus().undo().run()" class="p-button-outlined">undo</Button>
             <Button @click="editor.chain().focus().redo().run()" class="p-button-outlined">redo</Button>
         </div>
-        <editor-content :editor="editor" />
+        <editor-content :editor="editor" class="content" />
     </div>
 </template>
 
 <script setup lang='ts'>
 import { Editor, useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
+import TextAlign from '@tiptap/extension-text-align'
 import { onMounted, ref, watch } from 'vue'
 
 type FormProp = {
@@ -117,6 +130,9 @@ onMounted(() => {
         content: props.modelValue,
         extensions: [
             StarterKit,
+            TextAlign.configure({
+                types: ['heading', 'paragraph'],
+            }),
         ],
         onUpdate: () => {
             emit('update:modelValue', editor.value.getHTML())
@@ -129,10 +145,13 @@ onMounted(() => {
 <style lang="scss">
 .tiptap {
     border: solid #ccc 1px;
+    .content {
+        padding: 0.5em;
+    }
     .toolbar {
         // display: inline;
         border-bottom: solid #ccc 1px;
-        padding: 0.25em 0.25em 0.25em;
+        padding: 0.25em 0.25em 0.25em 0.25em;
         .p-button {
             width: fit-content;
             font-size: small;
