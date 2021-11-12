@@ -52,6 +52,7 @@ import Card from 'primevue/card'
 
 import C_Editor from '@/components/C_Editor.vue'
 import QuillEditor from '@/components/QuillEditor.vue'
+import Tiptap from '@/components/Tiptap.vue'
 
 import primeLocaleEn from '@/locales/prime_en'
 
@@ -117,5 +118,6 @@ app.component('Card', Card);
 
 app.component('C_Editor', C_Editor);
 app.component('QuillEditor', QuillEditor);
+app.component('Tiptap', Tiptap);
 
 app.mount('#app')
