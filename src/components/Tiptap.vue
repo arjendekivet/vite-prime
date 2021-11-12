@@ -146,7 +146,9 @@ onMounted(() => {
 .tiptap {
     border: solid #ccc 1px;
     .content {
-        padding: 0.5em;
+        .ProseMirror {
+            padding: 0.5em;
+        }
     }
     .toolbar {
         // display: inline;
