@@ -3,23 +3,19 @@
         <div v-if="editor" class="toolbar">
             <Button
                 @click="editor.chain().focus().toggleBold().run()"
-                :class="{ 'is-active': editor.isActive('bold') }"
-                class="p-button-outlined"
+                :class="{ 'p-button-outlined': !editor.isActive('bold') }"
             >bold</Button>
             <Button
                 @click="editor.chain().focus().toggleItalic().run()"
-                :class="{ 'is-active': editor.isActive('italic') }"
-                class="p-button-outlined"
+                :class="{ 'p-button-outlined': !editor.isActive('italic') }"
             >italic</Button>
             <Button
                 @click="editor.chain().focus().toggleStrike().run()"
-                class="p-button-outlined"
-                :class="{ 'is-active': editor.isActive('strike') }"
+                :class="{ 'p-button-outlined': !editor.isActive('strike') }"
             >strike</Button>
             <Button
                 @click="editor.chain().focus().toggleCode().run()"
-                class="p-button-outlined"
-                :class="{ 'is-active': editor.isActive('code') }"
+                :class="{ 'p-button-outlined': !editor.isActive('code') }"
             >code</Button>
             <Button
                 @click="editor.chain().focus().unsetAllMarks().run()"
@@ -29,69 +25,58 @@
                 @click="editor.chain().focus().clearNodes().run()"
                 class="p-button-outlined"
             >clear nodes</Button>
-            <Button
+            <!-- <Button
                 @click="editor.chain().focus().setParagraph().run()"
-                class="p-button-outlined"
-                :class="{ 'is-active': editor.isActive('paragraph') }"
-            >paragraph</Button>
+                :class="{ 'p-button-outlined': !editor.isActive('paragraph') }"
+            >paragraph</Button>-->
             <Button
                 @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
-                class="p-button-outlined"
-                :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }"
+                :class="{ 'p-button-outlined': !editor.isActive('heading', { level: 1 }) }"
             >h1</Button>
             <Button
                 @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-                class="p-button-outlined"
-                :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }"
+                :class="{ 'p-button-outlined': !editor.isActive('heading', { level: 2 }) }"
             >h2</Button>
             <Button
                 @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
-                class="p-button-outlined"
-                :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }"
+                :class="{ 'p-button-outlined': !editor.isActive('heading', { level: 3 }) }"
             >h3</Button>
-            <Button
+            <!-- <Button
                 @click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
-                class="p-button-outlined"
-                :class="{ 'is-active': editor.isActive('heading', { level: 4 }) }"
+                :class="{ 'p-button-outlined': !editor.isActive('heading', { level: 4 }) }"
             >h4</Button>
             <Button
                 @click="editor.chain().focus().toggleHeading({ level: 5 }).run()"
-                class="p-button-outlined"
-                :class="{ 'is-active': editor.isActive('heading', { level: 5 }) }"
+                :class="{ 'p-button-outlined': !editor.isActive('heading', { level: 5 }) }"
             >h5</Button>
             <Button
                 @click="editor.chain().focus().toggleHeading({ level: 6 }).run()"
-                class="p-button-outlined"
-                :class="{ 'is-active': editor.isActive('heading', { level: 6 }) }"
+                :class="{ 'p-button-outlined': !editor.isActive('heading', { level: 6 }) }"
             >h6</Button>
             <Button
                 @click="editor.chain().focus().toggleBulletList().run()"
-                class="p-button-outlined"
-                :class="{ 'is-active': editor.isActive('bulletList') }"
-            >bullet list</Button>
+                :class="{ 'p-button-outlined': !editor.isActive('bulletList') }"
+            >bullet list</Button>-->
             <Button
                 @click="editor.chain().focus().toggleOrderedList().run()"
-                class="p-button-outlined"
-                :class="{ 'is-active': editor.isActive('orderedList') }"
+                :class="{ 'p-button-outlined': !editor.isActive('orderedList') }"
             >ordered list</Button>
             <Button
                 @click="editor.chain().focus().toggleCodeBlock().run()"
-                class="p-button-outlined"
-                :class="{ 'is-active': editor.isActive('codeBlock') }"
+                :class="{ 'p-button-outlined': !editor.isActive('codeBlock') }"
             >code block</Button>
-            <Button
+            <!-- <Button
                 @click="editor.chain().focus().toggleBlockquote().run()"
-                class="p-button-outlined"
-                :class="{ 'is-active': editor.isActive('blockquote') }"
-            >blockquote</Button>
-            <Button
+                :class="{ 'p-button-outlined': !editor.isActive('blockquote') }"
+            >blockquote</Button>-->
+            <!-- <Button
                 @click="editor.chain().focus().setHorizontalRule().run()"
                 class="p-button-outlined"
             >horizontal rule</Button>
             <Button
                 @click="editor.chain().focus().setHardBreak().run()"
                 class="p-button-outlined"
-            >hard break</Button>
+            >hard break</Button>-->
             <Button @click="editor.chain().focus().undo().run()" class="p-button-outlined">undo</Button>
             <Button @click="editor.chain().focus().redo().run()" class="p-button-outlined">redo</Button>
         </div>
