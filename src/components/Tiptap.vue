@@ -1,72 +1,99 @@
 <template>
-    <div>
-        <div v-if="editor">
-            <button
+    <div class="tiptap">
+        <div v-if="editor" class="toolbar">
+            <Button
                 @click="editor.chain().focus().toggleBold().run()"
                 :class="{ 'is-active': editor.isActive('bold') }"
-            >bold</button>
-            <button
+                class="p-button-outlined"
+            >bold</Button>
+            <Button
                 @click="editor.chain().focus().toggleItalic().run()"
                 :class="{ 'is-active': editor.isActive('italic') }"
-            >italic</button>
-            <button
+                class="p-button-outlined"
+            >italic</Button>
+            <Button
                 @click="editor.chain().focus().toggleStrike().run()"
+                class="p-button-outlined"
                 :class="{ 'is-active': editor.isActive('strike') }"
-            >strike</button>
-            <button
+            >strike</Button>
+            <Button
                 @click="editor.chain().focus().toggleCode().run()"
+                class="p-button-outlined"
                 :class="{ 'is-active': editor.isActive('code') }"
-            >code</button>
-            <button @click="editor.chain().focus().unsetAllMarks().run()">clear marks</button>
-            <button @click="editor.chain().focus().clearNodes().run()">clear nodes</button>
-            <button
+            >code</Button>
+            <Button
+                @click="editor.chain().focus().unsetAllMarks().run()"
+                class="p-button-outlined"
+            >clear marks</Button>
+            <Button
+                @click="editor.chain().focus().clearNodes().run()"
+                class="p-button-outlined"
+            >clear nodes</Button>
+            <Button
                 @click="editor.chain().focus().setParagraph().run()"
+                class="p-button-outlined"
                 :class="{ 'is-active': editor.isActive('paragraph') }"
-            >paragraph</button>
-            <button
+            >paragraph</Button>
+            <Button
                 @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
+                class="p-button-outlined"
                 :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }"
-            >h1</button>
-            <button
+            >h1</Button>
+            <Button
                 @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
+                class="p-button-outlined"
                 :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }"
-            >h2</button>
-            <button
+            >h2</Button>
+            <Button
                 @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
+                class="p-button-outlined"
                 :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }"
-            >h3</button>
-            <button
+            >h3</Button>
+            <Button
                 @click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
+                class="p-button-outlined"
                 :class="{ 'is-active': editor.isActive('heading', { level: 4 }) }"
-            >h4</button>
-            <button
+            >h4</Button>
+            <Button
                 @click="editor.chain().focus().toggleHeading({ level: 5 }).run()"
+                class="p-button-outlined"
                 :class="{ 'is-active': editor.isActive('heading', { level: 5 }) }"
-            >h5</button>
-            <button
+            >h5</Button>
+            <Button
                 @click="editor.chain().focus().toggleHeading({ level: 6 }).run()"
+                class="p-button-outlined"
                 :class="{ 'is-active': editor.isActive('heading', { level: 6 }) }"
-            >h6</button>
-            <button
+            >h6</Button>
+            <Button
                 @click="editor.chain().focus().toggleBulletList().run()"
+                class="p-button-outlined"
                 :class="{ 'is-active': editor.isActive('bulletList') }"
-            >bullet list</button>
-            <button
+            >bullet list</Button>
+            <Button
                 @click="editor.chain().focus().toggleOrderedList().run()"
+                class="p-button-outlined"
                 :class="{ 'is-active': editor.isActive('orderedList') }"
-            >ordered list</button>
-            <button
+            >ordered list</Button>
+            <Button
                 @click="editor.chain().focus().toggleCodeBlock().run()"
+                class="p-button-outlined"
                 :class="{ 'is-active': editor.isActive('codeBlock') }"
-            >code block</button>
-            <button
+            >code block</Button>
+            <Button
                 @click="editor.chain().focus().toggleBlockquote().run()"
+                class="p-button-outlined"
                 :class="{ 'is-active': editor.isActive('blockquote') }"
-            >blockquote</button>
-            <button @click="editor.chain().focus().setHorizontalRule().run()">horizontal rule</button>
-            <button @click="editor.chain().focus().setHardBreak().run()">hard break</button>
-            <button @click="editor.chain().focus().undo().run()">undo</button>
-            <button @click="editor.chain().focus().redo().run()">redo</button>
+            >blockquote</Button>
+            <Button
+                @click="editor.chain().focus().setHorizontalRule().run()"
+                class="p-button-outlined"
+            >horizontal rule</Button>
+            <Button
+                @click="editor.chain().focus().setHardBreak().run()"
+                class="p-button-outlined"
+            >hard break</Button>
+            <Button @click="editor.chain().focus().undo().run()" class="p-button-outlined">undo</Button>
+            <Button @click="editor.chain().focus().redo().run()" class="p-button-outlined">redo</Button>
         </div>
         <editor-content :editor="editor" />
     </div>
@@ -113,3 +140,20 @@ onMounted(() => {
 })
 
 </script>
+
+<style lang="scss">
+.tiptap {
+    border: solid #ccc 1px;
+    .toolbar {
+        // display: inline;
+        border-bottom: solid #ccc 1px;
+        padding: 0.25em 0.25em 0.25em;
+        .p-button {
+            width: fit-content;
+            font-size: small;
+            padding: 0.25em;
+            margin: 0 0.25em 0.25em 0.25em;
+        }
+    }
+}
+</style>
