@@ -30,7 +30,11 @@
         </template>
         <template #empty>No data found ...</template>
         <Column v-if="selectionMode" :selectionMode="selectionMode" headerStyle="width: 3em"></Column>
-        <Column v-for="col of columns" :field="col.field" :header="col.header" :key="col.field"></Column>
+        <Column v-for="col of columns" :field="col.field" :header="col.header" :key="col.field">
+            <template v-if="col.html" #body="{ data }">
+                <div v-html="data[col.field]"></div>
+            </template>
+        </Column>
         <Column v-if="openDocumentRow" headerStyle="width: 8em;" bodyStyle="text-align: right">
             <template #body="slotProps">
                 <Button
