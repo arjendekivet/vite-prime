@@ -27,31 +27,6 @@ menuItems.value = [{
         }
     ]
 },
-{
-    key: '2',
-    label: 'Test forms',
-    icon: 'pi pi-fw pi-file',
-    items: [
-        {
-            key: '2_1',
-            label: 'Answer form',
-            icon: 'pi pi-fw pi-list',
-            to: { name: 'answerform' }
-        },
-        {
-            key: '2_2',
-            label: 'Example form',
-            icon: 'pi pi-fw pi-list',
-            to: { name: 'exampleform' }
-        },
-        {
-            key: '4_3',
-            label: 'Example form 2',
-            icon: 'pi pi-fw pi-list',
-            to: { name: 'exampleform2' }
-        }
-    ]
-},
 ];
 
 export default menuItems

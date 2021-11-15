@@ -1,5 +1,5 @@
 <template>
-    <h3 v-if="compTitle">{{ compTitle }}</h3>
+    <!-- <h3 v-if="compTitle">{{ compTitle }}</h3> -->
     <transition-group name="p-message" tag="div">
         <Message
             v-for="msg of messages"
@@ -24,6 +24,7 @@
                 v-model:searchValue="searchValue"
                 @update:search-value="searchUpdate($event)"
                 :hasSelection="selected && selected.length > 0"
+                :title="compTitle"
                 @new-doc="newDoc"
                 @delete-selection="deleteSelection"
             />

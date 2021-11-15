@@ -1,20 +1,17 @@
 import { createRouter, createWebHistory } from "vue-router";
 // import { getUser } from '@/modules/globalState'
 import Welcome from "@/pages/Welcome.vue";
-import Start from "@/pages/Start.vue";
-import Admin from "@/pages/Admin.vue";
+import AppLayout from '@/components/AppLayout.vue'
 import Pick from "@/pages/Pick.vue";
 import Questionnaire from "@/pages/Questionnaire.vue"
 
 import Table from "@/components/Table.vue";
 import Form from "@/components/Form.vue";
+import AppNavBar from '@/components/AppNavBar.vue';
 import AppSignUp from "@/components/AppSignUp.vue";
 import AppSignIn from "@/components/AppSignIn.vue";
 import AppSignOut from "@/components/AppSignOut.vue";
 
-import ExampleForm from "@/components/forms/ExampleForm.vue";
-import ExampleFormTwo from "@/components/forms/ExampleFormTwo.vue";
-import AnswerForm from "@/components/forms/AnswerForm.vue";
 import Test from "@/pages/Test.vue";
 
 import Store from '@/store'
@@ -44,75 +41,83 @@ const router = createRouter({
     {
       path: "/home",
       name: "home",
-      component: Start,
+      component: AppLayout,
+      props: { navBar: false },
       redirect: { name: "home_welcome" },
       children: [
         {
           path: 'welcome',
           name: "home_welcome",
-          component: Welcome
+          components: {
+            default: Welcome,
+          },
         },
         {
           path: 'pick',
           name: "home_pick",
-          component: Pick
+          components: {
+            default: Pick,
+          },
         },
         {
           path: 'questionnaire/:category',
           name: "questionnaire",
-          component: Questionnaire,
-          props: route => ({
-            category: route.params.category
-          })
+          components: {
+            default: Questionnaire,
+            // LeftSidebar: AppNavBar,
+          },
+          props: {
+            default: route => ({
+              category: route.params.category
+            })
+          }
         },
       ]
     },
     {
       path: "/admin",
       name: "admin",
-      component: Admin,
+      component: AppLayout,
       redirect: { name: "admin_welcome" },
       children: [
         {
           path: 'welcome',
           name: "admin_welcome",
-          component: Welcome
+          components: {
+            default: Welcome,
+            LeftSidebar: AppNavBar,
+          },
         },
         {
           path: "table/:type/:layout?/:formLayoutKey?",
           name: "table",
-          component: Table,
-          props: route => ({
-            dataType: route.params.type,
-            layoutKey: route.params.layout,
-            formLayoutKey: route.params.formLayoutKey
-          })
+          components: {
+            default: Table,
+            LeftSidebar: AppNavBar,
+          },
+          props: {
+            default: route => ({
+              dataType: route.params.type,
+              layoutKey: route.params.layout,
+              formLayoutKey: route.params.formLayoutKey
+            })
+          }
         },
         {
           path: "form/:type/:id?/:layout?",
           name: "form",
-          component: Form,
-          props: route => ({
-            dataType: route.params.type,
-            id: route.params.id === '0' ? null : route.params.id,
-            formLayoutKey: route.params.layout,
-            readOnly: route.query.readOnly === 'false' || route.params.id === '0' || !route.params.id ? false : true
-          })
-        },
-        {
-          path: "answerform",
-          name: "answerform",
-          component: AnswerForm,
-        },
-        {
-          path: "exampleform",
-          name: "exampleform",
-          component: ExampleForm,
-        },
-        {
-          path: "exampleform2",
-          name: "exampleform2",
-          component: ExampleFormTwo,
+          components: {
+            default: Form,
+            LeftSidebar: AppNavBar,
+          },
+          props: {
+            default: route => ({
+              dataType: route.params.type,
+              id: route.params.id === '0' ? null : route.params.id,
+              formLayoutKey: route.params.layout,
+              readOnly: route.query.readOnly === 'false' || route.params.id === '0' || !route.params.id ? false : true
+            })
+          }
         },
       ]
     },

@@ -14,6 +14,7 @@
                 v-tooltip="t('DeleteSelection')"
                 @click="emit('deleteSelection')"
             />
+            <span v-if="title" class="p-mr-2 p-text-bold" style="font-size: 1.5em">{{ title }}</span>
         </template>
         <template #right>
             <span class="p-input-icon-right">
@@ -33,6 +34,7 @@
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
+    title: String,
     searchValue: String,
     hasSelection: {
         type: Boolean,

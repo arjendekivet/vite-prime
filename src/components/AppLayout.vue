@@ -5,10 +5,9 @@
     </div>
     <div class="body">
       <div v-if="navBar" class="sidebar" :class="navVisible ? '' : 'navHide'">
-        <AppNavBar :direction="direction === 'row' ? 'row' : 'column'" />
+        <router-view name="LeftSidebar"></router-view>
       </div>
       <div class="main">
-        <!-- <div class="page-header">page-header</div> -->
         <div class="content">
           <div class="column">
             <router-view :key="$route.fullPath" />
