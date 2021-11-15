@@ -4,6 +4,7 @@ import Welcome from "@/pages/Welcome.vue";
 import AppLayout from '@/components/AppLayout.vue'
 import Pick from "@/pages/Pick.vue";
 import Questionnaire from "@/pages/Questionnaire.vue"
+import QuestionaireFilter from '@/components/QuestionaireFilter.vue'
 
 import Table from "@/components/Table.vue";
 import Form from "@/components/Form.vue";
@@ -42,7 +43,7 @@ const router = createRouter({
       path: "/home",
       name: "home",
       component: AppLayout,
-      props: { navBar: false },
+      props: { navBar: true },
       redirect: { name: "home_welcome" },
       children: [
         {
@@ -60,15 +61,17 @@ const router = createRouter({
           },
         },
         {
-          path: 'questionnaire/:category',
+          path: 'questionnaire/:categoryOne/:categoryTwo?/:categoryThree?',
           name: "questionnaire",
           components: {
             default: Questionnaire,
-            // LeftSidebar: AppNavBar,
+            LeftSidebar: QuestionaireFilter,
           },
           props: {
             default: route => ({
-              category: route.params.category
+              categoryOne: route.params.categoryOne,
+              categoryTwo: route.params.categoryTwo,
+              categoryThree: route.params.categoryThree
             })
           }
         },

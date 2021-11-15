@@ -1,10 +1,10 @@
 <template>
   <div class="app__layout">
     <div class="header">
-      <AppTopbar @menu-toggle="menuToggle"></AppTopbar>
+      <AppTopbar />
     </div>
     <div class="body">
-      <div v-if="navBar" class="sidebar" :class="navVisible ? '' : 'navHide'">
+      <div v-if="navBar && leftSidebar" class="sidebar" :class="getNavVisible() ? '' : 'navHide'">
         <router-view name="LeftSidebar"></router-view>
       </div>
       <div class="main">
@@ -20,9 +20,24 @@
 </template>
 
 <script setup lang="ts">
-import AppNavBar from '@/components/AppNavBar.vue'
+import { getNavVisible } from '@/modules/globalState'
 import AppTopbar from '@/components/AppTopbar.vue'
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute()
+// Calculate if the LeftSidebar router-view is actual filled with a component
+const leftSidebar = computed(
+  () => {
+    if (route.matched && route.matched.length > 0) {
+      const match = route.matched[route.matched.length - 1]
+      if (match && match.components) {
+        return match.components['LeftSidebar']
+      }
+      return
+    }
+  }
+)
 
 let navVisible = ref(true)
 

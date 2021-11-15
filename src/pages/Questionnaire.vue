@@ -1,7 +1,7 @@
 <template>
   <div class="questionaire">
     <!-- <h1>Questionnaire ({{ category }})</h1> -->
-    <Button :label="'Questionnaire - ' + category" class="p-mb-4 p-button-outlined title__button" />
+    <Button :label="`Questionnaire - ${compCat}`" class="p-mb-4 p-button-outlined title__button" />
     <div class="questions p-grid">
       <QuestionCard v-for="question in questions" :question="question"></QuestionCard>
     </div>
@@ -10,24 +10,40 @@
 
 <script setup lang="ts">
 import { addErrorMessage } from '@/modules/UseFormMessages'
-import { inject, ref } from 'vue'
-import QuestionCard from './QuestionCard.vue'
+import { compact } from 'lodash'
+import { computed, inject, ref } from 'vue'
+import QuestionCard from '../components/QuestionCard.vue'
 
 // const router: any = inject('router')
 const EventService: any = inject('EventService')
 
 type FormProp = {
-  category: string
+  categoryOne?: string,
+  categoryTwo?: string,
+  categoryThree?: string
+
 }
 const props = withDefaults(defineProps<FormProp>(), {
-  category: undefined
+  categoryOne: undefined
 })
 
 const questions = ref()
 
-EventService.getDataByFilterType('questions', 'cat_1', props.category)
+const compCat = computed(() => {
+  const arr = [props.categoryOne, props.categoryTwo, props.categoryThree]
+  return compact(arr).join('/')
+})
+
+const filter = {
+  cat_1: props.categoryOne,
+  ...(props.categoryTwo && { cat_2: props.categoryTwo }),
+  ...(props.categoryThree && { cat_3: props.categoryThree })
+}
+EventService.postForm('questions/filter', filter)
   .then((response: any) => {
-    questions.value = response.data
+    if (response.data) {
+      questions.value = response.data
+    }
   })
   .catch((error: any) => {
     addErrorMessage(error)

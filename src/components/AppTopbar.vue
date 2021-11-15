@@ -1,7 +1,7 @@
 <template>
     <div class="layout-topbar p-d-flex p-jc-between">
         <div class="left">
-            <Button type="button" icon="pi pi-bars" @click="emit('menuToggle')" />
+            <Button type="button" icon="pi pi-bars" @click="toggleNavVisible" />
             <!-- <Button type="button" icon="pi pi-directions-alt" @click="router.back()" /> -->
             <!-- <Button type="button" icon="pi pi-directions" @click="router.forward()" /> -->
         </div>
@@ -34,6 +34,7 @@
 </template>
 
 <script setup lang="ts">
+import { toggleNavVisible } from '@/modules/globalState'
 import { useI18n } from 'vue-i18n'
 import router from '@/router/routes';
 // import { getUser } from '@/modules/globalState'
@@ -73,10 +74,6 @@ const items = ref()
 const user = computed<User>(
     () => store.getters['user/getUser']
 )
-
-const emit = defineEmits<{
-    (event: 'menuToggle'): void
-}>()
 
 // On locale change, recalculate item label using I18n
 watch(
