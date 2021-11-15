@@ -3,12 +3,12 @@
     <h3>Welcome to Cynapps Spaced Repetition Learning App</h3>
     <img :src="leitner" class="p-m-auto" />
 
-    <Button
+    <!-- <Button
       label="Start"
       icon="pi pi-caret-right"
       class="p-m-auto"
       @click="router.push({ name: 'home_pick' })"
-    />
+    />-->
   </div>
 </template>
 

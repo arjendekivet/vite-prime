@@ -51,6 +51,7 @@ const router = createRouter({
           name: "home_welcome",
           components: {
             default: Welcome,
+            LeftSidebar: QuestionaireFilter,
           },
         },
         {
