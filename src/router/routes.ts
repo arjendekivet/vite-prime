@@ -73,7 +73,12 @@ const router = createRouter({
               categoryOne: route.params.categoryOne,
               categoryTwo: route.params.categoryTwo,
               categoryThree: route.params.categoryThree
-            })
+            }),
+            LeftSidebar: route => ({
+              categoryOne: route.params.categoryOne,
+              categoryTwo: route.params.categoryTwo ? route.params.categoryTwo : undefined,
+              categoryThree: route.params.categoryThree ? route.params.categoryThree : undefined
+            }),
           }
         },
       ]

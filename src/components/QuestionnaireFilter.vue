@@ -57,15 +57,27 @@ onMounted(() => {
   setNavVisible(true)
 })
 
+type FormProp = {
+  categoryOne?: string,
+  categoryTwo?: string,
+  categoryThree?: string
+
+}
+const props = withDefaults(defineProps<FormProp>(), {
+  categoryOne: undefined,
+  categoryTwo: undefined,
+  categoryThree: undefined
+})
+
 const EventService: any = inject('EventService')
 
 const catOne = ref()
 const catTwo = ref()
 const catThree = ref()
 
-const selectedCategoryOne = ref()
-const selectedCategoryTwo = ref()
-const selectedCategoryThree = ref()
+const selectedCategoryOne = ref(props.categoryOne)
+const selectedCategoryTwo = ref(props.categoryTwo)
+const selectedCategoryThree = ref(props.categoryThree)
 
 EventService.getDistinctDataByField('questions', 'cat_1')
   .then((response: any) => {
