@@ -12,7 +12,7 @@
 import { addErrorMessage } from '@/modules/UseFormMessages'
 import { compact } from 'lodash'
 import { computed, inject, ref } from 'vue'
-import QuestionCard from '../components/QuestionCard.vue'
+import QuestionCard from './QuestionCard.vue'
 
 // const router: any = inject('router')
 const EventService: any = inject('EventService')

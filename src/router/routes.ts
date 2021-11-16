@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import Welcome from "@/pages/Welcome.vue";
 import AppLayout from '@/components/AppLayout.vue'
 import Pick from "@/pages/Pick.vue";
-import Questionnaire from "@/pages/Questionnaire.vue"
+import Questionnaire from "@/components/Questionnaire.vue"
 import QuestionaireFilter from '@/components/QuestionaireFilter.vue'
 
 import Table from "@/components/Table.vue";
