@@ -1,5 +1,5 @@
 <template>
-  <div class="questionaire__filter p-p-2">
+  <div class="questionnaire__filter p-p-2">
     <h3>Filter questions</h3>
 
     <div class="p-d-flex p-flex-column">

@@ -4,7 +4,7 @@ import Welcome from "@/pages/Welcome.vue";
 import AppLayout from '@/components/AppLayout.vue'
 import Pick from "@/pages/Pick.vue";
 import Questionnaire from "@/components/Questionnaire.vue"
-import QuestionaireFilter from '@/components/QuestionaireFilter.vue'
+import QuestionnaireFilter from '@/components/QuestionnaireFilter.vue'
 
 import Table from "@/components/Table.vue";
 import Form from "@/components/Form.vue";
@@ -51,7 +51,7 @@ const router = createRouter({
           name: "home_welcome",
           components: {
             default: Welcome,
-            LeftSidebar: QuestionaireFilter,
+            LeftSidebar: QuestionnaireFilter,
           },
         },
         {
@@ -66,7 +66,7 @@ const router = createRouter({
           name: "questionnaire",
           components: {
             default: Questionnaire,
-            LeftSidebar: QuestionaireFilter,
+            LeftSidebar: QuestionnaireFilter,
           },
           props: {
             default: route => ({

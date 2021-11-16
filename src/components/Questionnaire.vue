@@ -1,5 +1,5 @@
 <template>
-  <div class="questionaire">
+  <div class="questionnaire">
     <!-- <h1>Questionnaire ({{ category }})</h1> -->
     <Button :label="`Questionnaire - ${compCat}`" class="p-mb-4 p-button-outlined title__button" />
     <div class="questions p-grid">
@@ -52,7 +52,7 @@ EventService.postForm('questions/filter', filter)
 </script>
 
 <style lang="scss">
-.questionaire {
+.questionnaire {
   .title__button {
     font-size: xx-large;
   }
