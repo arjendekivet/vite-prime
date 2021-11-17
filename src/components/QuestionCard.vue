@@ -169,15 +169,17 @@ function highlightedAnswer() {
   if (props.question.answer === userAnswer.value) {
     return userAnswer.value
   }
-  const desc = [props.question.answer, userAnswer.value].sort((a: string, b: string) => b.length - a.length)
-  const longestString = desc[0]
+  const arrStringsByLongest = [props.question.answer, userAnswer.value].sort((a: string, b: string) => b.length - a.length)
+  const longestString = arrStringsByLongest[0]
   const arrIndex = diff.value
 
   let newValue = ''
   let start
+  let chars
   arrIndex.forEach(function (val, i, myArr) {
     const str = longestString.substr(val, 1)
     const replacedIndexString = `<b>${str}</b>`
+    const replacedStrikethrough = `<s>${str}</s>`
 
     if (i === 0 && val > 0) {
       start = 0
@@ -186,7 +188,14 @@ function highlightedAnswer() {
       start = myArr[i - 1]
       newValue += longestString.substr(start + 1, val - start - 1)
     }
-    newValue += replacedIndexString
+
+    newValue += props.question.answer.length < val + 1 ? replacedStrikethrough : replacedIndexString
+
+    if (i === myArr.length - 1 && val < longestString.length - 1) {
+      start = val + 1
+      chars = longestString.length - val - 1
+      newValue += longestString.substr(start, chars)
+    }
   })
   return newValue
 }
@@ -218,9 +227,9 @@ function highlightedAnswer() {
   .answer__given {
     font-size: 1.5em;
     font-weight: 500;
-    b {
+    b,
+    s {
       color: red;
-      text-decoration: underline;
       font-weight: 700;
     }
   }
