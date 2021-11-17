@@ -72,12 +72,16 @@ const router = createRouter({
             default: route => ({
               categoryOne: route.params.categoryOne,
               categoryTwo: route.params.categoryTwo,
-              categoryThree: route.params.categoryThree
+              categoryThree: route.params.categoryThree,
+              quickPractice: route.query.quickPractice === 'true',
+              showDescription: route.query.showDescription === 'true',
             }),
             LeftSidebar: route => ({
               categoryOne: route.params.categoryOne,
               categoryTwo: route.params.categoryTwo ? route.params.categoryTwo : undefined,
-              categoryThree: route.params.categoryThree ? route.params.categoryThree : undefined
+              categoryThree: route.params.categoryThree ? route.params.categoryThree : undefined,
+              quickPractice: route.query.quickPractice === 'true',
+              showDescription: route.query.showDescription === 'true',
             }),
           }
         },

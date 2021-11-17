@@ -3,7 +3,12 @@
     <!-- <h1>Questionnaire ({{ category }})</h1> -->
     <Button :label="`Questionnaire - ${compCat}`" class="p-mb-4 p-button-outlined title__button" />
     <div class="questions p-grid">
-      <QuestionCard v-for="question in questions" :question="question"></QuestionCard>
+      <QuestionCard
+        v-for="question in questions"
+        :question="question"
+        :quickPractice="quickPractice"
+        :showDescription="showDescription"
+      ></QuestionCard>
     </div>
   </div>
 </template>
@@ -20,11 +25,14 @@ const EventService: any = inject('EventService')
 type FormProp = {
   categoryOne?: string,
   categoryTwo?: string,
-  categoryThree?: string
-
+  categoryThree?: string,
+  quickPractice?: boolean,
+  showDescription: boolean,
 }
 const props = withDefaults(defineProps<FormProp>(), {
-  categoryOne: undefined
+  categoryOne: undefined,
+  quickPractice: true,
+  showDescription: false,
 })
 
 const questions = ref()

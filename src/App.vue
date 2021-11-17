@@ -1,5 +1,6 @@
 <template>
   <div class="app">
+    <Toast />
     <router-view />
   </div>
 </template>
@@ -12,6 +13,7 @@ import EventService from '@/services/ApiService'
 // import Utils from '@/modules/utils'
 // import Constants from '@/modules/constants'
 import { useStore } from 'vuex'
+import Toast from 'primevue/toast'
 
 const store = useStore()
 

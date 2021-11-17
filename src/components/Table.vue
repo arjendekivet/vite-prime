@@ -36,7 +36,7 @@
                 <div v-html="data[col.field]"></div>
             </template>
         </Column>
-        <Column v-if="openDocumentRow" headerStyle="width: 8em;" bodyStyle="text-align: right">
+        <Column v-if="openDocumentRow" headerStyle="width: 12em;" bodyStyle="text-align: right">
             <template #body="slotProps">
                 <Button
                     type="button"
@@ -47,6 +47,11 @@
                     type="button"
                     icon="pi pi-pencil"
                     @click="openDocument(props.dataType, slotProps.data, false)"
+                ></Button>
+                <Button
+                    type="button"
+                    icon="pi pi-copy"
+                    @click="copyDocument(props.dataType, slotProps.data)"
                 ></Button>
             </template>
         </Column>
@@ -183,6 +188,20 @@ function openDocument(dataType: string, rowData: any, readOnly: boolean) {
             query: { readOnly: readOnly.toString() }
         })
     }
+}
+
+function copyDocument(dataType: string, rowData: any) {
+    const submitValue = _.cloneDeep(rowData)
+    submitValue.title = 'AAAAAA'
+    submitValue._id = null
+    EventService.postForm(props.dataType, submitValue)
+        .then((response: any) => {
+            addSuccesMessage(`Document(s) were created.`)
+            getData()
+        })
+        .catch((error: any) => {
+            addErrorMessage(error)
+        })
 }
 
 function searchUpdate(searchValue: string) {

@@ -6,6 +6,7 @@ import router from '@/router/routes'
 import store from '@/store'
 import App from '@/App.vue'
 import PrimeVue from 'primevue/config'
+import ToastService from 'primevue/toastservice';
 
 // import 'primevue/resources/themes/bootstrap4-light-blue/theme.css' //theme
 // import '@/themes/nova-vue/theme.css' // local theme 01
@@ -53,6 +54,7 @@ import Card from 'primevue/card'
 import C_Editor from '@/components/C_Editor.vue'
 import QuillEditor from '@/components/QuillEditor.vue'
 import Tiptap from '@/components/Tiptap.vue'
+import InputSwitch from 'primevue/inputswitch'
 
 import primeLocaleEn from '@/locales/prime_en'
 
@@ -78,6 +80,7 @@ const app = createApp(App)
 app.use(store)
 app.use(router)
 app.use(i18n)
+app.use(ToastService)
 
 // inputStyle: 'outlined' || 'filled'
 // ripple: true => is button ripple effect ...
@@ -119,5 +122,6 @@ app.component('Card', Card);
 app.component('C_Editor', C_Editor);
 app.component('QuillEditor', QuillEditor);
 app.component('Tiptap', Tiptap);
+app.component('InputSwitch', InputSwitch);
 
 app.mount('#app')

@@ -36,3 +36,16 @@ function onjsonSave(value: any) {
 }
 
 </script>
+
+<style lang="scss">
+.json-field {
+    .jsoneditor-vue {
+        .jsoneditor-outer {
+            min-height: 350px;
+            .ace-jsoneditor {
+                min-height: 350px;
+            }
+        }
+    }
+}
+</style>

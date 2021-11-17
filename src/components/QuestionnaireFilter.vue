@@ -33,12 +33,23 @@
         style="overflow: hidden;"
         class="p-mb-2"
       />
+      <div class="p-d-inline-flex p-mb-2">
+        <InputSwitch v-model="selectedQuickPractice" />
+        <div class="p-ml-2 p-text-bold" style="line-height: 1.75rem">Quick practice</div>
+      </div>
+
+      <div class="p-d-inline-flex p-mb-2">
+        <InputSwitch v-model="selectedShowDescription" />
+        <div class="p-ml-2 p-text-bold" style="line-height: 1.75rem">Show description</div>
+      </div>
+
       <Button
         label="Go!"
-        class="p-ml-1"
+        class="p-button-success p-mt-4"
         @click="router.push({
           name: 'questionnaire',
-          params: { categoryOne: selectedCategoryOne, categoryTwo: selectedCategoryTwo, categoryThree: selectedCategoryThree }
+          params: { categoryOne: selectedCategoryOne, categoryTwo: selectedCategoryTwo, categoryThree: selectedCategoryThree },
+          query: { quickPractice: selectedQuickPractice.toString(), showDescription: selectedShowDescription.toString() }
         })"
       />
     </div>
@@ -60,13 +71,16 @@ onMounted(() => {
 type FormProp = {
   categoryOne?: string,
   categoryTwo?: string,
-  categoryThree?: string
-
+  categoryThree?: string,
+  quickPractice?: boolean,
+  showDescription: boolean,
 }
 const props = withDefaults(defineProps<FormProp>(), {
   categoryOne: undefined,
   categoryTwo: undefined,
-  categoryThree: undefined
+  categoryThree: undefined,
+  quickPractice: false,
+  showDescription: false,
 })
 
 const EventService: any = inject('EventService')
@@ -78,6 +92,8 @@ const catThree = ref()
 const selectedCategoryOne = ref(props.categoryOne)
 const selectedCategoryTwo = ref(props.categoryTwo)
 const selectedCategoryThree = ref(props.categoryThree)
+const selectedQuickPractice = ref(props.quickPractice)
+const selectedShowDescription = ref(props.showDescription)
 
 EventService.getDistinctDataByField('questions', 'cat_1')
   .then((response: any) => {
@@ -103,3 +119,16 @@ EventService.getDistinctDataByField('questions', 'cat_3')
     addErrorMessage(error)
   })
 </script>
+
+<style lang="scss">
+.questionnaire__filter {
+  .p-inputswitch {
+    .p-inputswitch-slider {
+      border-radius: 30px;
+      &:before {
+        border-radius: 50%;
+      }
+    }
+  }
+}
+</style>
