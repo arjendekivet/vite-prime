@@ -55,6 +55,7 @@ import C_Editor from '@/components/C_Editor.vue'
 import QuillEditor from '@/components/QuillEditor.vue'
 import Tiptap from '@/components/Tiptap.vue'
 import InputSwitch from 'primevue/inputswitch'
+import Badge from 'primevue/badge'
 
 import primeLocaleEn from '@/locales/prime_en'
 
@@ -123,5 +124,6 @@ app.component('C_Editor', C_Editor);
 app.component('QuillEditor', QuillEditor);
 app.component('Tiptap', Tiptap);
 app.component('InputSwitch', InputSwitch);
+app.component('Badge', Badge);
 
 app.mount('#app')

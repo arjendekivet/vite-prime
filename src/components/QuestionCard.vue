@@ -4,7 +4,26 @@
     :class="{ flipped: flip, hide__description: !showDescription }"
   >
     <Card style="margin-bottom: 2em" v-if="!flip" class="card">
-      <!-- <template #header></template> -->
+      <template #header>
+        <div class="p-d-flex p-jc-between p-pl-5 p-pr-5 p-pt-2">
+          <div>
+            <Badge
+              :value="_.filter(answers, { correct: true, manual: props.quickPractice }).length.toString()"
+              severity="success"
+              size="large"
+              class="p-mr-1"
+            ></Badge>
+          </div>
+          <div>
+            <Badge
+              :value="_.filter(answers, { correct: false, manual: props.quickPractice }).length.toString()"
+              severity="warning"
+              size="large"
+              class="p-ml-1"
+            ></Badge>
+          </div>
+        </div>
+      </template>
       <template #title>{{ question?.title }}</template>
       <!-- <template #subtitle>{{ question?.title }}</template> -->
       <template #content>
@@ -25,19 +44,23 @@
       </template>
     </Card>
     <Card v-else style="margin-bottom: 2em" class="card">
-      <template #header>
-        <div class="header p-pr-4 p-pt-4">
-          <Button icon="pi pi-replay" label="Back" @click="flip = !flip" />
-        </div>
+      <!-- <template #header>
+        <div class="header p-pr-4 p-pt-4"></div>
+      </template>-->
+      <template #title>
+        <div>{{ question?.title }}</div>
       </template>
       <template #content class="hidden">
         <!-- <div v-html="question?.answer"></div> -->
-        <div>{{ question?.answer }}</div>
+        <div>{{ diff.length > 0 && !props.quickPractice ? userAnswer : null }}</div>
         <div v-html="highlightedAnswer()" class="answer__given"></div>
       </template>
       <template #footer v-if="props.quickPractice">
         <Button icon="pi pi-thumbs-up" class="p-mr-2" @click="submitAnswer(true)" />
         <Button icon="pi pi-thumbs-down" @click="submitAnswer(false)" />
+      </template>
+      <template #footer v-else>
+        <Button icon="pi pi-replay" label="Back" @click="flip = !flip" />
       </template>
     </Card>
   </div>
@@ -47,6 +70,7 @@
 import Question from '@/types/question'
 import { computed, inject, ref, watch } from 'vue'
 import { useToast } from "primevue/usetoast"
+import _ from 'lodash'
 
 const EventService: any = inject('EventService')
 const toast = useToast()
@@ -62,8 +86,11 @@ const props = withDefaults(defineProps<FormProp>(), {
 
 const flip = ref(false)
 const userAnswer = ref()
-const diff = computed(() => props.quickPractice ? [] : findDiff(props.question.answer, userAnswer.value || ''))
+const diff = computed(() => props.quickPractice ? [] : findDiff(props.question.answer, userAnswer.value || []))
 const errorPercentage = computed(() => Math.round((diff.value.length / props.question.answer.length) * 100))
+const answers = ref()
+
+getAnswers()
 
 watch(
   () => flip.value,
@@ -75,6 +102,16 @@ watch(
   }
 )
 
+function getAnswers() {
+  EventService.getDataByFilterType('answer', 'question_id', props.question._id)
+    .then((response: any) => {
+      answers.value = response.data
+    })
+    .catch((error: any) => {
+      toast.add({ severity: 'error', summary: 'Error', detail: error, life: 2500 })
+    })
+}
+
 async function submitAnswer(correct: boolean) {
   const submitValue = {
     question_id: props.question._id,
@@ -85,7 +122,7 @@ async function submitAnswer(correct: boolean) {
   }
   EventService.postForm('answer', submitValue)
     .then((response: any) => {
-      console.info(response)
+      getAnswers()
     })
     .catch((error: any) => {
       toast.add({ severity: 'error', summary: 'Error', detail: error, life: 2500 })
@@ -114,10 +151,10 @@ function checkAnswer() {
 
 function findDiff(str1: string, str2: string): number[] {
   // start with longest answer
-  const desc = [str1, str2].sort((a: string, b: string) => b.length - a.length)
+  const arrStringsByLongest = [str1, str2].sort((a: string, b: string) => b.length - a.length)
   const cDiff: number[] = []
-  desc[0].split('').forEach(function (val, i) {
-    if (val != desc[1].charAt(i)) {
+  arrStringsByLongest[0].split('').forEach(function (val, i) {
+    if (val != arrStringsByLongest[1].charAt(i)) {
       cDiff.push(i)
     }
   })
@@ -167,6 +204,9 @@ function highlightedAnswer() {
     border-radius: 3em;
     .header {
       text-align: end;
+    }
+    .p-card-body {
+      padding: 1rem;
     }
   }
   &.flipped {
