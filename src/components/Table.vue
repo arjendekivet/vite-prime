@@ -18,6 +18,7 @@
         @row-click="openDocument"
         :paginator="true"
         :rows="10"
+        stripedRows
     >
         <template #header>
             <TableToolbar

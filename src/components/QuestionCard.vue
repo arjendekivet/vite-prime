@@ -30,7 +30,12 @@
         <!-- <div v-html="question?.description"></div> -->
         <div v-if="showDescription">{{ question?.description }}</div>
         <div v-if="!quickPractice" class="answer__input">
-          <P_InputText v-model="userAnswer" placeholder="Answer" class="p-mt-2"></P_InputText>
+          <P_InputText
+            v-model="userAnswer"
+            placeholder="Answer"
+            class="p-mt-2"
+            v-on:keyup.enter="checkAnswer()"
+          ></P_InputText>
         </div>
       </template>
       <template #footer>
