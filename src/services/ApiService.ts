@@ -1,5 +1,7 @@
 import axios from 'axios'
-import authHeader from '@/modules/auth-header';
+import authHeader from '@/modules/auth-header'
+import router from '@/router/routes'
+// import { messages } from '@/modules/UseFormMessages'
 import Question from '@/types/question'
 
 const apiClient = axios.create({
@@ -13,7 +15,20 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use((config) => {
     return config;
-});
+})
+
+apiClient.interceptors.response.use(function (response) {
+    return response;
+}, function (error) {
+    if (401 === error.response.status && error.response.data?.jwtExpired) {
+        if (router.currentRoute.value.name !== 'signin') {
+            // Go to login, etc
+            router.push({ name: 'signin' })
+        }
+        // messages.value = []
+    }
+    return Promise.reject(error)
+})
 
 type QuestionResponse = {
     data: Question[]
