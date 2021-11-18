@@ -1,8 +1,9 @@
 import axios from 'axios'
 import authHeader from '@/modules/auth-header'
 import router from '@/router/routes'
-// import { messages } from '@/modules/UseFormMessages'
+import { addWarningMessage } from '@/modules/UseFormMessages'
 import Question from '@/types/question'
+import store from '@/store'
 
 const apiClient = axios.create({
     baseURL: `/api`,
@@ -23,9 +24,10 @@ apiClient.interceptors.response.use(function (response) {
     if (401 === error.response.status && error.response.data?.jwtExpired) {
         if (router.currentRoute.value.name !== 'signin') {
             // Go to login, etc
+            store.dispatch('user/removeUser')
             router.push({ name: 'signin' })
+            addWarningMessage('Your token expired. You were automatically logged out.', 5000)
         }
-        // messages.value = []
     }
     return Promise.reject(error)
 })

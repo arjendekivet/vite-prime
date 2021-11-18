@@ -62,6 +62,9 @@ import router from '@/router/routes'
 import { onMounted } from 'vue'
 import { setNavVisible } from '@/modules/globalState'
 import { addErrorMessage } from '@/modules/UseFormMessages'
+import MessageType from '@/types/message'
+
+const messages = ref<MessageType[]>([])
 
 onMounted(() => {
   // reset left sidebar visibility
@@ -73,7 +76,7 @@ type FormProp = {
   categoryTwo?: string,
   categoryThree?: string,
   quickPractice?: boolean,
-  showDescription: boolean,
+  showDescription?: boolean,
 }
 const props = withDefaults(defineProps<FormProp>(), {
   categoryOne: undefined,
@@ -100,7 +103,7 @@ EventService.getDistinctDataByField('questions', 'cat_1')
     catOne.value = response.data.map((cat: string) => ({ label: cat, value: cat }))
   })
   .catch((error: any) => {
-    addErrorMessage(error)
+    addErrorMessage(error, messages)
   })
 
 EventService.getDistinctDataByField('questions', 'cat_2')
@@ -108,7 +111,7 @@ EventService.getDistinctDataByField('questions', 'cat_2')
     catTwo.value = response.data.map((cat: string) => ({ label: cat, value: cat }))
   })
   .catch((error: any) => {
-    addErrorMessage(error)
+    addErrorMessage(error, messages)
   })
 
 EventService.getDistinctDataByField('questions', 'cat_3')
@@ -116,7 +119,7 @@ EventService.getDistinctDataByField('questions', 'cat_3')
     catThree.value = response.data.map((cat: string) => ({ label: cat, value: cat }))
   })
   .catch((error: any) => {
-    addErrorMessage(error)
+    addErrorMessage(error, messages)
   })
 </script>
 

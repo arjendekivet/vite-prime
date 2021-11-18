@@ -16,7 +16,8 @@ const addSuccesMessage = (msg: string) => {
     )
 }
 
-const addErrorMessage = (error: string | any) => {
+const addErrorMessage = (error: string | any, pMessages?: any) => {
+    const usedMessages = pMessages ? pMessages : messages
     let content = error
     if (typeof (error) === 'object') {
         content = error.response?.data?.message
@@ -25,14 +26,14 @@ const addErrorMessage = (error: string | any) => {
                 ? error + " ==> " + error.response.data.error
                 : error
     }
-    messages.value.push(
+    usedMessages.value.push(
         { severity: 'error', sticky: true, content: content, id: count.value++ },
     )
 }
 
-const addWarningMessage = (warning: string) => {
+const addWarningMessage = (warning: string, life?: number) => {
     messages.value.push(
-        { severity: 'warn', sticky: false, content: warning, id: count.value++ },
+        { severity: 'warn', sticky: false, life: life, content: warning, id: count.value++ },
     )
 }
 
