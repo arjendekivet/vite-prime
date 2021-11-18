@@ -1,6 +1,6 @@
 <template>
   <div
-    class="question__card p-col-12 p-md-6 p-lg-3"
+    class="question__card p-col-12 p-md-6 p-lg-4 p-xl-3"
     :class="{ flipped: flip, hide__description: !showDescription }"
   >
     <Card style="margin-bottom: 2em" v-if="!flip" class="card">
@@ -30,12 +30,7 @@
         <!-- <div v-html="question?.description"></div> -->
         <div v-if="showDescription">{{ question?.description }}</div>
         <div v-if="!quickPractice" class="answer__input">
-          <P_InputText
-            v-model="userAnswer"
-            placeholder="Answer"
-            class="p-mt-2"
-            style="background-color: azure"
-          ></P_InputText>
+          <P_InputText v-model="userAnswer" placeholder="Answer" class="p-mt-2"></P_InputText>
         </div>
       </template>
       <template #footer>
@@ -216,6 +211,15 @@ function highlightedAnswer() {
     }
     .p-card-body {
       padding: 1rem;
+      .p-card-content {
+        .answer__input {
+          input {
+            background-color: azure;
+            width: 100%;
+            max-width: 12em;
+          }
+        }
+      }
     }
   }
   &.flipped {
