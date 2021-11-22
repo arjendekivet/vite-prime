@@ -6,6 +6,7 @@
       <QuestionCard
         v-for="question in questions"
         :question="question"
+        :testRunId="testRunId"
         :quickPractice="quickPractice"
         :showDescription="showDescription"
       ></QuestionCard>
@@ -26,6 +27,7 @@ type FormProp = {
   categoryOne?: string,
   categoryTwo?: string,
   categoryThree?: string,
+  testRunId?: string,
   quickPractice?: boolean,
   showDescription: boolean,
 }

@@ -77,6 +77,7 @@ const toast = useToast()
 
 type FormProp = {
   question: Question,
+  testRunId?: string,
   quickPractice?: boolean,
   showDescription: boolean,
 }
@@ -103,9 +104,22 @@ watch(
 )
 
 function getAnswers() {
-  EventService.getDataByFilterType('answer', 'question_id', props.question._id)
+  // EventService.getDataByFilterType('answer', 'question_id', props.question._id)
+  //   .then((response: any) => {
+  //     answers.value = response.data
+  //   })
+  //   .catch((error: any) => {
+  //     toast.add({ severity: 'error', summary: 'Error', detail: error, life: 2500 })
+  //   })
+
+  EventService.postForm('answer/filter', {
+    question_id: props.question._id,
+    ...(props.testRunId && { test_run_id: props.testRunId })
+  })
     .then((response: any) => {
-      answers.value = response.data
+      if (response.data) {
+        answers.value = response.data
+      }
     })
     .catch((error: any) => {
       toast.add({ severity: 'error', summary: 'Error', detail: error, life: 2500 })
@@ -116,6 +130,7 @@ async function submitAnswer(correct: boolean) {
   const submitValue = {
     question_id: props.question._id,
     answer: userAnswer.value,
+    test_run_id: props.testRunId,
     correct: correct,
     manual: props.quickPractice,
     percentage: errorPercentage.value,

@@ -14,21 +14,7 @@
             <Button type="button" icon="pi pi-sliders-h" @click="router.push({ name: 'admin' })" />
             <Button type="button" icon="pi pi-home" @click="router.push({ name: 'home' })" />
             <Button type="button" icon="pi pi-cog" />
-            <SplitButton icon="pi pi-user" :model="items"></SplitButton>
-            <Avatar
-                :image-url="logo"
-                image-size="cover"
-                color="#007bff"
-                width="36px"
-                label=" "
-                font-size=".75em"
-                font-color="white"
-                radius="20%"
-                border-color="#007bff"
-                border-width="0px"
-                :inline="true"
-                v-tooltip="user?.username"
-            ></Avatar>
+            <SplitButton icon="pi pi-user" :model="items" v-tooltip="user?.username"></SplitButton>
         </div>
     </div>
 </template>

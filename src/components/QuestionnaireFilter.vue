@@ -1,6 +1,6 @@
 <template>
   <div class="questionnaire__filter p-p-2">
-    <h3>Filter questions</h3>
+    <h2>Filter questions</h2>
 
     <div class="p-d-flex p-flex-column">
       <P_Dropdown
@@ -33,6 +33,17 @@
         style="overflow: hidden;"
         class="p-mb-2"
       />
+      <h3>Testrun ID</h3>
+      <P_Dropdown
+        v-model="selectedTestRunId"
+        :options="optionsTestRunId"
+        :editable="true"
+        :showClear="true"
+        optionLabel="label"
+        optionValue="value"
+        style="overflow: hidden;"
+        class="p-mb-2"
+      />
       <div class="p-d-inline-flex p-mb-2">
         <InputSwitch v-model="selectedQuickPractice" />
         <div class="p-ml-2 p-text-bold" style="line-height: 1.75rem">Quick practice</div>
@@ -42,14 +53,13 @@
         <InputSwitch v-model="selectedShowDescription" />
         <div class="p-ml-2 p-text-bold" style="line-height: 1.75rem">Show description</div>
       </div>
-
       <Button
         label="Go!"
         class="p-button-success p-mt-4"
         @click="router.push({
           name: 'questionnaire',
           params: { categoryOne: selectedCategoryOne, categoryTwo: selectedCategoryTwo, categoryThree: selectedCategoryThree },
-          query: { quickPractice: selectedQuickPractice.toString(), showDescription: selectedShowDescription.toString() }
+          query: { quickPractice: selectedQuickPractice.toString(), showDescription: selectedShowDescription.toString(), testRunId: selectedTestRunId }
         })"
       />
     </div>
@@ -75,6 +85,7 @@ type FormProp = {
   categoryOne?: string,
   categoryTwo?: string,
   categoryThree?: string,
+  testRunId?: string,
   quickPractice?: boolean,
   showDescription?: boolean,
 }
@@ -82,6 +93,7 @@ const props = withDefaults(defineProps<FormProp>(), {
   categoryOne: undefined,
   categoryTwo: undefined,
   categoryThree: undefined,
+  testRunId: undefined,
   quickPractice: false,
   showDescription: false,
 })
@@ -91,10 +103,12 @@ const EventService: any = inject('EventService')
 const catOne = ref()
 const catTwo = ref()
 const catThree = ref()
+const optionsTestRunId = ref()
 
 const selectedCategoryOne = ref(props.categoryOne)
 const selectedCategoryTwo = ref(props.categoryTwo)
 const selectedCategoryThree = ref(props.categoryThree)
+const selectedTestRunId = ref(props.testRunId)
 const selectedQuickPractice = ref(props.quickPractice)
 const selectedShowDescription = ref(props.showDescription)
 
@@ -121,10 +135,19 @@ EventService.getDistinctDataByField('questions', 'cat_3')
   .catch((error: any) => {
     addErrorMessage(error, messages)
   })
+
+EventService.getDistinctDataByField('answer', 'test_run_id')
+  .then((response: any) => {
+    optionsTestRunId.value = response.data.map((cat: string) => ({ label: cat, value: cat }))
+  })
+  .catch((error: any) => {
+    addErrorMessage(error, messages)
+  })
 </script>
 
 <style lang="scss">
 .questionnaire__filter {
+  text-align: left;
   .p-inputswitch {
     .p-inputswitch-slider {
       border-radius: 30px;
@@ -132,6 +155,9 @@ EventService.getDistinctDataByField('questions', 'cat_3')
         border-radius: 50%;
       }
     }
+  }
+  h3 {
+    margin: 1em 0em 0em 0em;
   }
 }
 </style>
