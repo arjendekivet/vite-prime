@@ -74,7 +74,8 @@ function menuToggle() {
     }
 
     .sidebar {
-      width: 225px;
+      // width: 225px;
+      min-width: 225px;
       overflow: auto;
     }
 

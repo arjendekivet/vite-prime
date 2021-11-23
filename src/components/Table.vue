@@ -19,6 +19,8 @@
         :paginator="true"
         :rows="10"
         stripedRows
+        v-model:filters="activeFilters"
+        filterDisplay="row"
     >
         <template #header>
             <TableToolbar
@@ -35,6 +37,21 @@
         <Column v-for="col of columns" :field="col.field" :header="col.header" :key="col.field">
             <template v-if="col.html" #body="{ data }">
                 <div v-html="data[col.field]"></div>
+            </template>
+            <template v-if="col.filter" #filter="{ filterModel, filterCallback }">
+                <P_Dropdown
+                    v-if="col.filterField === 'select'"
+                    v-model="filterModel.value"
+                    @change="filterCallback()"
+                    :options="getUniqueFieldValues(col.field)"
+                    placeholder="Any"
+                ></P_Dropdown>
+                <P_InputText
+                    v-else
+                    v-model="filterModel.value"
+                    @keyup="filterCallback()"
+                    class="filter__input"
+                />
             </template>
         </Column>
         <Column v-if="openDocumentRow" headerStyle="width: 12em;" bodyStyle="text-align: right">
@@ -60,13 +77,15 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, ref, inject, computed } from 'vue'
+import { onBeforeUnmount, ref, inject, computed, watch } from 'vue'
 import TableToolbar from '@/components/TableToolbar.vue'
 import _ from 'lodash';
 import Utils from '@/modules/utils'
 import ColumnConfig from "@/types/columnconfig"
 import { messages, addSuccesMessage, addErrorMessage, addWarningMessage } from '@/modules/UseFormMessages'
 import TableLayoutDefaults from '@/data/TableLayoutDefaults'
+
+import { FilterMatchMode } from 'primevue/api'
 
 const router: any = inject('router')
 const EventService: any = inject('EventService')
@@ -100,6 +119,23 @@ const formLayoutKey = ref<string>('dummy')
 const selected = ref<Object[]>()
 const searchedTableData = ref()
 
+const activeFilters: any = ref({})
+
+watch(
+    () => columns.value,
+    (newValue, prevValue) => {
+        const filterColumns = _.filter(columns.value, { 'filter': true })
+        _.forEach(filterColumns, function (column) {
+            if (column.filterField === 'select') {
+                activeFilters.value[column.field] = { value: null, matchMode: FilterMatchMode.EQUALS }
+            } else {
+                // CONTAINS
+                activeFilters.value[column.field] = { value: null, matchMode: FilterMatchMode.STARTS_WITH }
+            }
+        })
+    }
+)
+
 const compTitle = computed(() => props.title ? props.title : configTitle.value)
 
 localTableData.value = props.tableData
@@ -128,6 +164,10 @@ if (props.layoutKey) {
         setDefaultLayout()
     }
     getData()
+}
+
+function getUniqueFieldValues(field: string) {
+    return _.uniq(_.map(localTableData.value, field))
 }
 
 function setDefaultLayout() {
@@ -254,6 +294,20 @@ function newDoc() {
         .p-datatable-header {
             padding: 0;
             border: 0;
+        }
+    }
+
+    .p-column-filter {
+        .p-fluid {
+            .p-inputtext {
+                padding: 0.4rem;
+                &.filter__input {
+                    min-width: 5em;
+                }
+            }
+            .p-dropdown .p-dropdown-trigger {
+                width: 1.5rem;
+            }
         }
     }
 }
