@@ -10,9 +10,12 @@
       @click="router.push({ name: 'home_pick' })"
     />-->
   </div>
+  {{ mode }}
 </template>
 
 <script setup lang="ts">
 import router from '@/router/routes'
 import leitner from '@/assets/leitner.png'
+
+const mode = import.meta.env.MODE
 </script>
